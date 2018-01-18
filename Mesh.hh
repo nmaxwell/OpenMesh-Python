@@ -5,7 +5,11 @@
 #include "Iterator.hh"
 #include "Circulator.hh"
 
+#include <boost/python/numpy.hpp>
 #include <boost/python/stl_iterator.hpp>
+
+namespace py = boost::python;
+namespace np = boost::python::numpy;
 
 namespace OpenMesh {
 namespace Python {
@@ -184,6 +188,46 @@ FaceHandle add_face(Mesh& _self, const list& _vhandles) {
 	vector.insert(vector.end(), begin, end);
 
 	return _self.add_face(vector);
+}
+
+/**
+ * Returns a single point of a mesh as a numpy array with shape (3).
+ *
+ * The returned array references the underlying point data, i.e. changes made to
+ * this array affect the original point/mesh.
+ *
+ * @tparam Mesh A Mesh type.
+ *
+ * @param _self The mesh instance that is to be used.
+ * @param _vh The vertex handle.
+ */
+template<class Mesh>
+np::ndarray point_np(Mesh& _self, VertexHandle _vh) {
+	double *ptr = _self.point(_vh).data();
+	np::ndarray array = np::from_data(ptr, np::dtype::get_builtin<double>(),
+		py::make_tuple(3), py::make_tuple(sizeof(double)), py::object());
+	return array;
+}
+
+/**
+ * Returns all points of a mesh as a numpy array with shape (n, 3).
+ *
+ * The returned array references the underlying point data, i.e. changes made to
+ * this array affect the original point/mesh.
+ *
+ * @tparam Mesh A Mesh type.
+ *
+ * @param _self The mesh instance that is to be used.
+ */
+template<class Mesh>
+np::ndarray points_np(Mesh& _self) {
+	// const double *ptr = _self.points()->data();
+	double *ptr = _self.point(VertexHandle(0)).data();
+	np::ndarray array = np::from_data(ptr, np::dtype::get_builtin<double>(),
+		py::make_tuple(_self.n_vertices(), 3),
+		py::make_tuple(3 * sizeof(double), sizeof(double)),
+		py::object());
+	return array;
 }
 
 /**
@@ -888,6 +932,13 @@ void expose_mesh(const char *_name) {
 
 		.def("is_trimesh", &Mesh::is_trimesh)
 		.staticmethod("is_trimesh")
+
+		//======================================================================
+		//  numpy
+		//======================================================================
+
+		.def("point_np", &point_np<Mesh>)
+		.def("points_np", &points_np<Mesh>)
 		;
 
 	expose_type_specific_functions(class_mesh);

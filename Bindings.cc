@@ -7,6 +7,11 @@
 
 #include <memory>
 
+#include <boost/python/numpy.hpp>
+
+namespace py = boost::python;
+namespace np = boost::python::numpy;
+
 namespace OpenMesh {
 namespace Python {
 
@@ -100,6 +105,9 @@ void expose_status_bits_and_info() {
 }
 
 BOOST_PYTHON_MODULE(openmesh) {
+	Py_Initialize();
+	np::initialize();
+
 	expose_items();
 	expose_handles();
 	expose_status_bits_and_info();
