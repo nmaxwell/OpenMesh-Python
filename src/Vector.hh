@@ -1,10 +1,9 @@
 #ifndef OPENMESH_PYTHON_VECTOR_HH
 #define OPENMESH_PYTHON_VECTOR_HH
 
-#include "Bindings.hh"
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
 
-namespace OpenMesh {
-namespace Python {
 
 template <class Vector, class Scalar>
 void set_item(Vector& _vec, int _index, Scalar _value) {
@@ -16,8 +15,9 @@ void set_item(Vector& _vec, int _index, Scalar _value) {
 		_vec[_index] = _value;
 	}
 	else {
-		PyErr_SetString(PyExc_IndexError, "Index out of range.");
-		throw_error_already_set();
+		// TODO
+		// PyErr_SetString(PyExc_IndexError, "Index out of range.");
+		// throw_error_already_set();
 	}
 }
 
@@ -31,8 +31,9 @@ Scalar get_item(Vector& _vec, int _index) {
 		return _vec[_index];
 	}
 	else {
-		PyErr_SetString(PyExc_IndexError, "Index out of range.");
-		throw_error_already_set();
+		// TODO
+		// PyErr_SetString(PyExc_IndexError, "Index out of range.");
+		// throw_error_already_set();
 	}
 
 	return 0.0;
@@ -67,29 +68,29 @@ struct Factory {
 }
 
 template<class Scalar, class Vector>
-void defInitMod(class_< OpenMesh::VectorT<Scalar, 2> > &classVector) {
+void defInitMod(py::module& m, py::class_< OpenMesh::VectorT<Scalar, 2> > &classVector) {
 	classVector
-		.def("__init__", make_constructor(&Factory<Scalar>::vec2_default))
-		.def("__init__", make_constructor(&Factory<Scalar>::vec2_user_defined))
+		.def(py::init(&Factory<Scalar>::vec2_default))
+		.def(py::init(&Factory<Scalar>::vec2_user_defined))
 		;
 }
 
 template<class Scalar, class Vector>
-void defInitMod(class_< OpenMesh::VectorT<Scalar, 3> > &classVector) {
+void defInitMod(py::module& m, py::class_< OpenMesh::VectorT<Scalar, 3> > &classVector) {
 	Vector (Vector::*cross)(const Vector&) const = &Vector::operator%;
 	classVector
-		.def("__init__", make_constructor(&Factory<Scalar>::vec3_default))
-		.def("__init__", make_constructor(&Factory<Scalar>::vec3_user_defined))
+		.def(py::init(&Factory<Scalar>::vec3_default))
+		.def(py::init(&Factory<Scalar>::vec3_user_defined))
 		.def("__mod__", cross)
 		;
-	def("cross", cross);
+	m.def("cross", cross);
 }
 
 template<class Scalar, class Vector>
-void defInitMod(class_< OpenMesh::VectorT<Scalar, 4> > &classVector) {
+void defInitMod(py::module& m, py::class_< OpenMesh::VectorT<Scalar, 4> > &classVector) {
 	classVector
-		.def("__init__", make_constructor(&Factory<Scalar>::vec4_default))
-		.def("__init__", make_constructor(&Factory<Scalar>::vec4_user_defined))
+		.def(py::init(&Factory<Scalar>::vec4_default))
+		.def(py::init(&Factory<Scalar>::vec4_user_defined))
 		;
 }
 
@@ -107,7 +108,7 @@ void defInitMod(class_< OpenMesh::VectorT<Scalar, 4> > &classVector) {
  * @note N must be either 2, 3 or 4.
  */
 template<class Scalar, int N>
-void expose_vec(const char *_name) {
+void expose_vec(py::module& m, const char *_name) {
 	typedef OpenMesh::VectorT<Scalar, N> Vector;
 
 	Scalar (Vector::*min_void)() const = &Vector::min;
@@ -129,38 +130,38 @@ void expose_vec(const char *_name) {
 	const Vector (Vector::*normalized)() const = &Vector::normalized;
 #endif
 
-	class_<Vector> classVector = class_<Vector>(_name);
+	py::class_<Vector> classVector = py::class_<Vector>(m, _name);
 
 	classVector
 		.def("__setitem__", &set_item<Vector, Scalar>)
 		.def("__getitem__", &get_item<Vector, Scalar>)
-		.def(self == self)
-		.def(self != self)
-		.def(self *= Scalar())
-		.def(self /= Scalar())
-		.def(self * Scalar())
-		.def(Scalar() * self)
-		.def(self / Scalar())
-		.def(self *= self)
-		.def(self /= self)
-		.def(self -= self)
-		.def(self += self)
-		.def(self * self)
-		.def(self / self)
-		.def(self + self)
-		.def(self - self)
-		.def(-self)
-		.def(self | self)
-		.def("vectorize", &Vector::vectorize, return_internal_reference<>())
-		.def(self < self)
+		.def("__eq__", &Vector::operator==)
+		// .def(self != self)
+		// .def(self *= Scalar())
+		// .def(self /= Scalar())
+		// .def(self * Scalar())
+		// .def(Scalar() * self)
+		// .def(self / Scalar())
+		// .def(self *= self)
+		// .def(self /= self)
+		// .def(self -= self)
+		// .def(self += self)
+		// .def(self * self)
+		// .def(self / self)
+		// .def(self + self)
+		// .def(self - self)
+		// .def("__neg__", &Vector::operator-)
+		// .def(self | self)
+		.def("vectorize", &Vector::vectorize, py::return_value_policy::reference_internal)
+		// .def(self < self)
 
 		.def("dot", dot)
 		.def("norm", norm)
 		.def("length", length)
 		.def("sqrnorm", sqrnorm)
 		.def("normalized", normalized)
-		.def("normalize", normalize, return_internal_reference<>())
-		.def("normalize_cond", normalize_cond, return_internal_reference<>())
+		.def("normalize", normalize, py::return_value_policy::reference_internal)
+		.def("normalize_cond", normalize_cond, py::return_value_policy::reference_internal)
 
 		.def("l1_norm", &Vector::l1_norm)
 		.def("l8_norm", &Vector::l8_norm)
@@ -171,23 +172,18 @@ void expose_vec(const char *_name) {
 		.def("min_abs", &Vector::min_abs)
 		.def("mean", &Vector::mean)
 		.def("mean_abs", &Vector::mean_abs)
-		.def("minimize", &Vector::minimize, return_internal_reference<>())
+		.def("minimize", &Vector::minimize, py::return_value_policy::reference_internal)
 		.def("minimized", &Vector::minimized)
-		.def("maximize", &Vector::maximize, return_internal_reference<>())
+		.def("maximize", &Vector::maximize, py::return_value_policy::reference_internal)
 		.def("maximized", &Vector::maximized)
 		.def("min", min_vector)
 		.def("max", max_vector)
 
-		.def("size", &Vector::size)
-		.staticmethod("size")
-		.def("vectorized", &Vector::vectorized)
-		.staticmethod("vectorized")
+		.def_static("size", &Vector::size)
+		.def_static("vectorized", &Vector::vectorized)
 		;
 
-	defInitMod<Scalar, Vector>(classVector);
+	defInitMod<Scalar, Vector>(m, classVector);
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif
