@@ -15,9 +15,7 @@ void set_item(Vector& _vec, int _index, Scalar _value) {
 		_vec[_index] = _value;
 	}
 	else {
-		// TODO
-		// PyErr_SetString(PyExc_IndexError, "Index out of range.");
-		// throw_error_already_set();
+		throw py::index_error();
 	}
 }
 
@@ -31,9 +29,7 @@ Scalar get_item(Vector& _vec, int _index) {
 		return _vec[_index];
 	}
 	else {
-		// TODO
-		// PyErr_SetString(PyExc_IndexError, "Index out of range.");
-		// throw_error_already_set();
+		throw py::index_error();
 	}
 
 	return 0.0;
@@ -124,6 +120,20 @@ void expose_vec(py::module& m, const char *_name) {
 	Vector& (Vector::*normalize     )(void         )       = &Vector::normalize;
 	Vector& (Vector::*normalize_cond)(void         )       = &Vector::normalize_cond;
 
+	Vector& (Vector::*op_selfmul_scalar)(const Scalar&)       = &Vector::operator*=;
+	Vector& (Vector::*op_selfmul_vector)(const Vector&)       = &Vector::operator*=;
+	Vector& (Vector::*op_selfdiv_scalar)(const Scalar&)       = &Vector::operator/=;
+	Vector& (Vector::*op_selfdiv_vector)(const Scalar&)       = &Vector::operator/=;
+	Vector& (Vector::*op_selfadd_vector)(const Vector&)       = &Vector::operator+=;
+	Vector& (Vector::*op_selfsub_vector)(const Vector&)       = &Vector::operator-=;
+	Vector  (Vector::*op_mul_scalar    )(const Scalar&) const = &Vector::operator*;
+	Vector  (Vector::*op_mul_vector    )(const Vector&) const = &Vector::operator*;
+	Vector  (Vector::*op_div_scalar    )(const Scalar&) const = &Vector::operator/;
+	Vector  (Vector::*op_div_vector    )(const Vector&) const = &Vector::operator/;
+	Vector  (Vector::*op_add_vector    )(const Vector&) const = &Vector::operator+;
+	Vector  (Vector::*op_sub_vector    )(const Vector&) const = &Vector::operator-;
+	Vector  (Vector::*op_unary_minus   )(void         ) const = &Vector::operator-;
+
 #if (_MSC_VER >= 1800 || __cplusplus > 199711L || defined(__GXX_EXPERIMENTAL_CXX0X__)) && !defined(OPENMESH_VECTOR_LEGACY)
 	Vector (Vector::*normalized)() const = &Vector::normalized;
 #else
@@ -136,24 +146,25 @@ void expose_vec(py::module& m, const char *_name) {
 		.def("__setitem__", &set_item<Vector, Scalar>)
 		.def("__getitem__", &get_item<Vector, Scalar>)
 		.def("__eq__", &Vector::operator==)
-		// .def(self != self)
-		// .def(self *= Scalar())
-		// .def(self /= Scalar())
-		// .def(self * Scalar())
-		// .def(Scalar() * self)
-		// .def(self / Scalar())
-		// .def(self *= self)
-		// .def(self /= self)
-		// .def(self -= self)
-		// .def(self += self)
-		// .def(self * self)
-		// .def(self / self)
-		// .def(self + self)
-		// .def(self - self)
-		// .def("__neg__", &Vector::operator-)
-		// .def(self | self)
+		.def("__ne__", &Vector::operator!=)
+		.def("__lt__", &Vector::operator<)
+		.def("__imul__", op_selfmul_scalar)
+		.def("__imul__", op_selfmul_vector)
+		.def("__itruediv__", op_selfdiv_scalar)
+		.def("__itruediv__", op_selfdiv_vector)
+		.def("__iadd__", op_selfadd_vector)
+		.def("__isub__", op_selfsub_vector)
+		.def("__mul__", op_mul_scalar)
+		.def("__mul__", op_mul_vector)
+		.def("__rmul__", op_mul_scalar)
+		.def("__truediv__", op_div_scalar)
+		.def("__truediv__", op_div_vector)
+		.def("__add__", op_add_vector)
+		.def("__sub__", op_sub_vector)
+		.def("__neg__", op_unary_minus)
+		.def("__or__", dot)
+
 		.def("vectorize", &Vector::vectorize, py::return_value_policy::reference_internal)
-		// .def(self < self)
 
 		.def("dot", dot)
 		.def("norm", norm)

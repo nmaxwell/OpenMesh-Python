@@ -7,7 +7,12 @@ namespace py = pybind11;
 
 
 PYBIND11_MODULE(openmesh, m) {
-    expose_vec<double, 3>(m, "Vec3d");
+	expose_vec<float,  2>(m, "Vec2f");
+	expose_vec<float,  3>(m, "Vec3f");
+	expose_vec<float,  4>(m, "Vec4f");
+	expose_vec<double, 2>(m, "Vec2d");
+	expose_vec<double, 3>(m, "Vec3d");
+	expose_vec<double, 4>(m, "Vec4d");
 }
 
 
