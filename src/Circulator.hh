@@ -3,8 +3,9 @@
 
 #include "Bindings.hh"
 
-namespace OpenMesh {
-namespace Python {
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
 
 /**
  * Wrapper for circulators.
@@ -61,8 +62,7 @@ class CirculatorWrapperT {
 				return res;
 			}
 			else {
-				PyErr_SetString(PyExc_StopIteration, "No more data.");
-				boost::python::throw_error_already_set();
+				throw py::stop_iteration();
 			}
 			return typename Circulator::value_type();
 		}
@@ -83,16 +83,14 @@ class CirculatorWrapperT {
  * that are passed from %Python to C++ are instances of CirculatorWrapperT.
  */
 template<class Circulator, class CenterEntityHandle>
-void expose_circulator(const char *_name) {
-	class_<CirculatorWrapperT<Circulator, CenterEntityHandle> >(_name, init<TriMesh&, CenterEntityHandle>())
-		.def(init<PolyMesh&, CenterEntityHandle>())
+void expose_circulator(py::module& m, const char *_name) {
+	py::class_<CirculatorWrapperT<Circulator, CenterEntityHandle> >(m, _name)
+		.def(py::init<TriMesh&, CenterEntityHandle>())
+		.def(py::init<PolyMesh&, CenterEntityHandle>())
 		.def("__iter__", &CirculatorWrapperT<Circulator, CenterEntityHandle>::iter)
 		.def("__next__", &CirculatorWrapperT<Circulator, CenterEntityHandle>::next)
 		.def("next", &CirculatorWrapperT<Circulator, CenterEntityHandle>::next)
 		;
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif

@@ -3,8 +3,9 @@
 
 #include "Bindings.hh"
 
-namespace OpenMesh {
-namespace Python {
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
 
 /**
  * Wrapper for mesh item iterators.
@@ -69,8 +70,7 @@ class IteratorWrapperT {
 				return res;
 			}
 			else {
-				PyErr_SetString(PyExc_StopIteration, "No more data.");
-				boost::python::throw_error_already_set();
+				throw py::stop_iteration();
 			}
 			return typename Iterator::value_type();
 		}
@@ -105,17 +105,17 @@ class IteratorWrapperT {
  * that are passed from %Python to C++ are instances of IteratorWrapperT.
  */
 template<class Iterator, size_t (OpenMesh::ArrayKernel::*n_items)() const>
-void expose_iterator(const char *_name) {
-	class_<IteratorWrapperT<Iterator, n_items> >(_name, init<PolyMesh&, typename Iterator::value_type, optional<bool> >())
-		.def(init<TriMesh&, typename Iterator::value_type, optional<bool> >())
+void expose_iterator(py::module& m, const char *_name) {
+	py::class_<IteratorWrapperT<Iterator, n_items> >(m, _name)
+		.def(py::init<PolyMesh&, typename Iterator::value_type>())
+		.def(py::init<PolyMesh&, typename Iterator::value_type, bool>())
+		.def(py::init<TriMesh&, typename Iterator::value_type>())
+		.def(py::init<TriMesh&, typename Iterator::value_type, bool>())
 		.def("__iter__", &IteratorWrapperT<Iterator, n_items>::iter)
 		.def("__next__", &IteratorWrapperT<Iterator, n_items>::next)
 		.def("__len__", &IteratorWrapperT<Iterator, n_items>::len)
 		.def("next", &IteratorWrapperT<Iterator, n_items>::next)
 		;
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif
