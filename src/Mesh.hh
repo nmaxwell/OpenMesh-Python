@@ -935,33 +935,12 @@ void expose_mesh(py::module& m, const char *_name) {
 	//  Nested Types
 	//======================================================================
 
-//	// Enter mesh scope
-//	py::scope scope_mesh = class_mesh;
+	class_mesh.attr("Point") = m.attr("Vec3d");
+	class_mesh.attr("Normal") = m.attr("Vec3d");
+	class_mesh.attr("Color") = m.attr("Vec4f");
+	class_mesh.attr("TexCoord2D") = m.attr("Vec2f");
+	class_mesh.attr("TexCoord3D") = m.attr("Vec3f");
 
-//	// Point
-//	const boost::python::type_info point_info = type_id<typename Mesh::Point>();
-//	const converter::registration * point_registration = converter::registry::query(point_info);
-//	scope_mesh.attr("Point") = handle<>(point_registration->m_class_object);
-
-//	// Normal
-//	const boost::python::type_info normal_info = type_id<typename Mesh::Normal>();
-//	const converter::registration * normal_registration = converter::registry::query(normal_info);
-//	scope_mesh.attr("Normal") = handle<>(normal_registration->m_class_object);
-
-//	// Color
-//	const boost::python::type_info color_info = type_id<typename Mesh::Color>();
-//	const converter::registration * color_registration = converter::registry::query(color_info);
-//	scope_mesh.attr("Color") = handle<>(color_registration->m_class_object);
-
-//	// TexCoord2D
-//	const boost::python::type_info texcoord2d_info = type_id<typename Mesh::TexCoord2D>();
-//	const converter::registration * texcoord2d_registration = converter::registry::query(texcoord2d_info);
-//	scope_mesh.attr("TexCoord2D") = handle<>(texcoord2d_registration->m_class_object);
-
-//	// TexCoord3D
-//	const boost::python::type_info texcoord3d_info = type_id<typename Mesh::TexCoord3D>();
-//	const converter::registration * texcoord3d_registration = converter::registry::query(texcoord3d_info);
-//	scope_mesh.attr("TexCoord3D") = handle<>(texcoord3d_registration->m_class_object);
 }
 
 #endif
