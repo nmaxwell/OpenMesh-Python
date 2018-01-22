@@ -4,10 +4,11 @@
 #include "Bindings.hh"
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
 
-namespace OpenMesh {
-namespace Python {
+#include <pybind11/pybind11.h>
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(retain_overloads, retain, 0, 1)
+namespace py = pybind11;
+namespace OM = OpenMesh;
+
 
 /**
  * Implementation of %Python's \_\_getitem\_\_ magic method.
@@ -21,7 +22,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(retain_overloads, retain, 0, 1)
  * @return The requested property value.
  */
 template <class PropertyManager, class IndexHandle>
-object propman_get_item(PropertyManager& _self, IndexHandle _handle) {
+py::object propman_get_item(PropertyManager& _self, IndexHandle _handle) {
 	return _self[_handle];
 }
 
@@ -36,7 +37,7 @@ object propman_get_item(PropertyManager& _self, IndexHandle _handle) {
  * @param _value The property value to be set.
  */
 template <class PropertyManager, class IndexHandle>
-void propman_set_item(PropertyManager& _self, IndexHandle _handle, object _value) {
+void propman_set_item(PropertyManager& _self, IndexHandle _handle, py::object _value) {
 	_self[_handle] = _value;
 }
 
@@ -52,13 +53,13 @@ void propman_set_item(PropertyManager& _self, IndexHandle _handle, object _value
  * @param _value The value the range will be set to.
  */
 template <class PropertyManager, class Iterator>
-void propman_set_range(PropertyManager& _self, Iterator _it, object _value) {
+void propman_set_range(PropertyManager& _self, Iterator _it, py::object _value) {
 	try {
 		while (true) {
 			_self[_it.next()] = _value;
 		}
 	}
-	catch (error_already_set exception) {
+	catch (py::stop_iteration exception) {
 		// This is expected behavior
 		PyErr_Clear();
 	}
@@ -94,25 +95,25 @@ bool property_exists(Mesh& _mesh, const char *_propname) {
  * @param _name The name of the property manager type to be exposed.
  */
 template <class PropHandle, class IndexHandle, class Iterator>
-void expose_property_manager(const char *_name) {
+void expose_property_manager(py::module& m, const char *_name) {
 	// Convenience typedef
-	typedef PropertyManager<PropHandle, PolyConnectivity> PropertyManager;
+	typedef OM::PropertyManager<PropHandle, OM::PolyConnectivity> PropertyManager;
 
 	// Function pointers
-	void (PropertyManager::*retain)(bool) = &PropertyManager::retain;
+	py::object (*getitem)(PropertyManager&, IndexHandle            ) = &propman_get_item;
+	void       (*setitem)(PropertyManager&, IndexHandle, py::object) = &propman_set_item;
 
-	object (*getitem)(PropertyManager&, IndexHandle        ) = &propman_get_item;
-	void   (*setitem)(PropertyManager&, IndexHandle, object) = &propman_set_item;
-
-	void (*set_range)(PropertyManager&, Iterator, object) = &propman_set_range;
+	void (*set_range)(PropertyManager&, Iterator, py::object) = &propman_set_range;
 
 	bool (*property_exists_poly)(PolyMesh&, const char *) = &property_exists<PropertyManager, PolyMesh>;
 	bool (*property_exists_tri )(TriMesh&,  const char *) = &property_exists<PropertyManager, TriMesh >;
 
 	// Expose property manager
-	class_<PropertyManager, boost::noncopyable>(_name)
-		.def(init<PolyMesh&, const char *, optional<bool> >()[with_custodian_and_ward<1,2>()])
-		.def(init<TriMesh&,  const char *, optional<bool> >()[with_custodian_and_ward<1,2>()])
+	py::class_<PropertyManager>(m, _name)
+		.def(py::init<PolyMesh&, const char *>(), py::keep_alive<1,2>())
+		.def(py::init<PolyMesh&, const char *, bool>(), py::keep_alive<1,2>())
+		.def(py::init<TriMesh&,  const char *>(), py::keep_alive<1,2>())
+		.def(py::init<TriMesh&,  const char *, bool>(), py::keep_alive<1,2>())
 
 		.def("swap", &PropertyManager::swap)
 		.def("is_valid", &PropertyManager::isValid)
@@ -120,24 +121,20 @@ void expose_property_manager(const char *_name) {
 		.def("__bool__", &PropertyManager::operator bool)
 		.def("__nonzero__", &PropertyManager::operator bool)
 
-		.def("get_raw_property", &PropertyManager::getRawProperty, return_value_policy<copy_const_reference>())
-		.def("get_name", &PropertyManager::getName, return_value_policy<copy_const_reference>())
-		.def("get_mesh", &PropertyManager::getMesh, return_value_policy<reference_existing_object>())
+		.def("get_raw_property", &PropertyManager::getRawProperty, py::return_value_policy::copy)
+		.def("get_name", &PropertyManager::getName, py::return_value_policy::copy)
+		.def("get_mesh", &PropertyManager::getMesh, py::return_value_policy::reference)
 
-		.def("retain", retain, retain_overloads())
+		.def("retain", &PropertyManager::retain, py::arg("do_retain")=false)
 
 		.def("__getitem__", getitem)
 		.def("__setitem__", setitem)
 
 		.def("set_range", set_range)
 
-		.def("property_exists", property_exists_poly)
-		.def("property_exists", property_exists_tri)
-		.staticmethod("property_exists")
+		.def_static("property_exists", property_exists_poly)
+		.def_static("property_exists", property_exists_tri)
 		;
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif

@@ -4,6 +4,7 @@
 #include "Mesh.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
+#include "PropertyManager.hh"
 #include "InputOutput.hh"
 
 #include <pybind11/pybind11.h>
@@ -45,15 +46,15 @@ PYBIND11_MODULE(openmesh, m) {
 
 	expose_circulator<OM::PolyConnectivity::HalfedgeLoopIter, OM::HalfedgeHandle>(m, "HalfedgeLoopIter");
 
-//	typedef IteratorWrapperT<PolyConnectivity::VertexIter, &ArrayKernel::n_vertices> VertexIterWrapper;
-//	typedef IteratorWrapperT<PolyConnectivity::HalfedgeIter, &ArrayKernel::n_halfedges> HalfedgeIterWrapper;
-//	typedef IteratorWrapperT<PolyConnectivity::EdgeIter, &ArrayKernel::n_edges> EdgeIterWrapper;
-//	typedef IteratorWrapperT<PolyConnectivity::FaceIter, &ArrayKernel::n_faces> FaceIterWrapper;
+	typedef IteratorWrapperT<OM::PolyConnectivity::VertexIter, &OM::ArrayKernel::n_vertices> VertexIterWrapper;
+	typedef IteratorWrapperT<OM::PolyConnectivity::HalfedgeIter, &OM::ArrayKernel::n_halfedges> HalfedgeIterWrapper;
+	typedef IteratorWrapperT<OM::PolyConnectivity::EdgeIter, &OM::ArrayKernel::n_edges> EdgeIterWrapper;
+	typedef IteratorWrapperT<OM::PolyConnectivity::FaceIter, &OM::ArrayKernel::n_faces> FaceIterWrapper;
 
-//	expose_property_manager<VPropHandleT<object>, VertexHandle, VertexIterWrapper>("VPropertyManager");
-//	expose_property_manager<HPropHandleT<object>, HalfedgeHandle, HalfedgeIterWrapper>("HPropertyManager");
-//	expose_property_manager<EPropHandleT<object>, EdgeHandle, EdgeIterWrapper>("EPropertyManager");
-//	expose_property_manager<FPropHandleT<object>, FaceHandle, FaceIterWrapper>("FPropertyManager");
+	expose_property_manager<OM::VPropHandleT<py::object>, OM::VertexHandle, VertexIterWrapper>(m, "VPropertyManager");
+	expose_property_manager<OM::HPropHandleT<py::object>, OM::HalfedgeHandle, HalfedgeIterWrapper>(m, "HPropertyManager");
+	expose_property_manager<OM::EPropHandleT<py::object>, OM::EdgeHandle, EdgeIterWrapper>(m, "EPropertyManager");
+	expose_property_manager<OM::FPropHandleT<py::object>, OM::FaceHandle, FaceIterWrapper>(m, "FPropertyManager");
 
 	expose_io(m);
 
