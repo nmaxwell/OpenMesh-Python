@@ -80,9 +80,9 @@ void expose_io(py::module& m) {
 
 	m.def("write_mesh", write_mesh_poly,
 		py::arg("mesh"), py::arg("filename"),
-		py::arg("opt")=OM::IO::Options::Default, py::arg("precision")=6);
+		py::arg("opt")=OM::IO::Options(), py::arg("precision")=6);
 	m.def("write_mesh", write_mesh_tri,
 		py::arg("mesh"), py::arg("filename"),
-		py::arg("opt")=OM::IO::Options::Default, py::arg("precision")=6);
+		py::arg("opt")=OM::IO::Options(), py::arg("precision")=6);
 }
 
