@@ -4,6 +4,7 @@
 #include "Mesh.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
+#include "InputOutput.hh"
 
 #include <pybind11/pybind11.h>
 
@@ -54,7 +55,7 @@ PYBIND11_MODULE(openmesh, m) {
 //	expose_property_manager<EPropHandleT<object>, EdgeHandle, EdgeIterWrapper>("EPropertyManager");
 //	expose_property_manager<FPropHandleT<object>, FaceHandle, FaceIterWrapper>("FPropertyManager");
 
-//	expose_io();
+	expose_io(m);
 
 //	expose_decimater<PolyMesh>("PolyMesh");
 //	expose_decimater<TriMesh>("TriMesh");

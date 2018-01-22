@@ -7,6 +7,6 @@ find_package(OpenMesh)
 include_directories(${OPENMESH_INCLUDE_DIRS})
 
 add_subdirectory(pybind11)
-pybind11_add_module(openmesh src/Bindings.cc src/Miscellaneous.cc)
+pybind11_add_module(openmesh src/Bindings.cc src/InputOutput.cc src/Miscellaneous.cc)
 
 target_link_libraries(openmesh PRIVATE ${OPENMESH_LIBRARIES})
