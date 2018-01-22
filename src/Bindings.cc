@@ -1,6 +1,7 @@
 #include "Bindings.hh"
 #include "Miscellaneous.hh"
 #include "Vector.hh"
+#include "Mesh.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
 
@@ -22,8 +23,8 @@ PYBIND11_MODULE(openmesh, m) {
 	expose_vec<double, 3>(m, "Vec3d");
 	expose_vec<double, 4>(m, "Vec4d");
 
-//	expose_mesh<PolyMesh>("PolyMesh");
-//	expose_mesh<TriMesh>("TriMesh");
+	expose_mesh<PolyMesh>(m, "PolyMesh");
+	expose_mesh<TriMesh>(m, "TriMesh");
 
 	expose_iterator<OM::PolyConnectivity::VertexIter, &OM::ArrayKernel::n_vertices>(m, "VertexIter");
 	expose_iterator<OM::PolyConnectivity::HalfedgeIter, &OM::ArrayKernel::n_halfedges>(m, "HalfedgeIter");

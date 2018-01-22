@@ -7,6 +7,14 @@
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 
+
+/**
+ * Return value policy for functions that return references to objects that are
+ * managed by %OpenMesh.
+ */
+#define OPENMESH_PYTHON_DEFAULT_POLICY py::return_value_policy::copy
+
+
 struct MeshTraits : public OpenMesh::DefaultTraits {
 	/** Use double precision points */
 	typedef OpenMesh::Vec3d Point;

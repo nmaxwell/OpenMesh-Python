@@ -5,29 +5,12 @@
 #include "Iterator.hh"
 #include "Circulator.hh"
 
-#include <boost/python/numpy.hpp>
-#include <boost/python/stl_iterator.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
-namespace py = boost::python;
-namespace np = boost::python::numpy;
+namespace py = pybind11;
+namespace OM = OpenMesh;
 
-namespace OpenMesh {
-namespace Python {
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(garbage_collection_overloads, garbage_collection, 0, 3)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(add_property_overloads, add_property, 1, 2)
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(copy_all_properties_overloads, copy_all_properties, 2, 3)
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(delete_vertex_overloads, delete_vertex, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(delete_edge_overloads, delete_edge, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(delete_face_overloads, delete_face, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(is_boundary_overloads, is_boundary, 1, 2)
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(find_feature_edges_overloads, find_feature_edges, 0, 1)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(update_normal_overloads, update_normal, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(update_halfedge_normals_overloads, update_halfedge_normals, 0, 1)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(calc_halfedge_normal_overloads, calc_halfedge_normal, 1, 2)
 
 /**
  * Set the status of an item.
@@ -65,7 +48,7 @@ void set_status(Mesh& _self, IndexHandle _h, const OpenMesh::Attributes::StatusI
  * property value of an item can be changed nonetheless.
  */
 template <class Mesh, class PropHandle, class IndexHandle>
-void set_property(Mesh& _self, PropHandle _ph, IndexHandle _h, const object& _value) {
+void set_property(Mesh& _self, PropHandle _ph, IndexHandle _h, const py::object& _value) {
 	_self.property(_ph, _h) = _value;
 }
 
@@ -84,7 +67,7 @@ void set_property(Mesh& _self, PropHandle _ph, IndexHandle _h, const object& _va
  * property value of an item can be changed nonetheless.
  */
 template <class Mesh, class PropHandle>
-void set_property(Mesh& _self, PropHandle _ph, const object& _value) {
+void set_property(Mesh& _self, PropHandle _ph, const py::object& _value) {
 	_self.property(_ph) = _value;
 }
 
@@ -105,7 +88,7 @@ void assign_connectivity(Mesh& _self, const OtherMesh& _other) {
 /**
  * Get an iterator.
  */
-template <class Mesh, class Iterator, size_t (ArrayKernel::*n_items)() const>
+template <class Mesh, class Iterator, size_t (OM::ArrayKernel::*n_items)() const>
 IteratorWrapperT<Iterator, n_items> get_iterator(Mesh& _self) {
 	return IteratorWrapperT<Iterator, n_items>(_self, typename Iterator::value_type(0));
 }
@@ -113,7 +96,7 @@ IteratorWrapperT<Iterator, n_items> get_iterator(Mesh& _self) {
 /**
  * Get a skipping iterator.
  */
-template <class Mesh, class Iterator, size_t (ArrayKernel::*n_items)() const>
+template <class Mesh, class Iterator, size_t (OM::ArrayKernel::*n_items)() const>
 IteratorWrapperT<Iterator, n_items> get_skipping_iterator(Mesh& _self) {
 	return IteratorWrapperT<Iterator, n_items>(_self, typename Iterator::value_type(0), true);
 }
@@ -148,24 +131,30 @@ CirculatorWrapperT<Circulator, CenterEntityHandle> get_circulator(Mesh& _self, C
  * @param _f Remove deleted faces?
  */
 template <class Mesh>
-void garbage_collection(Mesh& _self, list& _vh_to_update, list& _hh_to_update, list& _fh_to_update, bool _v = true, bool _e = true, bool _f = true) {
+void garbage_collection(Mesh& _self, py::list& _vh_to_update, py::list& _hh_to_update, py::list& _fh_to_update, bool _v = true, bool _e = true, bool _f = true) {
 	// Convert list of handles to vector of pointers
-	stl_input_iterator<VertexHandle*> vh_begin(_vh_to_update);
-	stl_input_iterator<VertexHandle*> vh_end;
-	std::vector<VertexHandle*> vh_vector;
-	vh_vector.insert(vh_vector.end(), vh_begin, vh_end);
+	std::vector<OM::VertexHandle*> vh_vector;
+	for (auto item : _vh_to_update) {
+		if (py::isinstance<OM::VertexHandle>(item)) {
+			vh_vector.push_back(item.cast<OM::VertexHandle*>());
+		}
+	}
 
 	// Convert list of handles to vector of pointers
-	stl_input_iterator<HalfedgeHandle*> hh_begin(_hh_to_update);
-	stl_input_iterator<HalfedgeHandle*> hh_end;
-	std::vector<HalfedgeHandle*> hh_vector;
-	hh_vector.insert(hh_vector.end(), hh_begin, hh_end);
+	std::vector<OM::HalfedgeHandle*> hh_vector;
+	for (auto item : _hh_to_update) {
+		if (py::isinstance<OM::HalfedgeHandle>(item)) {
+			hh_vector.push_back(item.cast<OM::HalfedgeHandle*>());
+		}
+	}
 
 	// Convert list of handles to vector of pointers
-	stl_input_iterator<FaceHandle*> fh_begin(_fh_to_update);
-	stl_input_iterator<FaceHandle*> fh_end;
-	std::vector<FaceHandle*> fh_vector;
-	fh_vector.insert(fh_vector.end(), fh_begin, fh_end);
+	std::vector<OM::FaceHandle*> fh_vector;
+	for (auto item : _fh_to_update) {
+		if (py::isinstance<OM::FaceHandle>(item)) {
+			fh_vector.push_back(item.cast<OM::FaceHandle*>());
+		}
+	}
 
 	// Call garbage collection
 	_self.garbage_collection(vh_vector, hh_vector, fh_vector, _v, _e, _f);
@@ -180,13 +169,14 @@ void garbage_collection(Mesh& _self, list& _vh_to_update, list& _hh_to_update, l
  * @param _vhandles The list of vertex handles.
  */
 template<class Mesh>
-FaceHandle add_face(Mesh& _self, const list& _vhandles) {
-	stl_input_iterator<VertexHandle> begin(_vhandles);
-	stl_input_iterator<VertexHandle> end;
-
-	std::vector<VertexHandle> vector;
-	vector.insert(vector.end(), begin, end);
-
+OM::FaceHandle add_face(Mesh& _self, const py::list& _vhandles) {
+	// TODO Use automatic conversion instead?
+	std::vector<OM::VertexHandle> vector;
+	for (auto item : _vhandles) {
+		if (py::isinstance<OM::VertexHandle>(item)) {
+			vector.push_back(item.cast<OM::VertexHandle>());
+		}
+	}
 	return _self.add_face(vector);
 }
 
@@ -202,11 +192,9 @@ FaceHandle add_face(Mesh& _self, const list& _vhandles) {
  * @param _vh The vertex handle.
  */
 template<class Mesh>
-np::ndarray point_np(Mesh& _self, VertexHandle _vh) {
+py::array_t<double> point_np(Mesh& _self, OM::VertexHandle _vh) {
 	double *ptr = _self.point(_vh).data();
-	np::ndarray array = np::from_data(ptr, np::dtype::get_builtin<double>(),
-		py::make_tuple(3), py::make_tuple(sizeof(double)), py::object());
-	return array;
+	return py::array_t<double>({3}, {sizeof(double)}, ptr, py::cast(_self));
 }
 
 /**
@@ -220,14 +208,12 @@ np::ndarray point_np(Mesh& _self, VertexHandle _vh) {
  * @param _self The mesh instance that is to be used.
  */
 template<class Mesh>
-np::ndarray points_np(Mesh& _self) {
+py::array_t<double> points_np(Mesh& _self) {
 	// const double *ptr = _self.points()->data();
-	double *ptr = _self.point(VertexHandle(0)).data();
-	np::ndarray array = np::from_data(ptr, np::dtype::get_builtin<double>(),
-		py::make_tuple(_self.n_vertices(), 3),
-		py::make_tuple(3 * sizeof(double), sizeof(double)),
-		py::object());
-	return array;
+	double *ptr = _self.point(OM::VertexHandle(0)).data();
+	auto shape = {(int)_self.n_vertices(), 3};
+	auto strides = {3 * sizeof(double), sizeof(double)};
+	return py::array_t<double>(shape, strides, ptr, py::cast(_self));
 }
 
 /**
@@ -235,9 +221,9 @@ np::ndarray points_np(Mesh& _self) {
  * available for a specific type of mesh (i.e. they are available for polygon
  * meshes or triangle meshes, but not both).
  *
- * @tparam Class A boost::python::class type.
+ * @tparam Class A pybind11::class type.
  *
- * @param _class The boost::python::class instance for which the member
+ * @param _class The pybind11::class instance for which the member
  * functions are to be defined.
  */
 template <class Class>
@@ -249,20 +235,20 @@ void expose_type_specific_functions(Class& _class) {
  * Function template specialization for polygon meshes.
  */
 template <>
-void expose_type_specific_functions(class_<PolyMesh>& _class) {
+void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 	typedef PolyMesh::Scalar Scalar;
 	typedef PolyMesh::Point  Point;
 	typedef PolyMesh::Normal Normal;
 	typedef PolyMesh::Color  Color;
 
-	FaceHandle (PolyMesh::*add_face_3_vh)(VertexHandle, VertexHandle, VertexHandle              ) = &PolyMesh::add_face;
-	FaceHandle (PolyMesh::*add_face_4_vh)(VertexHandle, VertexHandle, VertexHandle, VertexHandle) = &PolyMesh::add_face;
-	FaceHandle (*add_face_list)(PolyMesh&, const list&) = &add_face;
+	OM::FaceHandle (PolyMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle                  ) = &PolyMesh::add_face;
+	OM::FaceHandle (PolyMesh::*add_face_4_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &PolyMesh::add_face;
+	OM::FaceHandle (*add_face_list)(PolyMesh&, const py::list&) = &add_face;
 
-	void (PolyMesh::*split_eh_pt)(EdgeHandle, const Point&) = &PolyMesh::split;
-	void (PolyMesh::*split_eh_vh)(EdgeHandle, VertexHandle) = &PolyMesh::split;
-	void (PolyMesh::*split_fh_pt)(FaceHandle, const Point&) = &PolyMesh::split;
-	void (PolyMesh::*split_fh_vh)(FaceHandle, VertexHandle) = &PolyMesh::split;
+	void (PolyMesh::*split_eh_pt)(OM::EdgeHandle, const Point&    ) = &PolyMesh::split;
+	void (PolyMesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &PolyMesh::split;
+	void (PolyMesh::*split_fh_pt)(OM::FaceHandle, const Point&    ) = &PolyMesh::split;
+	void (PolyMesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &PolyMesh::split;
 
 	Normal (PolyMesh::*calc_face_normal_pt)(const Point&, const Point&, const Point&) const = &PolyMesh::calc_face_normal;
 
@@ -277,9 +263,7 @@ void expose_type_specific_functions(class_<PolyMesh>& _class) {
 		.def("split", split_fh_vh)
 
 		.def("split_copy", &PolyMesh::split_copy)
-
 		.def("calc_face_normal", calc_face_normal_pt)
-
 		.def("insert_edge", &PolyMesh::insert_edge)
 		;
 }
@@ -288,27 +272,27 @@ void expose_type_specific_functions(class_<PolyMesh>& _class) {
  * Function template specialization for triangle meshes.
  */
 template <>
-void expose_type_specific_functions(class_<TriMesh>& _class) {
+void expose_type_specific_functions(py::class_<TriMesh>& _class) {
 	typedef TriMesh::Scalar Scalar;
 	typedef TriMesh::Point  Point;
 	typedef TriMesh::Normal Normal;
 	typedef TriMesh::Color  Color;
 
-	FaceHandle (TriMesh::*add_face_3_vh)(VertexHandle, VertexHandle, VertexHandle) = &TriMesh::add_face;
-	FaceHandle (*add_face_list)(TriMesh&, const list&) = &add_face;
+	OM::FaceHandle (TriMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::add_face;
+	OM::FaceHandle (*add_face_list)(TriMesh&, const py::list&) = &add_face;
 
-	VertexHandle (TriMesh::*split_eh_pt)(EdgeHandle, const Point&) = &TriMesh::split;
-	void         (TriMesh::*split_eh_vh)(EdgeHandle, VertexHandle) = &TriMesh::split;
-	VertexHandle (TriMesh::*split_fh_pt)(FaceHandle, const Point&) = &TriMesh::split;
-	void         (TriMesh::*split_fh_vh)(FaceHandle, VertexHandle) = &TriMesh::split;
+	OM::VertexHandle (TriMesh::*split_eh_pt)(OM::EdgeHandle, const Point&    ) = &TriMesh::split;
+	void             (TriMesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split;
+	OM::VertexHandle (TriMesh::*split_fh_pt)(OM::FaceHandle, const Point&    ) = &TriMesh::split;
+	void             (TriMesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &TriMesh::split;
 
-	VertexHandle (TriMesh::*split_copy_eh_pt)(EdgeHandle, const Point&) = &TriMesh::split_copy;
-	void         (TriMesh::*split_copy_eh_vh)(EdgeHandle, VertexHandle) = &TriMesh::split_copy;
-	VertexHandle (TriMesh::*split_copy_fh_pt)(FaceHandle, const Point&) = &TriMesh::split_copy;
-	void         (TriMesh::*split_copy_fh_vh)(FaceHandle, VertexHandle) = &TriMesh::split_copy;
+	OM::VertexHandle (TriMesh::*split_copy_eh_pt)(OM::EdgeHandle, const Point&    ) = &TriMesh::split_copy;
+	void             (TriMesh::*split_copy_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split_copy;
+	OM::VertexHandle (TriMesh::*split_copy_fh_pt)(OM::FaceHandle, const Point&    ) = &TriMesh::split_copy;
+	void             (TriMesh::*split_copy_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &TriMesh::split_copy;
 
-	HalfedgeHandle (TriMesh::*vertex_split_pt)(Point,        VertexHandle, VertexHandle, VertexHandle) = &TriMesh::vertex_split;
-	HalfedgeHandle (TriMesh::*vertex_split_vh)(VertexHandle, VertexHandle, VertexHandle, VertexHandle) = &TriMesh::vertex_split;
+	OM::HalfedgeHandle (TriMesh::*vertex_split_pt)(Point,            OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::vertex_split;
+	OM::HalfedgeHandle (TriMesh::*vertex_split_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::vertex_split;
 
 	_class
 		.def("add_face", add_face_3_vh)
@@ -344,7 +328,7 @@ void expose_type_specific_functions(class_<TriMesh>& _class) {
  * @param _name The name of the mesh type to be exposed.
  */
 template <class Mesh>
-void expose_mesh(const char *_name) {
+void expose_mesh(py::module& m, const char *_name) {
 	using OpenMesh::Attributes::StatusInfo;
 
 	typedef typename Mesh::Scalar Scalar;
@@ -357,130 +341,130 @@ void expose_mesh(const char *_name) {
 	//======================================================================
 
 	// Get the i'th item
-	VertexHandle   (Mesh::*vertex_handle_uint  )(unsigned int) const = &Mesh::vertex_handle;
-	HalfedgeHandle (Mesh::*halfedge_handle_uint)(unsigned int) const = &Mesh::halfedge_handle;
-	EdgeHandle     (Mesh::*edge_handle_uint    )(unsigned int) const = &Mesh::edge_handle;
-	FaceHandle     (Mesh::*face_handle_uint    )(unsigned int) const = &Mesh::face_handle;
+	OM::VertexHandle   (Mesh::*vertex_handle_uint  )(unsigned int) const = &Mesh::vertex_handle;
+	OM::HalfedgeHandle (Mesh::*halfedge_handle_uint)(unsigned int) const = &Mesh::halfedge_handle;
+	OM::EdgeHandle     (Mesh::*edge_handle_uint    )(unsigned int) const = &Mesh::edge_handle;
+	OM::FaceHandle     (Mesh::*face_handle_uint    )(unsigned int) const = &Mesh::face_handle;
 
 	// Delete items
 	void (Mesh::*garbage_collection_bools)(bool, bool, bool) = &Mesh::garbage_collection;
-	void (*garbage_collection_lists_bools)(Mesh&, list&, list&, list&, bool, bool, bool) = &garbage_collection;
+	void (*garbage_collection_lists_bools)(Mesh&, py::list&, py::list&, py::list&, bool, bool, bool) = &garbage_collection;
 
 	// Vertex connectivity
-	HalfedgeHandle (Mesh::*halfedge_handle_vh)(VertexHandle) const = &Mesh::halfedge_handle;
-	HalfedgeHandle (Mesh::*halfedge_handle_fh)(FaceHandle  ) const = &Mesh::halfedge_handle;
+	OM::HalfedgeHandle (Mesh::*halfedge_handle_vh)(OM::VertexHandle) const = &Mesh::halfedge_handle;
+	OM::HalfedgeHandle (Mesh::*halfedge_handle_fh)(OM::FaceHandle  ) const = &Mesh::halfedge_handle;
 
 	// Halfedge connectivity
-	FaceHandle     (Mesh::*face_handle_hh         )(HalfedgeHandle) const = &Mesh::face_handle;
-	HalfedgeHandle (Mesh::*prev_halfedge_handle_hh)(HalfedgeHandle) const = &Mesh::prev_halfedge_handle;
-	EdgeHandle     (Mesh::*edge_handle_hh         )(HalfedgeHandle) const = &Mesh::edge_handle;
+	OM::FaceHandle     (Mesh::*face_handle_hh         )(OM::HalfedgeHandle) const = &Mesh::face_handle;
+	OM::HalfedgeHandle (Mesh::*prev_halfedge_handle_hh)(OM::HalfedgeHandle) const = &Mesh::prev_halfedge_handle;
+	OM::EdgeHandle     (Mesh::*edge_handle_hh         )(OM::HalfedgeHandle) const = &Mesh::edge_handle;
 
 	// Edge connectivity
-	HalfedgeHandle (Mesh::*halfedge_handle_eh_uint)(EdgeHandle, unsigned int) const = &Mesh::halfedge_handle;
+	OM::HalfedgeHandle (Mesh::*halfedge_handle_eh_uint)(OM::EdgeHandle, unsigned int) const = &Mesh::halfedge_handle;
 
 	// Set halfedge
-	void (Mesh::*set_halfedge_handle_vh_hh)(VertexHandle, HalfedgeHandle) = &Mesh::set_halfedge_handle;
-	void (Mesh::*set_halfedge_handle_fh_hh)(FaceHandle, HalfedgeHandle  ) = &Mesh::set_halfedge_handle;
+	void (Mesh::*set_halfedge_handle_vh_hh)(OM::VertexHandle, OM::HalfedgeHandle) = &Mesh::set_halfedge_handle;
+	void (Mesh::*set_halfedge_handle_fh_hh)(OM::FaceHandle,   OM::HalfedgeHandle) = &Mesh::set_halfedge_handle;
 
 	// Handle -> Item
-	const typename Mesh::Vertex&   (Mesh::*vertex  )(VertexHandle  ) const = &Mesh::vertex;
-	const typename Mesh::Halfedge& (Mesh::*halfedge)(HalfedgeHandle) const = &Mesh::halfedge;
-	const typename Mesh::Edge&     (Mesh::*edge    )(EdgeHandle    ) const = &Mesh::edge;
-	const typename Mesh::Face&     (Mesh::*face    )(FaceHandle    ) const = &Mesh::face;
+	const typename Mesh::Vertex&   (Mesh::*vertex  )(OM::VertexHandle  ) const = &Mesh::vertex;
+	const typename Mesh::Halfedge& (Mesh::*halfedge)(OM::HalfedgeHandle) const = &Mesh::halfedge;
+	const typename Mesh::Edge&     (Mesh::*edge    )(OM::EdgeHandle    ) const = &Mesh::edge;
+	const typename Mesh::Face&     (Mesh::*face    )(OM::FaceHandle    ) const = &Mesh::face;
 
 	// Item -> Handle
-	VertexHandle   (Mesh::*handle_v)(const typename Mesh::Vertex&  ) const = &Mesh::handle;
-	HalfedgeHandle (Mesh::*handle_h)(const typename Mesh::Halfedge&) const = &Mesh::handle;
-	EdgeHandle     (Mesh::*handle_e)(const typename Mesh::Edge&    ) const = &Mesh::handle;
-	FaceHandle     (Mesh::*handle_f)(const typename Mesh::Face&    ) const = &Mesh::handle;
+	OM::VertexHandle   (Mesh::*handle_v)(const typename Mesh::Vertex&  ) const = &Mesh::handle;
+	OM::HalfedgeHandle (Mesh::*handle_h)(const typename Mesh::Halfedge&) const = &Mesh::handle;
+	OM::EdgeHandle     (Mesh::*handle_e)(const typename Mesh::Edge&    ) const = &Mesh::handle;
+	OM::FaceHandle     (Mesh::*handle_f)(const typename Mesh::Face&    ) const = &Mesh::handle;
 
 	// Get value of a standard property (point, normal, color)
-	const typename Mesh::Point&  (Mesh::*point_vh )(VertexHandle  ) const = &Mesh::point;
-	const typename Mesh::Normal& (Mesh::*normal_vh)(VertexHandle  ) const = &Mesh::normal;
-	const typename Mesh::Normal& (Mesh::*normal_hh)(HalfedgeHandle) const = &Mesh::normal;
-	const typename Mesh::Normal& (Mesh::*normal_fh)(FaceHandle    ) const = &Mesh::normal;
-	const typename Mesh::Color&  (Mesh::*color_vh )(VertexHandle  ) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_hh )(HalfedgeHandle) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_eh )(EdgeHandle    ) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_fh )(FaceHandle    ) const = &Mesh::color;
+	const typename Mesh::Point&  (Mesh::*point_vh )(OM::VertexHandle  ) const = &Mesh::point;
+	const typename Mesh::Normal& (Mesh::*normal_vh)(OM::VertexHandle  ) const = &Mesh::normal;
+	const typename Mesh::Normal& (Mesh::*normal_hh)(OM::HalfedgeHandle) const = &Mesh::normal;
+	const typename Mesh::Normal& (Mesh::*normal_fh)(OM::FaceHandle    ) const = &Mesh::normal;
+	const typename Mesh::Color&  (Mesh::*color_vh )(OM::VertexHandle  ) const = &Mesh::color;
+	const typename Mesh::Color&  (Mesh::*color_hh )(OM::HalfedgeHandle) const = &Mesh::color;
+	const typename Mesh::Color&  (Mesh::*color_eh )(OM::EdgeHandle    ) const = &Mesh::color;
+	const typename Mesh::Color&  (Mesh::*color_fh )(OM::FaceHandle    ) const = &Mesh::color;
 
 	// Get value of a standard property (texture coordinate)
-	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_vh)(VertexHandle  ) const = &Mesh::texcoord1D;
-	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_hh)(HalfedgeHandle) const = &Mesh::texcoord1D;
-	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_vh)(VertexHandle  ) const = &Mesh::texcoord2D;
-	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_hh)(HalfedgeHandle) const = &Mesh::texcoord2D;
-	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_vh)(VertexHandle  ) const = &Mesh::texcoord3D;
-	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_hh)(HalfedgeHandle) const = &Mesh::texcoord3D;
+	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord1D;
+	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord1D;
+	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord2D;
+	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord2D;
+	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord3D;
+	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord3D;
 
 	// Get value of a standard property (status)
-	const StatusInfo& (Mesh::*status_vh)(VertexHandle  ) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_hh)(HalfedgeHandle) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_eh)(EdgeHandle    ) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_fh)(FaceHandle    ) const = &Mesh::status;
+	const StatusInfo& (Mesh::*status_vh)(OM::VertexHandle  ) const = &Mesh::status;
+	const StatusInfo& (Mesh::*status_hh)(OM::HalfedgeHandle) const = &Mesh::status;
+	const StatusInfo& (Mesh::*status_eh)(OM::EdgeHandle    ) const = &Mesh::status;
+	const StatusInfo& (Mesh::*status_fh)(OM::FaceHandle    ) const = &Mesh::status;
 
 	// Set value of a standard property (point, normal, color)
-	void (Mesh::*set_normal_vh)(VertexHandle,   const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_normal_hh)(HalfedgeHandle, const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_normal_fh)(FaceHandle,     const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_color_vh )(VertexHandle,   const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_hh )(HalfedgeHandle, const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_eh )(EdgeHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_fh )(FaceHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
+	void (Mesh::*set_normal_vh)(OM::VertexHandle,   const typename Mesh::Normal&) = &Mesh::set_normal;
+	void (Mesh::*set_normal_hh)(OM::HalfedgeHandle, const typename Mesh::Normal&) = &Mesh::set_normal;
+	void (Mesh::*set_normal_fh)(OM::FaceHandle,     const typename Mesh::Normal&) = &Mesh::set_normal;
+	void (Mesh::*set_color_vh )(OM::VertexHandle,   const typename Mesh::Color& ) = &Mesh::set_color;
+	void (Mesh::*set_color_hh )(OM::HalfedgeHandle, const typename Mesh::Color& ) = &Mesh::set_color;
+	void (Mesh::*set_color_eh )(OM::EdgeHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
+	void (Mesh::*set_color_fh )(OM::FaceHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
 
 	// Set value of a standard property (texture coordinate)
-	void (Mesh::*set_texcoord1D_vh)(VertexHandle,   const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
-	void (Mesh::*set_texcoord1D_hh)(HalfedgeHandle, const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
-	void (Mesh::*set_texcoord2D_vh)(VertexHandle,   const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
-	void (Mesh::*set_texcoord2D_hh)(HalfedgeHandle, const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
-	void (Mesh::*set_texcoord3D_vh)(VertexHandle,   const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
-	void (Mesh::*set_texcoord3D_hh)(HalfedgeHandle, const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
+	void (Mesh::*set_texcoord1D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
+	void (Mesh::*set_texcoord1D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
+	void (Mesh::*set_texcoord2D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
+	void (Mesh::*set_texcoord2D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
+	void (Mesh::*set_texcoord3D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
+	void (Mesh::*set_texcoord3D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
 
 	// Set value of a standard property (status)
-	void (*set_status_vh)(Mesh&, VertexHandle,   const StatusInfo&) = &set_status;
-	void (*set_status_hh)(Mesh&, HalfedgeHandle, const StatusInfo&) = &set_status;
-	void (*set_status_eh)(Mesh&, EdgeHandle,     const StatusInfo&) = &set_status;
-	void (*set_status_fh)(Mesh&, FaceHandle,     const StatusInfo&) = &set_status;
+	void (*set_status_vh)(Mesh&, OM::VertexHandle,   const StatusInfo&) = &set_status;
+	void (*set_status_hh)(Mesh&, OM::HalfedgeHandle, const StatusInfo&) = &set_status;
+	void (*set_status_eh)(Mesh&, OM::EdgeHandle,     const StatusInfo&) = &set_status;
+	void (*set_status_fh)(Mesh&, OM::FaceHandle,     const StatusInfo&) = &set_status;
 
 	// Property management - add property
-	void (Mesh::*add_property_vph)(VPropHandleT<object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_eph)(EPropHandleT<object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_hph)(HPropHandleT<object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_fph)(FPropHandleT<object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_mph)(MPropHandleT<object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_vph)(OM::VPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_eph)(OM::EPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_hph)(OM::HPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_fph)(OM::FPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_mph)(OM::MPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
 
 	// Property management - remove property
-	void (Mesh::*remove_property_vph)(VPropHandleT<object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_eph)(EPropHandleT<object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_hph)(HPropHandleT<object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_fph)(FPropHandleT<object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_mph)(MPropHandleT<object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_vph)(OM::VPropHandleT<py::object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_eph)(OM::EPropHandleT<py::object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_hph)(OM::HPropHandleT<py::object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_fph)(OM::FPropHandleT<py::object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_mph)(OM::MPropHandleT<py::object>&) = &Mesh::remove_property;
 
 	// Property management - get property by name
-	bool (Mesh::*get_property_handle_vph)(VPropHandleT<object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_eph)(EPropHandleT<object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_hph)(HPropHandleT<object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_fph)(FPropHandleT<object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_mph)(MPropHandleT<object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_vph)(OM::VPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_eph)(OM::EPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_hph)(OM::HPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_fph)(OM::FPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_mph)(OM::MPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
 
 	// Property management - get property value for an item
-	const object& (Mesh::*property_vertex  )(VPropHandleT<object>, VertexHandle  ) const = &Mesh::property;
-	const object& (Mesh::*property_edge    )(EPropHandleT<object>, EdgeHandle    ) const = &Mesh::property;
-	const object& (Mesh::*property_halfedge)(HPropHandleT<object>, HalfedgeHandle) const = &Mesh::property;
-	const object& (Mesh::*property_face    )(FPropHandleT<object>, FaceHandle    ) const = &Mesh::property;
-	const object& (Mesh::*property_mesh    )(MPropHandleT<object>                ) const = &Mesh::property;
+	const py::object& (Mesh::*property_vertex  )(OM::VPropHandleT<py::object>, OM::VertexHandle  ) const = &Mesh::property;
+	const py::object& (Mesh::*property_edge    )(OM::EPropHandleT<py::object>, OM::EdgeHandle    ) const = &Mesh::property;
+	const py::object& (Mesh::*property_halfedge)(OM::HPropHandleT<py::object>, OM::HalfedgeHandle) const = &Mesh::property;
+	const py::object& (Mesh::*property_face    )(OM::FPropHandleT<py::object>, OM::FaceHandle    ) const = &Mesh::property;
+	const py::object& (Mesh::*property_mesh    )(OM::MPropHandleT<py::object>                    ) const = &Mesh::property;
 
 	// Property management - set property value for an item
-	void (*set_property_vertex  )(Mesh&, VPropHandleT<object>, VertexHandle,   const object&) = &set_property;
-	void (*set_property_edge    )(Mesh&, EPropHandleT<object>, EdgeHandle,     const object&) = &set_property;
-	void (*set_property_halfedge)(Mesh&, HPropHandleT<object>, HalfedgeHandle, const object&) = &set_property;
-	void (*set_property_face    )(Mesh&, FPropHandleT<object>, FaceHandle,     const object&) = &set_property;
-	void (*set_property_mesh    )(Mesh&, MPropHandleT<object>,                 const object&) = &set_property;
+	void (*set_property_vertex  )(Mesh&, OM::VPropHandleT<py::object>, OM::VertexHandle,   const py::object&) = &set_property;
+	void (*set_property_edge    )(Mesh&, OM::EPropHandleT<py::object>, OM::EdgeHandle,     const py::object&) = &set_property;
+	void (*set_property_halfedge)(Mesh&, OM::HPropHandleT<py::object>, OM::HalfedgeHandle, const py::object&) = &set_property;
+	void (*set_property_face    )(Mesh&, OM::FPropHandleT<py::object>, OM::FaceHandle,     const py::object&) = &set_property;
+	void (*set_property_mesh    )(Mesh&, OM::MPropHandleT<py::object>,                     const py::object&) = &set_property;
 
 	// Low-level adding new items
-	VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
-	VertexHandle (Mesh::*new_vertex_point)(const typename Mesh::Point& ) = &Mesh::new_vertex;
-	FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
-	FaceHandle   (Mesh::*new_face_face   )(const typename Mesh::Face&  ) = &Mesh::new_face;
+	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
+	OM::VertexHandle (Mesh::*new_vertex_point)(const typename Mesh::Point& ) = &Mesh::new_vertex;
+	OM::FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
+	OM::FaceHandle   (Mesh::*new_face_face   )(const typename Mesh::Face&  ) = &Mesh::new_face;
 
 	// Kernel item iterators
 	IteratorWrapperT<typename Mesh::VertexIter,   &Mesh::n_vertices > (*vertices )(Mesh&) = &get_iterator;
@@ -498,16 +482,16 @@ void expose_mesh(const char *_name) {
 	//======================================================================
 
 	// Copy property
-	void (Mesh::*copy_property_vprop)(VPropHandleT<object>&, VertexHandle,   VertexHandle  ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_hprop)(HPropHandleT<object>,  HalfedgeHandle, HalfedgeHandle) = &Mesh::copy_property;
-	void (Mesh::*copy_property_eprop)(EPropHandleT<object>,  EdgeHandle,     EdgeHandle    ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_fprop)(FPropHandleT<object>,  FaceHandle,     FaceHandle    ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_vprop)(OM::VPropHandleT<py::object>&, OM::VertexHandle,   OM::VertexHandle  ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_hprop)(OM::HPropHandleT<py::object>,  OM::HalfedgeHandle, OM::HalfedgeHandle) = &Mesh::copy_property;
+	void (Mesh::*copy_property_eprop)(OM::EPropHandleT<py::object>,  OM::EdgeHandle,     OM::EdgeHandle    ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_fprop)(OM::FPropHandleT<py::object>,  OM::FaceHandle,     OM::FaceHandle    ) = &Mesh::copy_property;
 
 	// Copy all properties
-	void (Mesh::*copy_all_properties_vh_vh_bool)(VertexHandle,   VertexHandle,   bool) = &Mesh::copy_all_properties;
-	void (Mesh::*copy_all_properties_hh_hh_bool)(HalfedgeHandle, HalfedgeHandle, bool) = &Mesh::copy_all_properties;
-	void (Mesh::*copy_all_properties_eh_eh_bool)(EdgeHandle,     EdgeHandle,     bool) = &Mesh::copy_all_properties;
-	void (Mesh::*copy_all_properties_fh_fh_bool)(FaceHandle,     FaceHandle,     bool) = &Mesh::copy_all_properties;
+	void (Mesh::*copy_all_properties_vh_vh_bool)(OM::VertexHandle,   OM::VertexHandle,   bool) = &Mesh::copy_all_properties;
+	void (Mesh::*copy_all_properties_hh_hh_bool)(OM::HalfedgeHandle, OM::HalfedgeHandle, bool) = &Mesh::copy_all_properties;
+	void (Mesh::*copy_all_properties_eh_eh_bool)(OM::EdgeHandle,     OM::EdgeHandle,     bool) = &Mesh::copy_all_properties;
+	void (Mesh::*copy_all_properties_fh_fh_bool)(OM::FaceHandle,     OM::FaceHandle,     bool) = &Mesh::copy_all_properties;
 
 	//======================================================================
 	//  PolyConnectivity Function Pointers
@@ -518,88 +502,89 @@ void expose_mesh(const char *_name) {
 	void (*assign_connectivity_tri )(Mesh&, const TriMesh& ) = &assign_connectivity;
 
 	// Vertex and face valence
-	unsigned int (Mesh::*valence_vh)(VertexHandle) const = &Mesh::valence;
-	unsigned int (Mesh::*valence_fh)(FaceHandle  ) const = &Mesh::valence;
+	unsigned int (Mesh::*valence_vh)(OM::VertexHandle) const = &Mesh::valence;
+	unsigned int (Mesh::*valence_fh)(OM::FaceHandle  ) const = &Mesh::valence;
 
 	// Triangulate face or mesh
-	void (Mesh::*triangulate_fh  )(FaceHandle) = &Mesh::triangulate;
-	void (Mesh::*triangulate_void)(          ) = &Mesh::triangulate;
+	void (Mesh::*triangulate_fh  )(OM::FaceHandle) = &Mesh::triangulate;
+	void (Mesh::*triangulate_void)(              ) = &Mesh::triangulate;
 
 	// Deleting mesh items and other connectivity/topology modifications
-	void (Mesh::*delete_vertex)(VertexHandle, bool) = &Mesh::delete_vertex;
-	void (Mesh::*delete_edge  )(EdgeHandle,   bool) = &Mesh::delete_edge;
-	void (Mesh::*delete_face  )(FaceHandle,   bool) = &Mesh::delete_face;
+	void (Mesh::*delete_vertex)(OM::VertexHandle, bool) = &Mesh::delete_vertex;
+	void (Mesh::*delete_edge  )(OM::EdgeHandle,   bool) = &Mesh::delete_edge;
+	void (Mesh::*delete_face  )(OM::FaceHandle,   bool) = &Mesh::delete_face;
 
 	// Vertex and Face circulators
-	CirculatorWrapperT<typename Mesh::VertexVertexIter,    VertexHandle  > (*vv )(Mesh&, VertexHandle  ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::VertexIHalfedgeIter, VertexHandle  > (*vih)(Mesh&, VertexHandle  ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::VertexOHalfedgeIter, VertexHandle  > (*voh)(Mesh&, VertexHandle  ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::VertexEdgeIter,      VertexHandle  > (*ve )(Mesh&, VertexHandle  ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::VertexFaceIter,      VertexHandle  > (*vf )(Mesh&, VertexHandle  ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::FaceVertexIter,      FaceHandle    > (*fv )(Mesh&, FaceHandle    ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::FaceHalfedgeIter,    FaceHandle    > (*fh )(Mesh&, FaceHandle    ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::FaceEdgeIter,        FaceHandle    > (*fe )(Mesh&, FaceHandle    ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::FaceFaceIter,        FaceHandle    > (*ff )(Mesh&, FaceHandle    ) = &get_circulator;
-	CirculatorWrapperT<typename Mesh::HalfedgeLoopIter,    HalfedgeHandle> (*hl )(Mesh&, HalfedgeHandle) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::VertexVertexIter,    OM::VertexHandle  > (*vv )(Mesh&, OM::VertexHandle  ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::VertexIHalfedgeIter, OM::VertexHandle  > (*vih)(Mesh&, OM::VertexHandle  ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::VertexOHalfedgeIter, OM::VertexHandle  > (*voh)(Mesh&, OM::VertexHandle  ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::VertexEdgeIter,      OM::VertexHandle  > (*ve )(Mesh&, OM::VertexHandle  ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::VertexFaceIter,      OM::VertexHandle  > (*vf )(Mesh&, OM::VertexHandle  ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::FaceVertexIter,      OM::FaceHandle    > (*fv )(Mesh&, OM::FaceHandle    ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::FaceHalfedgeIter,    OM::FaceHandle    > (*fh )(Mesh&, OM::FaceHandle    ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::FaceEdgeIter,        OM::FaceHandle    > (*fe )(Mesh&, OM::FaceHandle    ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::FaceFaceIter,        OM::FaceHandle    > (*ff )(Mesh&, OM::FaceHandle    ) = &get_circulator;
+	CirculatorWrapperT<typename Mesh::HalfedgeLoopIter,    OM::HalfedgeHandle> (*hl )(Mesh&, OM::HalfedgeHandle) = &get_circulator;
 
 	// Boundary and manifold tests
-	bool (Mesh::*is_boundary_hh)(HalfedgeHandle  ) const = &Mesh::is_boundary;
-	bool (Mesh::*is_boundary_eh)(EdgeHandle      ) const = &Mesh::is_boundary;
-	bool (Mesh::*is_boundary_vh)(VertexHandle    ) const = &Mesh::is_boundary;
-	bool (Mesh::*is_boundary_fh)(FaceHandle, bool) const = &Mesh::is_boundary;
+	bool (Mesh::*is_boundary_hh)(OM::HalfedgeHandle  ) const = &Mesh::is_boundary;
+	bool (Mesh::*is_boundary_eh)(OM::EdgeHandle      ) const = &Mesh::is_boundary;
+	bool (Mesh::*is_boundary_vh)(OM::VertexHandle    ) const = &Mesh::is_boundary;
+	bool (Mesh::*is_boundary_fh)(OM::FaceHandle, bool) const = &Mesh::is_boundary;
 
 	// Generic handle derefertiation
-	const typename Mesh::Vertex&   (Mesh::*deref_vh)(VertexHandle  ) const = &Mesh::deref;
-	const typename Mesh::Halfedge& (Mesh::*deref_hh)(HalfedgeHandle) const = &Mesh::deref;
-	const typename Mesh::Edge&     (Mesh::*deref_eh)(EdgeHandle    ) const = &Mesh::deref;
-	const typename Mesh::Face&     (Mesh::*deref_fh)(FaceHandle    ) const = &Mesh::deref;
+	const typename Mesh::Vertex&   (Mesh::*deref_vh)(OM::VertexHandle  ) const = &Mesh::deref;
+	const typename Mesh::Halfedge& (Mesh::*deref_hh)(OM::HalfedgeHandle) const = &Mesh::deref;
+	const typename Mesh::Edge&     (Mesh::*deref_eh)(OM::EdgeHandle    ) const = &Mesh::deref;
+	const typename Mesh::Face&     (Mesh::*deref_fh)(OM::FaceHandle    ) const = &Mesh::deref;
 
 	//======================================================================
 	//  PolyMeshT Function Pointers
 	//======================================================================
 
-	void (Mesh::*calc_edge_vector_eh_normal)(EdgeHandle,     Normal&) const = &Mesh::calc_edge_vector;
-	void (Mesh::*calc_edge_vector_hh_normal)(HalfedgeHandle, Normal&) const = &Mesh::calc_edge_vector;
+	void (Mesh::*calc_edge_vector_eh_normal)(OM::EdgeHandle,     Normal&) const = &Mesh::calc_edge_vector;
+	void (Mesh::*calc_edge_vector_hh_normal)(OM::HalfedgeHandle, Normal&) const = &Mesh::calc_edge_vector;
 
-	Normal (Mesh::*calc_edge_vector_eh)(EdgeHandle    ) const = &Mesh::calc_edge_vector;
-	Normal (Mesh::*calc_edge_vector_hh)(HalfedgeHandle) const = &Mesh::calc_edge_vector;
+	Normal (Mesh::*calc_edge_vector_eh)(OM::EdgeHandle    ) const = &Mesh::calc_edge_vector;
+	Normal (Mesh::*calc_edge_vector_hh)(OM::HalfedgeHandle) const = &Mesh::calc_edge_vector;
 
-	Scalar (Mesh::*calc_edge_length_eh)(EdgeHandle    ) const = &Mesh::calc_edge_length;
-	Scalar (Mesh::*calc_edge_length_hh)(HalfedgeHandle) const = &Mesh::calc_edge_length;
+	Scalar (Mesh::*calc_edge_length_eh)(OM::EdgeHandle    ) const = &Mesh::calc_edge_length;
+	Scalar (Mesh::*calc_edge_length_hh)(OM::HalfedgeHandle) const = &Mesh::calc_edge_length;
 
-	Scalar (Mesh::*calc_edge_sqr_length_eh)(EdgeHandle    ) const = &Mesh::calc_edge_sqr_length;
-	Scalar (Mesh::*calc_edge_sqr_length_hh)(HalfedgeHandle) const = &Mesh::calc_edge_sqr_length;
+	Scalar (Mesh::*calc_edge_sqr_length_eh)(OM::EdgeHandle    ) const = &Mesh::calc_edge_sqr_length;
+	Scalar (Mesh::*calc_edge_sqr_length_hh)(OM::HalfedgeHandle) const = &Mesh::calc_edge_sqr_length;
 
-	Scalar (Mesh::*calc_dihedral_angle_fast_hh)(HalfedgeHandle) const = &Mesh::calc_dihedral_angle_fast;
-	Scalar (Mesh::*calc_dihedral_angle_fast_eh)(EdgeHandle    ) const = &Mesh::calc_dihedral_angle_fast;
+	Scalar (Mesh::*calc_dihedral_angle_fast_hh)(OM::HalfedgeHandle) const = &Mesh::calc_dihedral_angle_fast;
+	Scalar (Mesh::*calc_dihedral_angle_fast_eh)(OM::EdgeHandle    ) const = &Mesh::calc_dihedral_angle_fast;
 
-	Scalar (Mesh::*calc_dihedral_angle_hh)(HalfedgeHandle) const = &Mesh::calc_dihedral_angle;
-	Scalar (Mesh::*calc_dihedral_angle_eh)(EdgeHandle    ) const = &Mesh::calc_dihedral_angle;
+	Scalar (Mesh::*calc_dihedral_angle_hh)(OM::HalfedgeHandle) const = &Mesh::calc_dihedral_angle;
+	Scalar (Mesh::*calc_dihedral_angle_eh)(OM::EdgeHandle    ) const = &Mesh::calc_dihedral_angle;
 
 	unsigned int (Mesh::*find_feature_edges)(Scalar) = &Mesh::find_feature_edges;
 
-	void (Mesh::*split_fh_vh)(FaceHandle, VertexHandle) = &Mesh::split;
-	void (Mesh::*split_eh_vh)(EdgeHandle, VertexHandle) = &Mesh::split;
+	void (Mesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &Mesh::split;
+	void (Mesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &Mesh::split;
 
-	void (Mesh::*update_normal_fh)(FaceHandle            ) = &Mesh::update_normal;
-	void (Mesh::*update_normal_hh)(HalfedgeHandle, double) = &Mesh::update_normal;
-	void (Mesh::*update_normal_vh)(VertexHandle          ) = &Mesh::update_normal;
+	void (Mesh::*update_normal_fh)(OM::FaceHandle            ) = &Mesh::update_normal;
+	void (Mesh::*update_normal_hh)(OM::HalfedgeHandle, double) = &Mesh::update_normal;
+	void (Mesh::*update_normal_vh)(OM::VertexHandle          ) = &Mesh::update_normal;
 
 	void (Mesh::*update_halfedge_normals)(double) = &Mesh::update_halfedge_normals;
 
-	Normal (Mesh::*calc_face_normal    )(FaceHandle            ) const = &Mesh::calc_face_normal;
-	Normal (Mesh::*calc_halfedge_normal)(HalfedgeHandle, double) const = &Mesh::calc_halfedge_normal;
+	Normal (Mesh::*calc_face_normal    )(OM::FaceHandle            ) const = &Mesh::calc_face_normal;
+	Normal (Mesh::*calc_halfedge_normal)(OM::HalfedgeHandle, double) const = &Mesh::calc_halfedge_normal;
 
-	void  (Mesh::*calc_face_centroid_fh_point)(FaceHandle, Point&) const = &Mesh::calc_face_centroid;
-	Point (Mesh::*calc_face_centroid_fh      )(FaceHandle        ) const = &Mesh::calc_face_centroid;
+	void  (Mesh::*calc_face_centroid_fh_point)(OM::FaceHandle, Point&) const = &Mesh::calc_face_centroid;
+	Point (Mesh::*calc_face_centroid_fh      )(OM::FaceHandle        ) const = &Mesh::calc_face_centroid;
 
 	//======================================================================
 	//  Mesh Type
 	//======================================================================
 
-	class_<Mesh> class_mesh(_name);
+	py::class_<Mesh> class_mesh(m, _name);
 
 	class_mesh
+		.def(py::init<>())
 
 		//======================================================================
 		//  KernelT
@@ -607,10 +592,10 @@ void expose_mesh(const char *_name) {
 
 		.def("reserve", &Mesh::reserve)
 
-		.def("vertex", vertex, return_value_policy<reference_existing_object>())
-		.def("halfedge", halfedge, return_value_policy<reference_existing_object>())
-		.def("edge", edge, return_value_policy<reference_existing_object>())
-		.def("face", face, return_value_policy<reference_existing_object>())
+		.def("vertex", vertex, py::return_value_policy::reference)
+		.def("halfedge", halfedge, py::return_value_policy::reference)
+		.def("edge", edge, py::return_value_policy::reference)
+		.def("face", face, py::return_value_policy::reference)
 
 		.def("handle", handle_v)
 		.def("handle", handle_h)
@@ -624,8 +609,11 @@ void expose_mesh(const char *_name) {
 
 		.def("clear", &Mesh::clear)
 		.def("clean", &Mesh::clean)
-		.def("garbage_collection", garbage_collection_bools, garbage_collection_overloads())
-		.def("garbage_collection", garbage_collection_lists_bools)
+		.def("garbage_collection", garbage_collection_bools,
+			py::arg("v")=true, py::arg("e")=true, py::arg("f")=true)
+		.def("garbage_collection", garbage_collection_lists_bools,
+			py::arg("vh_to_update"), py::arg("hh_to_update"), py::arg("fh_to_update"),
+			py::arg("v")=true, py::arg("e")=true, py::arg("f")=true)
 
 		.def("n_vertices", &Mesh::n_vertices)
 		.def("n_halfedges", &Mesh::n_halfedges)
@@ -751,11 +739,11 @@ void expose_mesh(const char *_name) {
 		.def("has_face_status", &Mesh::has_face_status)
 		.def("has_face_texture_index", &Mesh::has_face_texture_index)
 
-		.def("add_property", add_property_vph, add_property_overloads())
-		.def("add_property", add_property_eph, add_property_overloads())
-		.def("add_property", add_property_hph, add_property_overloads())
-		.def("add_property", add_property_fph, add_property_overloads())
-		.def("add_property", add_property_mph, add_property_overloads())
+		.def("add_property", add_property_vph, py::arg("ph"), py::arg("name")="<vprop>")
+		.def("add_property", add_property_eph, py::arg("ph"), py::arg("name")="<eprop>")
+		.def("add_property", add_property_hph, py::arg("ph"), py::arg("name")="<hprop>")
+		.def("add_property", add_property_fph, py::arg("ph"), py::arg("name")="<fprop>")
+		.def("add_property", add_property_mph, py::arg("ph"), py::arg("name")="<mprop>")
 
 		.def("remove_property", remove_property_vph)
 		.def("remove_property", remove_property_eph)
@@ -806,10 +794,14 @@ void expose_mesh(const char *_name) {
 		.def("copy_property", copy_property_eprop)
 		.def("copy_property", copy_property_fprop)
 
-		.def("copy_all_properties", copy_all_properties_vh_vh_bool, copy_all_properties_overloads())
-		.def("copy_all_properties", copy_all_properties_hh_hh_bool, copy_all_properties_overloads())
-		.def("copy_all_properties", copy_all_properties_eh_eh_bool, copy_all_properties_overloads())
-		.def("copy_all_properties", copy_all_properties_fh_fh_bool, copy_all_properties_overloads())
+		.def("copy_all_properties", copy_all_properties_vh_vh_bool,
+			py::arg("vh_from"), py::arg("vh_to"), py::arg("copy_build_in")=false)
+		.def("copy_all_properties", copy_all_properties_hh_hh_bool,
+			py::arg("hh_from"), py::arg("hh_to"), py::arg("copy_build_in")=false)
+		.def("copy_all_properties", copy_all_properties_eh_eh_bool,
+			py::arg("eh_from"), py::arg("eh_to"), py::arg("copy_build_in")=false)
+		.def("copy_all_properties", copy_all_properties_fh_fh_bool,
+			py::arg("fh_from"), py::arg("fh_to"), py::arg("copy_build_in")=false)
 
 		//======================================================================
 		//  PolyConnectivity
@@ -836,9 +828,9 @@ void expose_mesh(const char *_name) {
 		.def("add_vertex", &Mesh::add_vertex)
 
 		.def("is_collapse_ok",  &Mesh::is_collapse_ok)
-		.def("delete_vertex", delete_vertex, delete_vertex_overloads())
-		.def("delete_edge", delete_edge, delete_edge_overloads())
-		.def("delete_face", delete_face, delete_face_overloads())
+		.def("delete_vertex", delete_vertex, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
+		.def("delete_edge", delete_edge, py::arg("eh"), py::arg("delete_isolated_vertices")=true)
+		.def("delete_face", delete_face, py::arg("fh"), py::arg("delete_isolated_vertices")=true)
 
 		.def("vv", vv)
 		.def("vih", vih)
@@ -856,21 +848,20 @@ void expose_mesh(const char *_name) {
 		.def("is_boundary", is_boundary_hh)
 		.def("is_boundary", is_boundary_eh)
 		.def("is_boundary", is_boundary_vh)
-		.def("is_boundary", is_boundary_fh, is_boundary_overloads())
+		.def("is_boundary", is_boundary_fh, py::arg("fh"), py::arg("check_vertex")=false)
 		.def("is_manifold", &Mesh::is_manifold)
 
-		.def("deref", deref_vh, return_value_policy<reference_existing_object>())
-		.def("deref", deref_hh, return_value_policy<reference_existing_object>())
-		.def("deref", deref_eh, return_value_policy<reference_existing_object>())
-		.def("deref", deref_fh, return_value_policy<reference_existing_object>())
+		.def("deref", deref_vh, py::return_value_policy::reference)
+		.def("deref", deref_hh, py::return_value_policy::reference)
+		.def("deref", deref_eh, py::return_value_policy::reference)
+		.def("deref", deref_fh, py::return_value_policy::reference)
 
-		.def("is_triangles", &Mesh::is_triangles)
-		.staticmethod("is_triangles")
+		.def_static("is_triangles", &Mesh::is_triangles)
 
-		.def_readonly("InvalidVertexHandle", &Mesh::InvalidVertexHandle)
-		.def_readonly("InvalidHalfedgeHandle", &Mesh::InvalidHalfedgeHandle)
-		.def_readonly("InvalidEdgeHandle", &Mesh::InvalidEdgeHandle)
-		.def_readonly("InvalidFaceHandle", &Mesh::InvalidFaceHandle)
+		.def_readonly_static("InvalidVertexHandle", &Mesh::InvalidVertexHandle)
+		.def_readonly_static("InvalidHalfedgeHandle", &Mesh::InvalidHalfedgeHandle)
+		.def_readonly_static("InvalidEdgeHandle", &Mesh::InvalidEdgeHandle)
+		.def_readonly_static("InvalidFaceHandle", &Mesh::InvalidFaceHandle)
 
 		//======================================================================
 		//  PolyMeshT
@@ -898,7 +889,7 @@ void expose_mesh(const char *_name) {
 		.def("calc_dihedral_angle", calc_dihedral_angle_hh)
 		.def("calc_dihedral_angle", calc_dihedral_angle_eh)
 
-		.def("find_feature_edges", find_feature_edges, find_feature_edges_overloads())
+		.def("find_feature_edges", find_feature_edges, py::arg("angle_tresh")=OM::deg_to_rad(44.0))
 
 		.def("split", split_fh_vh)
 		.def("split", split_eh_vh)
@@ -912,10 +903,10 @@ void expose_mesh(const char *_name) {
 		.def("calc_face_centroid", calc_face_centroid_fh_point)
 		.def("calc_face_centroid", calc_face_centroid_fh)
 
-		.def("update_normal", update_normal_hh, update_normal_overloads())
-		.def("update_halfedge_normals", update_halfedge_normals, update_halfedge_normals_overloads())
+		.def("update_normal", update_normal_hh, py::arg("heh"), py::arg("feature_angle")=0.8)
+		.def("update_halfedge_normals", update_halfedge_normals, py::arg("feature_angle")=0.8)
 
-		.def("calc_halfedge_normal", calc_halfedge_normal, calc_halfedge_normal_overloads())
+		.def("calc_halfedge_normal", &Mesh::calc_halfedge_normal, py::arg("heh"), py::arg("feature_angle")=0.8)
 
 		.def("is_estimated_feature_edge", &Mesh::is_estimated_feature_edge)
 
@@ -927,11 +918,8 @@ void expose_mesh(const char *_name) {
 		.def("calc_vertex_normal_correct", &Mesh::calc_vertex_normal_correct)
 		.def("calc_vertex_normal_loop", &Mesh::calc_vertex_normal_loop)
 
-		.def("is_polymesh", &Mesh::is_polymesh)
-		.staticmethod("is_polymesh")
-
+		.def_static("is_polymesh", &Mesh::is_polymesh)
 		.def("is_trimesh", &Mesh::is_trimesh)
-		.staticmethod("is_trimesh")
 
 		//======================================================================
 		//  numpy
@@ -947,36 +935,33 @@ void expose_mesh(const char *_name) {
 	//  Nested Types
 	//======================================================================
 
-	// Enter mesh scope
-	scope scope_mesh = class_mesh;
+//	// Enter mesh scope
+//	py::scope scope_mesh = class_mesh;
 
-	// Point
-	const boost::python::type_info point_info = type_id<typename Mesh::Point>();
-	const converter::registration * point_registration = converter::registry::query(point_info);
-	scope_mesh.attr("Point") = handle<>(point_registration->m_class_object);
+//	// Point
+//	const boost::python::type_info point_info = type_id<typename Mesh::Point>();
+//	const converter::registration * point_registration = converter::registry::query(point_info);
+//	scope_mesh.attr("Point") = handle<>(point_registration->m_class_object);
 
-	// Normal
-	const boost::python::type_info normal_info = type_id<typename Mesh::Normal>();
-	const converter::registration * normal_registration = converter::registry::query(normal_info);
-	scope_mesh.attr("Normal") = handle<>(normal_registration->m_class_object);
+//	// Normal
+//	const boost::python::type_info normal_info = type_id<typename Mesh::Normal>();
+//	const converter::registration * normal_registration = converter::registry::query(normal_info);
+//	scope_mesh.attr("Normal") = handle<>(normal_registration->m_class_object);
 
-	// Color
-	const boost::python::type_info color_info = type_id<typename Mesh::Color>();
-	const converter::registration * color_registration = converter::registry::query(color_info);
-	scope_mesh.attr("Color") = handle<>(color_registration->m_class_object);
+//	// Color
+//	const boost::python::type_info color_info = type_id<typename Mesh::Color>();
+//	const converter::registration * color_registration = converter::registry::query(color_info);
+//	scope_mesh.attr("Color") = handle<>(color_registration->m_class_object);
 
-	// TexCoord2D
-	const boost::python::type_info texcoord2d_info = type_id<typename Mesh::TexCoord2D>();
-	const converter::registration * texcoord2d_registration = converter::registry::query(texcoord2d_info);
-	scope_mesh.attr("TexCoord2D") = handle<>(texcoord2d_registration->m_class_object);
+//	// TexCoord2D
+//	const boost::python::type_info texcoord2d_info = type_id<typename Mesh::TexCoord2D>();
+//	const converter::registration * texcoord2d_registration = converter::registry::query(texcoord2d_info);
+//	scope_mesh.attr("TexCoord2D") = handle<>(texcoord2d_registration->m_class_object);
 
-	// TexCoord3D
-	const boost::python::type_info texcoord3d_info = type_id<typename Mesh::TexCoord3D>();
-	const converter::registration * texcoord3d_registration = converter::registry::query(texcoord3d_info);
-	scope_mesh.attr("TexCoord3D") = handle<>(texcoord3d_registration->m_class_object);
+//	// TexCoord3D
+//	const boost::python::type_info texcoord3d_info = type_id<typename Mesh::TexCoord3D>();
+//	const converter::registration * texcoord3d_registration = converter::registry::query(texcoord3d_info);
+//	scope_mesh.attr("TexCoord3D") = handle<>(texcoord3d_registration->m_class_object);
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif
