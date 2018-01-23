@@ -181,39 +181,54 @@ OM::FaceHandle add_face(Mesh& _self, const py::list& _vhandles) {
 }
 
 /**
- * Returns a single point of a mesh as a numpy array with shape (3).
+ * Converts OpenMesh vectors to numpy arrays.
  *
- * The returned array references the underlying point data, i.e. changes made to
- * this array affect the original point/mesh.
+ * The returned array references the vector's underlying data, i.e. changes
+ * made to the returned array affect the original mesh.
  *
  * @tparam Mesh A Mesh type.
+ * @tparam vector A Vector type.
  *
- * @param _self The mesh instance that is to be used.
- * @param _vh The vertex handle.
+ * @param _mesh The mesh that owns the vector's underlying memory. In order
+ * to avaoid dangling pointers, the lifetime of this mesh is tied to the
+ * lifetime of the returned numpy array.
+ * @param _vec The vector to be converted.
  */
+template<class Mesh, class Vector>
+py::array_t<typename Vector::value_type> vec2numpy(Mesh& _mesh, Vector& _vec) {
+	typedef typename Vector::value_type dtype;
+	return py::array_t<dtype>({_vec.size()}, {sizeof(dtype)}, _vec.data(), py::cast(_mesh));
+}
+
 template<class Mesh>
-py::array_t<double> point_np(Mesh& _self, OM::VertexHandle _vh) {
-	double *ptr = _self.point(_vh).data();
-	return py::array_t<double>({3}, {sizeof(double)}, ptr, py::cast(_self));
+py::array_t<float> flt2numpy(Mesh& _mesh, const float& _flt) {
+	return py::array_t<float>({1}, {sizeof(float)}, &_flt, py::cast(_mesh));
+}
+
+template<class Mesh>
+py::array_t<double> flt2numpy(Mesh& _mesh, const double& _flt) {
+	return py::array_t<double>({1}, {sizeof(double)}, &_flt, py::cast(_mesh));
 }
 
 /**
- * Returns all points of a mesh as a numpy array with shape (n, 3).
+ * Converts entire properties to numpy arrays with shape (n, dim).
  *
- * The returned array references the underlying point data, i.e. changes made to
- * this array affect the original point/mesh.
+ * The returned array references the vector's underlying data, i.e. changes
+ * made to the returned array affect the original mesh.
  *
  * @tparam Mesh A Mesh type.
+ * @tparam vector A Vector type.
  *
- * @param _self The mesh instance that is to be used.
+ * @param _mesh The mesh that owns the vector's underlying memory. In order
+ * to avaoid dangling pointers, the lifetime of this mesh is tied to the
+ * lifetime of the returned numpy array.
  */
-template<class Mesh>
-py::array_t<double> points_np(Mesh& _self) {
-	// const double *ptr = _self.points()->data();
-	double *ptr = _self.point(OM::VertexHandle(0)).data();
-	auto shape = {(int)_self.n_vertices(), 3};
-	auto strides = {3 * sizeof(double), sizeof(double)};
-	return py::array_t<double>(shape, strides, ptr, py::cast(_self));
+template<class Mesh, class Vector>
+py::array_t<typename Vector::value_type> prop2numpy(Mesh& _mesh, Vector& _vec, size_t _n) {
+	typedef typename Vector::value_type dtype;
+	auto shape = {_n, _vec.size()};
+	auto strides = {_vec.size() * sizeof(dtype), sizeof(dtype)};
+	return py::array_t<dtype>(shape, strides, _vec.data(), py::cast(_mesh));
 }
 
 /**
@@ -647,38 +662,38 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("point_vec", point_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_point_vec", &Mesh::set_point)
-		.def("normal", normal_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal", set_normal_vh)
-		.def("normal", normal_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal", set_normal_hh)
-		.def("color", color_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color", set_color_vh)
-		.def("texcoord1D", texcoord1D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord1D", set_texcoord1D_vh)
-		.def("texcoord2D", texcoord2D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord2D", set_texcoord2D_vh)
-		.def("texcoord3D", texcoord3D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord3D", set_texcoord3D_vh)
-		.def("texcoord1D", texcoord1D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord1D", set_texcoord1D_hh)
-		.def("texcoord2D", texcoord2D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord2D", set_texcoord2D_hh)
-		.def("texcoord3D", texcoord3D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord3D", set_texcoord3D_hh)
+		.def("normal_vec", normal_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_normal_vec", set_normal_vh)
+		.def("normal_vec", normal_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_normal_vec", set_normal_hh)
+		.def("color_vec", color_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_color_vec", set_color_vh)
+		.def("texcoord1D_vec", texcoord1D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord1D_vec", set_texcoord1D_vh)
+		.def("texcoord2D_vec", texcoord2D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord2D_vec", set_texcoord2D_vh)
+		.def("texcoord3D_vec", texcoord3D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord3D_vec", set_texcoord3D_vh)
+		.def("texcoord1D_vec", texcoord1D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord1D_vec", set_texcoord1D_hh)
+		.def("texcoord2D_vec", texcoord2D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord2D_vec", set_texcoord2D_hh)
+		.def("texcoord3D_vec", texcoord3D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_texcoord3D_vec", set_texcoord3D_hh)
 		.def("status", status_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_vh)
 		.def("status", status_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_hh)
-		.def("color", color_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color", set_color_hh)
-		.def("color", color_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color", set_color_eh)
+		.def("color_vec", color_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_color_vec", set_color_hh)
+		.def("color_vec", color_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_color_vec", set_color_eh)
 		.def("status", status_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_eh)
-		.def("normal", normal_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal", set_normal_fh)
-		.def("color", color_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color", set_color_fh)
+		.def("normal_vec", normal_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_normal_vec", set_normal_fh)
+		.def("color_vec", color_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_color_vec", set_color_fh)
 		.def("status", status_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_fh)
 
@@ -925,8 +940,25 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  numpy
 		//======================================================================
 
-		.def("point", &point_np<Mesh>)
-		.def("points", &points_np<Mesh>)
+		.def("point", [](Mesh& _self, OM::VertexHandle _h) { return vec2numpy(_self, _self.point(_h)); })
+
+		.def("normal", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.normal(_h)); })
+		.def("normal", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.normal(_h)); })
+		.def("normal", [](Mesh& _self, OM::FaceHandle     _h) { return vec2numpy(_self, _self.normal(_h)); })
+
+		.def("color", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.color(_h)); })
+		.def("color", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.color(_h)); })
+		.def("color", [](Mesh& _self, OM::EdgeHandle     _h) { return vec2numpy(_self, _self.color(_h)); })
+		.def("color", [](Mesh& _self, OM::FaceHandle     _h) { return vec2numpy(_self, _self.color(_h)); })
+
+		.def("texcoord1D", [](Mesh& _self, OM::VertexHandle   _h) { return flt2numpy(_self, _self.texcoord1D(_h)); })
+		.def("texcoord1D", [](Mesh& _self, OM::HalfedgeHandle _h) { return flt2numpy(_self, _self.texcoord1D(_h)); })
+		.def("texcoord2D", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.texcoord2D(_h)); })
+		.def("texcoord2D", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.texcoord2D(_h)); })
+		.def("texcoord3D", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.texcoord3D(_h)); })
+		.def("texcoord3D", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.texcoord3D(_h)); })
+
+		.def("points", [](Mesh& _self) { return prop2numpy(_self, _self.point(OM::VertexHandle(0)), _self.n_vertices()); })
 		;
 
 	expose_type_specific_functions(class_mesh);
