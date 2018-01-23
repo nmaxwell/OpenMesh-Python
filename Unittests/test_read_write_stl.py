@@ -7,7 +7,7 @@ class ReadWriteSTL(unittest.TestCase):
         self.mesh = openmesh.TriMesh()
 
     def test_load_simple_stl_file(self):
-        ok = openmesh.read_mesh(self.mesh, "cube1.stl")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1.stl")
         
         self.assertTrue(ok)
         
@@ -21,7 +21,7 @@ class ReadWriteSTL(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.FaceNormal
         
-        ok = openmesh.read_mesh(self.mesh, "cube1.stl", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1.stl", options)
         
         self.assertTrue(ok)
         
@@ -36,7 +36,7 @@ class ReadWriteSTL(unittest.TestCase):
         self.mesh.release_face_normals()
 
     def test_load_simple_stl_binary_file(self):
-        ok = openmesh.read_mesh(self.mesh, "cube1Binary.stl")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1Binary.stl")
         
         self.assertTrue(ok)
         
@@ -51,7 +51,7 @@ class ReadWriteSTL(unittest.TestCase):
         options += openmesh.Options.FaceNormal
         options += openmesh.Options.Binary
         
-        ok = openmesh.read_mesh(self.mesh, "cube1Binary.stl", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1Binary.stl", options)
         
         self.assertTrue(ok)
         

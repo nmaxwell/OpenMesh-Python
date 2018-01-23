@@ -7,7 +7,7 @@ class ReadWriteOBJ(unittest.TestCase):
         self.mesh = openmesh.TriMesh()
 
     def test_load_simple_obj(self):
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal.obj")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal.obj")
         
         self.assertTrue(ok)
         
@@ -22,7 +22,7 @@ class ReadWriteOBJ(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexNormal
         
-        file_name = "cube-minimal.obj"
+        file_name = "TestFiles/cube-minimal.obj"
         
         ok = openmesh.read_mesh(self.mesh, file_name, options)
         
@@ -87,7 +87,7 @@ class ReadWriteOBJ(unittest.TestCase):
     def test_load_simple_obj_force_vertex_colors_although_not_available(self):
         self.mesh.request_vertex_colors()
         
-        file_name = "cube-minimal.obj"
+        file_name = "TestFiles/cube-minimal.obj"
         
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
@@ -107,7 +107,7 @@ class ReadWriteOBJ(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.FaceTexCoord
         
-        file_name = "cube-minimal-texCoords.obj"
+        file_name = "TestFiles/cube-minimal-texCoords.obj"
         
         ok = openmesh.read_mesh(self.mesh, file_name, options)
         
@@ -139,7 +139,7 @@ class ReadWriteOBJ(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.FaceColor
 
-        file_name = "square_material.obj"
+        file_name = "TestFiles/square_material.obj"
 
         ok = openmesh.read_mesh(self.mesh, file_name, options)
 
@@ -161,7 +161,7 @@ class ReadWriteOBJ(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        file_name = "cube-minimal-vertex-colors-after-vertex-definition.obj"
+        file_name = "TestFiles/cube-minimal-vertex-colors-after-vertex-definition.obj"
         
         ok = openmesh.read_mesh(self.mesh, file_name, options)
         
@@ -195,7 +195,7 @@ class ReadWriteOBJ(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        file_name = "cube-minimal-vertex-colors-as-vc-lines.obj"
+        file_name = "TestFiles/cube-minimal-vertex-colors-as-vc-lines.obj"
         
         ok = openmesh.read_mesh(self.mesh, file_name, options)
         

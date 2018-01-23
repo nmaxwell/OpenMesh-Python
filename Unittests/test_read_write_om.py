@@ -10,7 +10,7 @@ class ReadWriteOM(unittest.TestCase):
     def test_load_simple_om_force_vertex_colors_although_not_available(self):
         self.mesh.request_vertex_colors()
         
-        file_name = "cube-minimal.om"
+        file_name = "TestFiles/cube-minimal.om"
         
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
@@ -34,7 +34,7 @@ class ReadWriteOM(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexTexCoord
         
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal-texCoords.om", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-texCoords.om", options)
         
         self.assertTrue(ok)
         
@@ -66,7 +66,7 @@ class ReadWriteOM(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal-vertexColors.om", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-vertexColors.om", options)
         
         self.assertTrue(ok)
         
@@ -97,7 +97,7 @@ class ReadWriteOM(unittest.TestCase):
         self.mesh.release_vertex_colors()
 
     def test_write_triangle(self):
-        filename = "triangle-minimal.om";
+        filename = "TestFiles/triangle-minimal.om";
         
         # Generate data
         v1 = self.mesh.add_vertex(openmesh.Vec3d(1.0, 0.0, 0.0))
@@ -135,7 +135,7 @@ class ReadWriteOM(unittest.TestCase):
         options += openmesh.Options.VertexColor
         options += openmesh.Options.ColorFloat
 
-        filename = "triangle-minimal-ColorsPerVertex.om"
+        filename = "TestFiles/triangle-minimal-ColorsPerVertex.om"
             
         # Generate data
         v1 = self.mesh.add_vertex(openmesh.Vec3d(1.0, 0.0, 0.0))

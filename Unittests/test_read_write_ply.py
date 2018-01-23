@@ -7,7 +7,7 @@ class ReadWritePLY(unittest.TestCase):
         self.mesh = openmesh.TriMesh()
 
     def test_load_simple_point_ply_file_with_bad_encoding(self):
-        ok = openmesh.read_mesh(self.mesh, "pointCloudBadEncoding.ply")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/pointCloudBadEncoding.ply")
         
         self.assertTrue(ok)
         
@@ -16,7 +16,7 @@ class ReadWritePLY(unittest.TestCase):
         self.assertEqual(self.mesh.n_faces(), 0)
 
     def test_load_simple_point_ply_file_with_good_encoding(self):
-        ok = openmesh.read_mesh(self.mesh, "pointCloudGoodEncoding.ply")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/pointCloudGoodEncoding.ply")
         
         self.assertTrue(ok)
         
@@ -25,7 +25,7 @@ class ReadWritePLY(unittest.TestCase):
         self.assertEqual(self.mesh.n_faces(), 0)
 
     def test_load_simple_ply(self):
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal.ply")
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal.ply")
         
         self.assertTrue(ok)
         
@@ -36,7 +36,7 @@ class ReadWritePLY(unittest.TestCase):
     def test_load_simple_ply_force_vertex_colors_although_not_available(self):
         self.mesh.request_vertex_colors()
         
-        file_name = "cube-minimal.ply"
+        file_name = "TestFiles/cube-minimal.ply"
         
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
@@ -57,12 +57,12 @@ class ReadWritePLY(unittest.TestCase):
     def test_load_simple_ply_with_vertex_colors(self):
         self.mesh.request_vertex_colors()
         
-        file_name = "cube-minimal.ply"
+        file_name = "TestFiles/cube-minimal.ply"
         
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal-vertexColors.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-vertexColors.ply", options)
         
         self.assertTrue(ok)
         
@@ -98,7 +98,7 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
     
-        ok = openmesh.read_mesh(self.mesh, "meshlab.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
     
         self.assertTrue(ok)
         
@@ -134,18 +134,18 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        ok = openmesh.read_mesh(self.mesh, "meshlab.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
         
         self.assertTrue(ok)
 
         options += openmesh.Options.Binary
 
-        ok = openmesh.write_mesh(self.mesh, "meshlab_binary.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_binary.ply", options)
         self.assertTrue(ok)
 
         self.mesh.clear
 
-        ok = openmesh.read_mesh(self.mesh, "meshlab_binary.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_binary.ply", options)
         self.assertTrue(ok)
 
         self.assertEqual(self.mesh.n_vertices(), 8)
@@ -180,17 +180,17 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        ok = openmesh.read_mesh(self.mesh, "meshlab.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
         
         self.assertTrue(ok)
         
         options += openmesh.Options.ColorFloat
     
-        ok = openmesh.write_mesh(self.mesh, "meshlab_float.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_float.ply", options)
         self.assertTrue(ok)
         
         self.mesh.clear
-        ok = openmesh.read_mesh(self.mesh, "meshlab_float.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_float.ply", options)
         self.assertTrue(ok)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
@@ -226,18 +226,18 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexColor
         
-        ok = openmesh.read_mesh(self.mesh, "meshlab.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
         
         self.assertTrue(ok)
         
         options += openmesh.Options.ColorFloat
         options += openmesh.Options.Binary
         
-        ok = openmesh.write_mesh(self.mesh, "meshlab_binary_float.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_binary_float.ply", options)
         self.assertTrue(ok)
         
         self.mesh.clear
-        ok = openmesh.read_mesh(self.mesh, "meshlab_binary_float.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_binary_float.ply", options)
         self.assertTrue(ok)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
@@ -274,7 +274,7 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexTexCoord
         
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal-texCoords.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-texCoords.ply", options)
         
         self.assertTrue(ok)
         
@@ -306,7 +306,7 @@ class ReadWritePLY(unittest.TestCase):
         options = openmesh.Options()
         options += openmesh.Options.VertexNormal
         
-        ok = openmesh.read_mesh(self.mesh, "cube-minimal-normals.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-normals.ply", options)
         
         self.assertTrue(ok)
         
