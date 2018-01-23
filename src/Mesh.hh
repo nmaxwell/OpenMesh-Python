@@ -645,8 +645,8 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("halfedge_handle", halfedge_handle_fh)
 		.def("set_halfedge_handle", set_halfedge_handle_fh_hh)
 
-		.def("point", point_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_point", &Mesh::set_point)
+		.def("point_vec", point_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
+		.def("set_point_vec", &Mesh::set_point)
 		.def("normal", normal_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_normal", set_normal_vh)
 		.def("normal", normal_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
@@ -925,8 +925,8 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  numpy
 		//======================================================================
 
-		.def("point_np", &point_np<Mesh>)
-		.def("points_np", &points_np<Mesh>)
+		.def("point", &point_np<Mesh>)
+		.def("points", &points_np<Mesh>)
 		;
 
 	expose_type_specific_functions(class_mesh);
