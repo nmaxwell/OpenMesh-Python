@@ -1,18 +1,11 @@
 /** @file */
 
-#ifndef OPENMESH_PYTHON_BINDINGS_HH
-#define OPENMESH_PYTHON_BINDINGS_HH
+#ifndef OPENMESH_PYTHON_MESHTYPES_HH
+#define OPENMESH_PYTHON_MESHTYPES_HH
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
-
-
-/**
- * Return value policy for functions that return references to objects that are
- * managed by %OpenMesh.
- */
-#define OPENMESH_PYTHON_DEFAULT_POLICY py::return_value_policy::copy
 
 
 struct MeshTraits : public OpenMesh::DefaultTraits {
@@ -24,6 +17,11 @@ struct MeshTraits : public OpenMesh::DefaultTraits {
 
 	/** Use RGBA colors */
 	typedef OpenMesh::Vec4f Color;
+
+	/** Use double precision texcoords */
+	typedef double TexCoord1D;
+	typedef OpenMesh::Vec2d TexCoord2D;
+	typedef OpenMesh::Vec3d TexCoord3D;
 };
 
 typedef OpenMesh::TriMesh_ArrayKernelT<MeshTraits> TriMesh;

@@ -1,7 +1,7 @@
 #ifndef OPENMESH_PYTHON_ITERATOR_HH
 #define OPENMESH_PYTHON_ITERATOR_HH
 
-#include "Bindings.hh"
+#include "MeshTypes.hh"
 
 #include <pybind11/pybind11.h>
 namespace py = pybind11;

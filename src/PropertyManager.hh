@@ -1,7 +1,7 @@
 #ifndef OPENMESH_PYTHON_PROPERTYMANAGER_HH
 #define OPENMESH_PYTHON_PROPERTYMANAGER_HH
 
-#include "Bindings.hh"
+#include "MeshTypes.hh"
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
 
 #include <pybind11/pybind11.h>

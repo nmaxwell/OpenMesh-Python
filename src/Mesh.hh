@@ -1,7 +1,7 @@
 #ifndef OPENMESH_PYTHON_MESH_HH
 #define OPENMESH_PYTHON_MESH_HH
 
-#include "Bindings.hh"
+#include "MeshTypes.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
 
@@ -11,6 +11,12 @@
 namespace py = pybind11;
 namespace OM = OpenMesh;
 
+
+/**
+ * Return value policy for functions that return references to objects that are
+ * managed by %OpenMesh.
+ */
+#define OPENMESH_PYTHON_DEFAULT_POLICY py::return_value_policy::copy
 
 /**
  * Set the status of an item.
