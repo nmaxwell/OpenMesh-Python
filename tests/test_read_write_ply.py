@@ -1,10 +1,13 @@
 import unittest
 import openmesh
+import os
 
 class ReadWritePLY(unittest.TestCase):
 
     def setUp(self):
         self.mesh = openmesh.TriMesh()
+        if not os.path.exists('OutFiles'):
+            os.makedirs('OutFiles')
 
     def test_load_simple_point_ply_file_with_bad_encoding(self):
         ok = openmesh.read_mesh(self.mesh, "TestFiles/pointCloudBadEncoding.ply")
@@ -140,12 +143,12 @@ class ReadWritePLY(unittest.TestCase):
 
         options += openmesh.Options.Binary
 
-        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_binary.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "OutFiles/meshlab_binary.ply", options)
         self.assertTrue(ok)
 
         self.mesh.clear
 
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_binary.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "OutFiles/meshlab_binary.ply", options)
         self.assertTrue(ok)
 
         self.assertEqual(self.mesh.n_vertices(), 8)
@@ -186,11 +189,11 @@ class ReadWritePLY(unittest.TestCase):
         
         options += openmesh.Options.ColorFloat
     
-        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_float.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "OutFiles/meshlab_float.ply", options)
         self.assertTrue(ok)
         
         self.mesh.clear
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_float.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "OutFiles/meshlab_float.ply", options)
         self.assertTrue(ok)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
@@ -233,11 +236,11 @@ class ReadWritePLY(unittest.TestCase):
         options += openmesh.Options.ColorFloat
         options += openmesh.Options.Binary
         
-        ok = openmesh.write_mesh(self.mesh, "TestFiles/meshlab_binary_float.ply", options)
+        ok = openmesh.write_mesh(self.mesh, "OutFiles/meshlab_binary_float.ply", options)
         self.assertTrue(ok)
         
         self.mesh.clear
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab_binary_float.ply", options)
+        ok = openmesh.read_mesh(self.mesh, "OutFiles/meshlab_binary_float.ply", options)
         self.assertTrue(ok)
         
         self.assertEqual(self.mesh.n_vertices(), 8)

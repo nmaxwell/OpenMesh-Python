@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class SplitCopy(unittest.TestCase):
 
     def test_split_copy_triangle_mesh(self):
@@ -8,10 +10,10 @@ class SplitCopy(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0.25, 0.25, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0.25, 0.25, 0])))
 
         # Add one face
         face_vhandles = []
@@ -46,11 +48,11 @@ class SplitCopy(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0.5, 0.5, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0.5, 0.5, 0])))
         
         # Add one face
         face_vhandles = []

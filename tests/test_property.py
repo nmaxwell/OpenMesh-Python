@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class Property(unittest.TestCase):
 
     def setUp(self):
@@ -9,10 +11,10 @@ class Property(unittest.TestCase):
 
     def test_vertex_property_copy_properties_int(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
         
         # Add two faces
         face_vhandles = []
@@ -131,10 +133,10 @@ class Property(unittest.TestCase):
         self.mesh.request_edge_status()
 
         # Define positions
-        p1 = openmesh.Vec3d(0, 0, 0)
-        p2 = openmesh.Vec3d(0, 1, 0)
-        p3 = openmesh.Vec3d(1, 1, 0)
-        p4 = openmesh.Vec3d(0, 0, 1)
+        p1 = np.array([0, 0, 0])
+        p2 = np.array([0, 1, 0])
+        p3 = np.array([1, 1, 0])
+        p4 = np.array([0, 0, 1])
         
         # Add some vertices
         vh1 = self.mesh.add_vertex(p1)
@@ -160,10 +162,10 @@ class Property(unittest.TestCase):
 
     def test_copy_all_properties_vertex_after_remove_of_property(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
         
         # Add two faces
         face_vhandles = []

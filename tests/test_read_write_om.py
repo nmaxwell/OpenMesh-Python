@@ -2,10 +2,14 @@ import unittest
 import openmesh
 import os
 
+import numpy as np
+
 class ReadWriteOM(unittest.TestCase):
 
     def setUp(self):
         self.mesh = openmesh.TriMesh()
+        if not os.path.exists('OutFiles'):
+            os.makedirs('OutFiles')
 
     def test_load_simple_om_force_vertex_colors_although_not_available(self):
         self.mesh.request_vertex_colors()
@@ -97,12 +101,12 @@ class ReadWriteOM(unittest.TestCase):
         self.mesh.release_vertex_colors()
 
     def test_write_triangle(self):
-        filename = "TestFiles/triangle-minimal.om";
+        filename = "OutFiles/triangle-minimal.om";
         
         # Generate data
-        v1 = self.mesh.add_vertex(openmesh.Vec3d(1.0, 0.0, 0.0))
-        v2 = self.mesh.add_vertex(openmesh.Vec3d(0.0, 1.0, 0.0))
-        v3 = self.mesh.add_vertex(openmesh.Vec3d(0.0, 0.0, 1.0))
+        v1 = self.mesh.add_vertex(np.array([1.0, 0.0, 0.0]))
+        v2 = self.mesh.add_vertex(np.array([0.0, 1.0, 0.0]))
+        v3 = self.mesh.add_vertex(np.array([0.0, 0.0, 1.0]))
         self.mesh.add_face(v1, v2, v3)
         
         # Save
@@ -121,9 +125,9 @@ class ReadWriteOM(unittest.TestCase):
         self.assertEqual(self.mesh.n_edges(), 3)
         self.assertEqual(self.mesh.n_faces(), 1)
         
-        self.assertEqual(self.mesh.point(v1), openmesh.Vec3d(1.0, 0.0, 0.0))
-        self.assertEqual(self.mesh.point(v2), openmesh.Vec3d(0.0, 1.0, 0.0))
-        self.assertEqual(self.mesh.point(v3), openmesh.Vec3d(0.0, 0.0, 1.0))
+        self.assertTrue(np.allclose(self.mesh.point(v1), np.array([1.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(self.mesh.point(v2), np.array([0.0, 1.0, 0.0])))
+        self.assertTrue(np.allclose(self.mesh.point(v3), np.array([0.0, 0.0, 1.0])))
         
         # Cleanup
         os.remove(filename)
@@ -135,17 +139,17 @@ class ReadWriteOM(unittest.TestCase):
         options += openmesh.Options.VertexColor
         options += openmesh.Options.ColorFloat
 
-        filename = "TestFiles/triangle-minimal-ColorsPerVertex.om"
+        filename = "OutFiles/triangle-minimal-ColorsPerVertex.om"
             
         # Generate data
-        v1 = self.mesh.add_vertex(openmesh.Vec3d(1.0, 0.0, 0.0))
-        v2 = self.mesh.add_vertex(openmesh.Vec3d(0.0, 1.0, 0.0))
-        v3 = self.mesh.add_vertex(openmesh.Vec3d(0.0, 0.0, 1.0))
+        v1 = self.mesh.add_vertex(np.array([1.0, 0.0, 0.0]))
+        v2 = self.mesh.add_vertex(np.array([0.0, 1.0, 0.0]))
+        v3 = self.mesh.add_vertex(np.array([0.0, 0.0, 1.0]))
         self.mesh.add_face(v1, v2, v3)
         
-        c1 = openmesh.Vec4f(0.00, 0.00, 0.50, 1.00)
-        c2 = openmesh.Vec4f(0.25, 0.00, 0.00, 1.00)
-        c3 = openmesh.Vec4f(0.00, 0.75, 0.00, 1.00)
+        c1 = np.array([0.00, 0.00, 0.50, 1.00])
+        c2 = np.array([0.25, 0.00, 0.00, 1.00])
+        c3 = np.array([0.00, 0.75, 0.00, 1.00])
     
         self.mesh.set_color(v1, c1)
         self.mesh.set_color(v2, c2)
@@ -170,9 +174,9 @@ class ReadWriteOM(unittest.TestCase):
         self.assertEqual(self.mesh.n_edges(), 3)
         self.assertEqual(self.mesh.n_faces(), 1)
         
-        self.assertEqual(cmpMesh.point(v1), openmesh.Vec3d(1.0, 0.0, 0.0))
-        self.assertEqual(cmpMesh.point(v2), openmesh.Vec3d(0.0, 1.0, 0.0))
-        self.assertEqual(cmpMesh.point(v3), openmesh.Vec3d(0.0, 0.0, 1.0))
+        self.assertTrue(np.allclose(cmpMesh.point(v1), np.array([1.0, 0.0, 0.0])))
+        self.assertTrue(np.allclose(cmpMesh.point(v2), np.array([0.0, 1.0, 0.0])))
+        self.assertTrue(np.allclose(cmpMesh.point(v3), np.array([0.0, 0.0, 1.0])))
         
         self.assertAlmostEqual(cmpMesh.color(v1)[0], c1[0], 2)
         self.assertAlmostEqual(cmpMesh.color(v1)[1], c1[1], 2)

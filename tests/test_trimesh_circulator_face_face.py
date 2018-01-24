@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class TrimeshCirculatorFaceFace(unittest.TestCase):
 
     def setUp(self):
@@ -9,11 +11,11 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
     
     def test_face_face_iter_with_holes(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(3, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(4, 1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([3, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([4, 1, 0])))
 
         # Add three faces
         face_vhandles = []
@@ -53,12 +55,12 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
 
     def test_face_face_iter_without_holes(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(3,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(4,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, -1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([3,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([4,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, -1, 0])))
         
         # Add four faces
         face_vhandles = []
@@ -111,10 +113,10 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
 
     def test_face_face_iter_without_holes(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
         
         # Add two faces
         face_vhandles = []

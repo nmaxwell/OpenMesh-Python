@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 from math import pi, fabs
 
 class Others(unittest.TestCase):
@@ -11,10 +13,10 @@ class Others(unittest.TestCase):
     
     def test_is_estimated_feature_edge(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 1)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 1])))
 
         # Add four faces
         face_vhandles = []
@@ -82,10 +84,10 @@ class Others(unittest.TestCase):
         #  0 -- 3
 
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
 
         # Add two faces
         face_vhandles = []
@@ -116,7 +118,7 @@ class Others(unittest.TestCase):
         self.assertEqual(self.mesh.calc_dihedral_angle(eh), 0.0)
 
         # Modify point
-        tmp = (openmesh.Vec3d(0.0, 0.0, -1.0) + openmesh.Vec3d(1.0, 1.0, -1.0)) * 0.5
+        tmp = (np.array([0.0, 0.0, -1.0]) + np.array([1.0, 1.0, -1.0])) * 0.5
         self.mesh.set_point(self.vhandle[2], tmp)
 
         difference = fabs(1.36944 - self.mesh.calc_dihedral_angle(eh))

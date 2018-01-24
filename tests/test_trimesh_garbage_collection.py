@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class TriMeshGarbageCollection(unittest.TestCase):
 
     def setUp(self):
@@ -14,14 +16,14 @@ class TriMeshGarbageCollection(unittest.TestCase):
         # Add some vertices
         self.vhandle = []
         
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1, -1)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1, -1])))
 
         # Add six faces to form a cube
         self.mesh.add_face(self.vhandle[0], self.vhandle[1], self.vhandle[3])

@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class TriMeshCirculatorVertexOHalfEdge(unittest.TestCase):
 
     def setUp(self):
@@ -9,11 +11,11 @@ class TriMeshCirculatorVertexOHalfEdge(unittest.TestCase):
         # Add some vertices
         self.vhandle = []
 
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,-1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,-1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,-1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,-1, 0])))
         
         # Add four faces
         self.mesh.add_face(self.vhandle[0], self.vhandle[1], self.vhandle[2])

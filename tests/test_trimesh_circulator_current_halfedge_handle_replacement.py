@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class TrimeshCirculatorCurrentHalfedgeHandleReplacement(unittest.TestCase):
 
     def setUp(self):
@@ -9,11 +11,11 @@ class TrimeshCirculatorCurrentHalfedgeHandleReplacement(unittest.TestCase):
     
     def test_dereference(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, -1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, -1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, -1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, -1, 0])))
 
         # Add four faces
         face_vhandles = []
@@ -65,11 +67,11 @@ class TrimeshCirculatorCurrentHalfedgeHandleReplacement(unittest.TestCase):
 
     def test_vv_iter(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, -1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, -1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, -1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, -1, 0])))
         
         # Add four faces
         face_vhandles = []
@@ -133,11 +135,11 @@ class TrimeshCirculatorCurrentHalfedgeHandleReplacement(unittest.TestCase):
 
     def test_fe_iter(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, -1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, -1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, -1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, -1, 0])))
         
         # Add four faces
         face_vhandles = []
@@ -200,12 +202,12 @@ class TrimeshCirculatorCurrentHalfedgeHandleReplacement(unittest.TestCase):
 
     def test_vf_iter_boundary(self):
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(3,  0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(4,  1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, -1, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([3,  0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([4,  1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, -1, 0])))
         
         # Add three faces
         face_vhandles = []

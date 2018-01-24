@@ -1,6 +1,8 @@
 import unittest
 import openmesh
 
+import numpy as np
+
 class AddFace(unittest.TestCase):
 
     def test_add_triangles_to_trimesh(self):
@@ -8,10 +10,10 @@ class AddFace(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
 
         # Add two faces
         face_vhandles = []
@@ -44,10 +46,10 @@ class AddFace(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
 
         # Add two faces
         face_vhandles = []
@@ -74,14 +76,14 @@ class AddFace(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1, -1)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1, -1])))
         
         # Add six faces to form a cube
         face_vhandles = []
@@ -203,13 +205,13 @@ class AddFace(unittest.TestCase):
         #       3    4    5
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(2, 2, 2)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(3, 3, 3)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(4, 4, 4)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(5, 5, 5)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(6, 6, 6)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([2, 2, 2])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([3, 3, 3])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([4, 4, 4])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([5, 5, 5])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([6, 6, 6])))
         
         self.mesh.add_face(self.vhandle[0], self.vhandle[1], self.vhandle[2])
         self.mesh.add_face(self.vhandle[0], self.vhandle[3], self.vhandle[4])
@@ -228,10 +230,10 @@ class AddFace(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 0, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(0, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 1, 0)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(1, 0, 0)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 1, 0])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([1, 0, 0])))
 
         # Add one face
         face_vhandles = []
@@ -258,14 +260,14 @@ class AddFace(unittest.TestCase):
         self.vhandle = []
         
         # Add some vertices
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1,  1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1, -1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d( 1,  1, -1)))
-        self.vhandle.append(self.mesh.add_vertex(openmesh.Vec3d(-1,  1, -1)))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1,  1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1, -1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([ 1,  1, -1])))
+        self.vhandle.append(self.mesh.add_vertex(np.array([-1,  1, -1])))
         
         # Add six faces to form a cube
         face_vhandles = []
