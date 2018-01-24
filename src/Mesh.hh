@@ -865,6 +865,8 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("split_edge_copy", &Mesh::split_edge_copy)
 
 		.def("add_vertex", &Mesh::add_vertex)
+		.def("add_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr)
+			{ return _self.add_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2))); })
 
 		.def("is_collapse_ok",  &Mesh::is_collapse_ok)
 		.def("delete_vertex", delete_vertex, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
