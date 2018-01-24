@@ -1,1 +1,3 @@
 build/
+tests/__pycache__
+tests/OutFiles
