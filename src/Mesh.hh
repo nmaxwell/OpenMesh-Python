@@ -5,6 +5,8 @@
 #include "Iterator.hh"
 #include "Circulator.hh"
 
+#include <algorithm>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
@@ -252,6 +254,70 @@ void set_texcoord3d(Mesh& _self, IndexHandle _h, const Array& _arr) {
 }
 
 /**
+ * Returns the face indices of this mesh as a numpy array.
+ *
+ * Note that the array is constructed on the fly and does not
+ * reference the underlying mesh.
+ */
+py::array_t<int> face_indices_tri(TriMesh& _self) {
+	if (_self.n_faces() == 0) {
+		return py::array_t<int>();
+	}
+	int *indices = new int[_self.n_faces() * 3];
+	for (auto fh : _self.faces()) {
+		auto fv_it = _self.fv_iter(fh);
+		indices[fh.idx() * 3 + 0] = fv_it->idx(); ++fv_it;
+		indices[fh.idx() * 3 + 1] = fv_it->idx(); ++fv_it;
+		indices[fh.idx() * 3 + 2] = fv_it->idx();
+	}
+	const auto shape = {_self.n_faces(), size_t(3)};
+	const auto strides = {3 * sizeof(int), sizeof(int)};
+	py::capsule free_when_done(indices, [](void *f) {
+		int *ptr = reinterpret_cast<int *>(f);
+		delete[] ptr;
+	});
+	return py::array_t<int>(shape, strides, indices, free_when_done);
+}
+
+/**
+ * Returns the face indices of this mesh as a numpy array.
+ *
+ * If the faces of the mesh have different valences, the array
+ * is padded with -1 entries.
+ *
+ * Note that the array is constructed on the fly and does not
+ * reference the underlying mesh.
+ */
+py::array_t<int> face_indices_poly(PolyMesh& _self) {
+	if (_self.n_faces() == 0) {
+		return py::array_t<int>();
+	}
+	int max_valence = 0;
+	for (auto fh : _self.faces()) {
+		max_valence = std::max(max_valence, int(_self.valence(fh)));
+	}
+	int *indices = new int[_self.n_faces() * max_valence];
+	for (auto fh : _self.faces()) {
+		auto fv_it = _self.fv_iter(fh);
+		const int valence = _self.valence(fh);
+		for (int i = 0; i < valence; ++i) {
+			indices[fh.idx() * max_valence + i] = fv_it->idx();
+			++fv_it;
+		}
+		for (int i = valence; i < max_valence; ++i) {
+			indices[fh.idx() * max_valence + i] = -1;
+		}
+	}
+	const auto shape = {_self.n_faces(), size_t(max_valence)};
+	const auto strides = {max_valence * sizeof(int), sizeof(int)};
+	py::capsule free_when_done(indices, [](void *f) {
+		int *ptr = reinterpret_cast<int *>(f);
+		delete[] ptr;
+	});
+	return py::array_t<int>(shape, strides, indices, free_when_done);
+}
+
+/**
  * This function template is used to expose mesh member functions that are only
  * available for a specific type of mesh (i.e. they are available for polygon
  * meshes or triangle meshes, but not both).
@@ -300,6 +366,8 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 		.def("split_copy", &PolyMesh::split_copy)
 		.def("calc_face_normal", calc_face_normal_pt)
 		.def("insert_edge", &PolyMesh::insert_edge)
+
+		.def("face_indices", &face_indices_poly)
 		;
 }
 
@@ -351,6 +419,8 @@ void expose_type_specific_functions(py::class_<TriMesh>& _class) {
 
 		.def("is_flip_ok", &TriMesh::is_flip_ok)
 		.def("flip", &TriMesh::flip)
+
+		.def("face_indices", &face_indices_tri)
 		;
 }
 
