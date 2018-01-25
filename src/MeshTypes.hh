@@ -3,6 +3,8 @@
 #ifndef OPENMESH_PYTHON_MESHTYPES_HH
 #define OPENMESH_PYTHON_MESHTYPES_HH
 
+#define OM_STATIC_BUILD
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
