@@ -228,31 +228,6 @@ py::array_t<double> flt2numpy(Mesh& _mesh, const double& _flt, size_t _n = 1) {
 	return py::array_t<double>({_n}, {sizeof(double)}, &_flt, py::cast(_mesh));
 }
 
-template <class Mesh, class IndexHandle, class Array>
-void set_normal(Mesh& _self, IndexHandle _h, const Array& _arr) {
-	_self.set_normal(_h, typename Mesh::Normal(_arr.at(0), _arr.at(1), _arr.at(2)));
-}
-
-template <class Mesh, class IndexHandle, class Array>
-void set_color(Mesh& _self, IndexHandle _h, const Array& _arr) {
-	_self.set_color(_h, typename Mesh::Color(_arr.at(0), _arr.at(1), _arr.at(2), _arr.at(3)));
-}
-
-template <class Mesh, class IndexHandle, class Array>
-void set_texcoord1d(Mesh& _self, IndexHandle _h, const Array& _arr) {
-	_self.set_texcoord1D(_h, _arr.at(0));
-}
-
-template <class Mesh, class IndexHandle, class Array>
-void set_texcoord2d(Mesh& _self, IndexHandle _h, const Array& _arr) {
-	_self.set_texcoord2D(_h, typename Mesh::TexCoord2D(_arr.at(0), _arr.at(1)));
-}
-
-template <class Mesh, class IndexHandle, class Array>
-void set_texcoord3d(Mesh& _self, IndexHandle _h, const Array& _arr) {
-	_self.set_texcoord3D(_h, typename Mesh::TexCoord3D(_arr.at(0), _arr.at(1), _arr.at(2)));
-}
-
 /**
  * Returns the face indices of this mesh as a numpy array.
  *
@@ -704,11 +679,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	void (Mesh::*triangulate_fh  )(OM::FaceHandle) = &Mesh::triangulate;
 	void (Mesh::*triangulate_void)(              ) = &Mesh::triangulate;
 
-	// Deleting mesh items and other connectivity/topology modifications
-	void (Mesh::*delete_vertex)(OM::VertexHandle, bool) = &Mesh::delete_vertex;
-	void (Mesh::*delete_edge  )(OM::EdgeHandle,   bool) = &Mesh::delete_edge;
-	void (Mesh::*delete_face  )(OM::FaceHandle,   bool) = &Mesh::delete_face;
-
 	// Vertex and Face circulators
 	CirculatorWrapperT<typename Mesh::VertexVertexIter,    OM::VertexHandle  > (*vv )(Mesh&, OM::VertexHandle  ) = &get_circulator;
 	CirculatorWrapperT<typename Mesh::VertexIHalfedgeIter, OM::VertexHandle  > (*vih)(Mesh&, OM::VertexHandle  ) = &get_circulator;
@@ -760,14 +730,7 @@ void expose_mesh(py::module& m, const char *_name) {
 	void (Mesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &Mesh::split;
 	void (Mesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &Mesh::split;
 
-	void (Mesh::*update_normal_fh)(OM::FaceHandle            ) = &Mesh::update_normal;
-	void (Mesh::*update_normal_hh)(OM::HalfedgeHandle, double) = &Mesh::update_normal;
-	void (Mesh::*update_normal_vh)(OM::VertexHandle          ) = &Mesh::update_normal;
-
-	void (Mesh::*update_halfedge_normals)(double) = &Mesh::update_halfedge_normals;
-
 	Normal (Mesh::*calc_face_normal    )(OM::FaceHandle            ) const = &Mesh::calc_face_normal;
-	Normal (Mesh::*calc_halfedge_normal)(OM::HalfedgeHandle, double) const = &Mesh::calc_halfedge_normal;
 
 	void  (Mesh::*calc_face_centroid_fh_point)(OM::FaceHandle, Point&) const = &Mesh::calc_face_centroid;
 	Point (Mesh::*calc_face_centroid_fh      )(OM::FaceHandle        ) const = &Mesh::calc_face_centroid;
@@ -1025,9 +988,21 @@ void expose_mesh(py::module& m, const char *_name) {
 			{ return _self.add_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2))); })
 
 		.def("is_collapse_ok",  &Mesh::is_collapse_ok)
-		.def("delete_vertex", delete_vertex, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
-		.def("delete_edge", delete_edge, py::arg("eh"), py::arg("delete_isolated_vertices")=true)
-		.def("delete_face", delete_face, py::arg("fh"), py::arg("delete_isolated_vertices")=true)
+
+		.def("delete_vertex", [](Mesh& _self, OM::VertexHandle _vh, bool _delete_isolated) {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.delete_vertex(_vh, _delete_isolated);
+			}, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
+		.def("delete_edge", [](Mesh& _self, OM::EdgeHandle _eh, bool _delete_isolated) {
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.delete_edge(_eh, _delete_isolated);
+			}, py::arg("eh"), py::arg("delete_isolated_vertices")=true)
+		.def("delete_face", [](Mesh& _self, OM::FaceHandle _fh, bool _delete_isolated) {
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.delete_face(_fh, _delete_isolated);
+			}, py::arg("fh"), py::arg("delete_isolated_vertices")=true)
 
 		.def("vv", vv)
 		.def("vih", vih)
@@ -1091,24 +1066,77 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("split", split_fh_vh)
 		.def("split", split_eh_vh)
 
-		.def("update_normals", &Mesh::update_normals)
-		.def("update_normal", update_normal_fh)
-		.def("update_face_normals", &Mesh::update_face_normals)
+		.def("update_normals", [](Mesh& _self) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+				}
+				if (!_self.has_halfedge_normals()) {
+					_self.request_halfedge_normals();
+				}
+				if (!_self.has_vertex_normals()) {
+					_self.request_vertex_normals();
+				}
+				_self.update_normals();
+			})
+
+		.def("update_normal", [](Mesh& _self, OM::FaceHandle _fh) {
+				if (!_self.has_face_normals()) _self.request_face_normals();
+				_self.update_normal(_fh);
+			})
+		.def("update_face_normals", [](Mesh& _self) {
+				if (!_self.has_face_normals()) _self.request_face_normals();
+				_self.update_face_normals();
+			})
+
+		.def("update_normal", [](Mesh& _self, OM::HalfedgeHandle _hh, double _feature_angle) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				if (!_self.has_halfedge_normals()) {
+					_self.request_halfedge_normals();
+				}
+				_self.update_normal(_hh, _feature_angle);
+			}, py::arg("heh"), py::arg("feature_angle")=0.8)
+		.def("update_halfedge_normals", [](Mesh& _self, double _feature_angle) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				if (!_self.has_halfedge_normals()) {
+					_self.request_halfedge_normals();
+				}
+				_self.update_halfedge_normals(_feature_angle);
+			}, py::arg("feature_angle")=0.8)
+
+		.def("update_normal", [](Mesh& _self, OM::VertexHandle _vh) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				if (!_self.has_vertex_normals()) {
+					_self.request_vertex_normals();
+				}
+				_self.update_normal(_vh);
+			})
+		.def("update_vertex_normals", [](Mesh& _self) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				if (!_self.has_vertex_normals()) {
+					_self.request_vertex_normals();
+				}
+				_self.update_vertex_normals();
+			})
 
 		.def("calc_face_normal", calc_face_normal)
+		.def("calc_halfedge_normal", &Mesh::calc_halfedge_normal, py::arg("heh"), py::arg("feature_angle")=0.8)
 
 		.def("calc_face_centroid", calc_face_centroid_fh_point)
 		.def("calc_face_centroid", calc_face_centroid_fh)
 
-		.def("update_normal", update_normal_hh, py::arg("heh"), py::arg("feature_angle")=0.8)
-		.def("update_halfedge_normals", update_halfedge_normals, py::arg("feature_angle")=0.8)
-
-		.def("calc_halfedge_normal", &Mesh::calc_halfedge_normal, py::arg("heh"), py::arg("feature_angle")=0.8)
-
 		.def("is_estimated_feature_edge", &Mesh::is_estimated_feature_edge)
-
-		.def("update_normal", update_normal_vh)
-		.def("update_vertex_normals", &Mesh::update_vertex_normals)
 
 		.def("calc_vertex_normal", &Mesh::calc_vertex_normal)
 		.def("calc_vertex_normal_fast", &Mesh::calc_vertex_normal_fast)
@@ -1122,72 +1150,193 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  numpy vector getter
 		//======================================================================
 
-		.def("point", [](Mesh& _self, OM::VertexHandle _h) { return vec2numpy(_self, _self.point(_h)); })
+		.def("point", [](Mesh& _self, OM::VertexHandle _h) {
+				return vec2numpy(_self, _self.point(_h));
+			})
 
-		.def("normal", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.normal(_h)); })
-		.def("normal", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.normal(_h)); })
-		.def("normal", [](Mesh& _self, OM::FaceHandle     _h) { return vec2numpy(_self, _self.normal(_h)); })
+		.def("normal", [](Mesh& _self, OM::VertexHandle _h) {
+				if (!_self.has_vertex_normals()) _self.request_vertex_normals();
+				return vec2numpy(_self, _self.normal(_h));
+			})
+		.def("normal", [](Mesh& _self, OM::HalfedgeHandle _h) {
+				if (!_self.has_halfedge_normals()) _self.request_halfedge_normals();
+				return vec2numpy(_self, _self.normal(_h));
+			})
+		.def("normal", [](Mesh& _self, OM::FaceHandle _h) {
+				if (!_self.has_face_normals()) _self.request_face_normals();
+				return vec2numpy(_self, _self.normal(_h));
+			})
 
-		.def("color", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.color(_h)); })
-		.def("color", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.color(_h)); })
-		.def("color", [](Mesh& _self, OM::EdgeHandle     _h) { return vec2numpy(_self, _self.color(_h)); })
-		.def("color", [](Mesh& _self, OM::FaceHandle     _h) { return vec2numpy(_self, _self.color(_h)); })
+		.def("color", [](Mesh& _self, OM::VertexHandle _h) {
+				if (!_self.has_vertex_colors()) _self.request_vertex_colors();
+				return vec2numpy(_self, _self.color(_h));
+			})
+		.def("color", [](Mesh& _self, OM::HalfedgeHandle _h) {
+				if (!_self.has_halfedge_colors()) _self.request_halfedge_colors();
+				return vec2numpy(_self, _self.color(_h));
+			})
+		.def("color", [](Mesh& _self, OM::EdgeHandle _h) {
+				if (!_self.has_edge_colors()) _self.request_edge_colors();
+				return vec2numpy(_self, _self.color(_h));
+			})
+		.def("color", [](Mesh& _self, OM::FaceHandle _h) {
+				if (!_self.has_face_colors()) _self.request_face_colors();
+				return vec2numpy(_self, _self.color(_h));
+			})
 
-		.def("texcoord1D", [](Mesh& _self, OM::VertexHandle   _h) { return flt2numpy(_self, _self.texcoord1D(_h)); })
-		.def("texcoord1D", [](Mesh& _self, OM::HalfedgeHandle _h) { return flt2numpy(_self, _self.texcoord1D(_h)); })
-		.def("texcoord2D", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.texcoord2D(_h)); })
-		.def("texcoord2D", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.texcoord2D(_h)); })
-		.def("texcoord3D", [](Mesh& _self, OM::VertexHandle   _h) { return vec2numpy(_self, _self.texcoord3D(_h)); })
-		.def("texcoord3D", [](Mesh& _self, OM::HalfedgeHandle _h) { return vec2numpy(_self, _self.texcoord3D(_h)); })
+		.def("texcoord1D", [](Mesh& _self, OM::VertexHandle _h) {
+				if (!_self.has_vertex_texcoords1D()) _self.request_vertex_texcoords1D();
+				return flt2numpy(_self, _self.texcoord1D(_h));
+			})
+		.def("texcoord1D", [](Mesh& _self, OM::HalfedgeHandle _h) {
+				if (!_self.has_halfedge_texcoords1D()) _self.request_halfedge_texcoords1D();
+				return flt2numpy(_self, _self.texcoord1D(_h));
+			})
+		.def("texcoord2D", [](Mesh& _self, OM::VertexHandle _h) {
+				if (!_self.has_vertex_texcoords2D()) _self.request_vertex_texcoords2D();
+				return vec2numpy(_self, _self.texcoord2D(_h));
+			})
+		.def("texcoord2D", [](Mesh& _self, OM::HalfedgeHandle _h) {
+				if (!_self.has_halfedge_texcoords2D()) _self.request_halfedge_texcoords2D();
+				return vec2numpy(_self, _self.texcoord2D(_h));
+			})
+		.def("texcoord3D", [](Mesh& _self, OM::VertexHandle _h) {
+				if (!_self.has_vertex_texcoords3D()) _self.request_vertex_texcoords3D();
+				return vec2numpy(_self, _self.texcoord3D(_h));
+			})
+		.def("texcoord3D", [](Mesh& _self, OM::HalfedgeHandle _h) {
+				if (!_self.has_halfedge_texcoords3D()) _self.request_halfedge_texcoords3D();
+				return vec2numpy(_self, _self.texcoord3D(_h));
+			})
 
 		//======================================================================
 		//  numpy vector setter
 		//======================================================================
 
-		.def("set_point", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename Point::value_type> _arr)
-			{_self.point(_h) = Point(_arr.at(0), _arr.at(1), _arr.at(2));})
+		.def("set_point", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename Point::value_type> _arr) {
+				_self.point(_h) = Point(_arr.at(0), _arr.at(1), _arr.at(2));
+			})
 
-		.def("set_normal", &set_normal<Mesh, OM::VertexHandle,   py::array_t<typename Normal::value_type> >)
-		.def("set_normal", &set_normal<Mesh, OM::HalfedgeHandle, py::array_t<typename Normal::value_type> >)
-		.def("set_normal", &set_normal<Mesh, OM::FaceHandle,     py::array_t<typename Normal::value_type> >)
+		.def("set_normal", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename Normal::value_type> _arr) {
+				if (!_self.has_vertex_normals()) _self.request_vertex_normals();
+				_self.set_normal(_h, typename Mesh::Normal(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+		.def("set_normal", [](Mesh& _self, OM::HalfedgeHandle _h, py::array_t<typename Normal::value_type> _arr) {
+				if (!_self.has_halfedge_normals()) _self.request_halfedge_normals();
+				_self.set_normal(_h, typename Mesh::Normal(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+		.def("set_normal", [](Mesh& _self, OM::FaceHandle _h, py::array_t<typename Normal::value_type> _arr) {
+				if (!_self.has_face_normals()) _self.request_face_normals();
+				_self.set_normal(_h, typename Mesh::Normal(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
-		.def("set_color", &set_color<Mesh, OM::VertexHandle,   py::array_t<typename Color::value_type> >)
-		.def("set_color", &set_color<Mesh, OM::HalfedgeHandle, py::array_t<typename Color::value_type> >)
-		.def("set_color", &set_color<Mesh, OM::EdgeHandle,     py::array_t<typename Color::value_type> >)
-		.def("set_color", &set_color<Mesh, OM::FaceHandle,     py::array_t<typename Color::value_type> >)
+		.def("set_color", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename Color::value_type> _arr) {
+				if(!_self.has_vertex_colors()) _self.request_vertex_colors();
+				_self.set_color(_h, typename Mesh::Color(_arr.at(0), _arr.at(1), _arr.at(2), _arr.at(3)));
+			})
+		.def("set_color", [](Mesh& _self, OM::HalfedgeHandle _h, py::array_t<typename Color::value_type> _arr) {
+				if(!_self.has_halfedge_colors()) _self.request_halfedge_colors();
+				_self.set_color(_h, typename Mesh::Color(_arr.at(0), _arr.at(1), _arr.at(2), _arr.at(3)));
+			})
+		.def("set_color", [](Mesh& _self, OM::EdgeHandle _h, py::array_t<typename Color::value_type> _arr) {
+				if(!_self.has_edge_colors()) _self.request_edge_colors();
+				_self.set_color(_h, typename Mesh::Color(_arr.at(0), _arr.at(1), _arr.at(2), _arr.at(3)));
+			})
+		.def("set_color", [](Mesh& _self, OM::FaceHandle _h, py::array_t<typename Color::value_type> _arr) {
+				if(!_self.has_face_colors()) _self.request_face_colors();
+				_self.set_color(_h, typename Mesh::Color(_arr.at(0), _arr.at(1), _arr.at(2), _arr.at(3)));
+			})
 
-		.def("set_texcoord1D", &set_texcoord1d<Mesh, OM::VertexHandle,   py::array_t<TexCoord1D> >)
-		.def("set_texcoord1D", &set_texcoord1d<Mesh, OM::HalfedgeHandle, py::array_t<TexCoord1D> >)
+		.def("set_texcoord1D", [](Mesh& _self, OM::VertexHandle _h, py::array_t<TexCoord1D> _arr) {
+				if (!_self.has_vertex_texcoords1D()) _self.request_vertex_texcoords1D();
+				_self.set_texcoord1D(_h, _arr.at(0));
+			})
+		.def("set_texcoord1D", [](Mesh& _self, OM::HalfedgeHandle _h, py::array_t<TexCoord1D> _arr) {
+				if (!_self.has_halfedge_texcoords1D()) _self.request_halfedge_texcoords1D();
+				_self.set_texcoord1D(_h, _arr.at(0));
+			})
 
-		.def("set_texcoord2D", &set_texcoord2d<Mesh, OM::VertexHandle,   py::array_t<typename TexCoord2D::value_type> >)
-		.def("set_texcoord2D", &set_texcoord2d<Mesh, OM::HalfedgeHandle, py::array_t<typename TexCoord2D::value_type> >)
+		.def("set_texcoord2D", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename TexCoord2D::value_type> _arr) {
+				if (!_self.has_vertex_texcoords2D()) _self.request_vertex_texcoords2D();
+				_self.set_texcoord2D(_h, typename Mesh::TexCoord2D(_arr.at(0), _arr.at(1)));
+			})
+		.def("set_texcoord2D", [](Mesh& _self, OM::HalfedgeHandle _h, py::array_t<typename TexCoord2D::value_type> _arr) {
+				if (!_self.has_halfedge_texcoords2D()) _self.request_halfedge_texcoords2D();
+				_self.set_texcoord2D(_h, typename Mesh::TexCoord2D(_arr.at(0), _arr.at(1)));
+			})
 
-		.def("set_texcoord3D", &set_texcoord3d<Mesh, OM::VertexHandle,   py::array_t<typename TexCoord3D::value_type> >)
-		.def("set_texcoord3D", &set_texcoord3d<Mesh, OM::HalfedgeHandle, py::array_t<typename TexCoord3D::value_type> >)
+		.def("set_texcoord3D", [](Mesh& _self, OM::VertexHandle _h, py::array_t<typename TexCoord3D::value_type> _arr) {
+				if (!_self.has_vertex_texcoords3D()) _self.request_vertex_texcoords3D();
+				_self.set_texcoord3D(_h, typename Mesh::TexCoord3D(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+		.def("set_texcoord3D", [](Mesh& _self, OM::HalfedgeHandle _h, py::array_t<typename TexCoord3D::value_type> _arr) {
+				if (!_self.has_halfedge_texcoords3D()) _self.request_halfedge_texcoords3D();
+				_self.set_texcoord3D(_h, typename Mesh::TexCoord3D(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
 		//======================================================================
 		//  numpy matrix getter
 		//======================================================================
 
-		.def("points", [](Mesh& _self) { return vec2numpy(_self, _self.point(OM::VertexHandle(0)), _self.n_vertices()); })
+		.def("points", [](Mesh& _self) {
+				return vec2numpy(_self, _self.point(OM::VertexHandle(0)), _self.n_vertices());
+			})
 
-		.def("vertex_normals",     [](Mesh& _self) { return vec2numpy(_self, _self.normal    (OM::VertexHandle(0)), _self.n_vertices()); })
-		.def("vertex_colors",      [](Mesh& _self) { return vec2numpy(_self, _self.color     (OM::VertexHandle(0)), _self.n_vertices()); })
-		.def("vertex_colors",      [](Mesh& _self) { return vec2numpy(_self, _self.color     (OM::VertexHandle(0)), _self.n_vertices()); })
-		.def("vertex_texcoords1D", [](Mesh& _self) { return flt2numpy(_self, _self.texcoord1D(OM::VertexHandle(0)), _self.n_vertices()); })
-		.def("vertex_texcoords2D", [](Mesh& _self) { return vec2numpy(_self, _self.texcoord2D(OM::VertexHandle(0)), _self.n_vertices()); })
-		.def("vertex_texcoords3D", [](Mesh& _self) { return vec2numpy(_self, _self.texcoord3D(OM::VertexHandle(0)), _self.n_vertices()); })
+		.def("vertex_normals", [](Mesh& _self) {
+				if (!_self.has_vertex_normals()) _self.request_vertex_normals();
+				return vec2numpy(_self, _self.normal(OM::VertexHandle(0)), _self.n_vertices());
+			})
+		.def("vertex_colors", [](Mesh& _self) {
+				if (!_self.has_vertex_colors()) _self.request_vertex_colors();
+				return vec2numpy(_self, _self.color(OM::VertexHandle(0)), _self.n_vertices());
+			})
+		.def("vertex_texcoords1D", [](Mesh& _self) {
+				if (!_self.has_vertex_texcoords1D()) _self.request_vertex_texcoords1D();
+				return flt2numpy(_self, _self.texcoord1D(OM::VertexHandle(0)), _self.n_vertices());
+			})
+		.def("vertex_texcoords2D", [](Mesh& _self) {
+				if (!_self.has_vertex_texcoords2D()) _self.request_vertex_texcoords2D();
+				return vec2numpy(_self, _self.texcoord2D(OM::VertexHandle(0)), _self.n_vertices());
+			})
+		.def("vertex_texcoords3D", [](Mesh& _self) {
+				if (!_self.has_vertex_texcoords3D()) _self.request_vertex_texcoords3D();
+				return vec2numpy(_self, _self.texcoord3D(OM::VertexHandle(0)), _self.n_vertices());
+			})
 
-		.def("halfedge_normals",     [](Mesh& _self) { return vec2numpy(_self, _self.normal    (OM::HalfedgeHandle(0)), _self.n_halfedges()); })
-		.def("halfedge_colors",      [](Mesh& _self) { return vec2numpy(_self, _self.color     (OM::HalfedgeHandle(0)), _self.n_halfedges()); })
-		.def("halfedge_texcoords1D", [](Mesh& _self) { return flt2numpy(_self, _self.texcoord1D(OM::HalfedgeHandle(0)), _self.n_halfedges()); })
-		.def("halfedge_texcoords2D", [](Mesh& _self) { return vec2numpy(_self, _self.texcoord2D(OM::HalfedgeHandle(0)), _self.n_halfedges()); })
-		.def("halfedge_texcoords3D", [](Mesh& _self) { return vec2numpy(_self, _self.texcoord3D(OM::HalfedgeHandle(0)), _self.n_halfedges()); })
+		.def("halfedge_normals", [](Mesh& _self) {
+				if (!_self.has_halfedge_normals()) _self.request_halfedge_normals();
+				return vec2numpy(_self, _self.normal(OM::HalfedgeHandle(0)), _self.n_halfedges());
+			})
+		.def("halfedge_colors", [](Mesh& _self) {
+				if (!_self.has_halfedge_colors()) _self.request_halfedge_colors();
+				return vec2numpy(_self, _self.color(OM::HalfedgeHandle(0)), _self.n_halfedges());
+			})
+		.def("halfedge_texcoords1D", [](Mesh& _self) {
+				if (!_self.has_halfedge_texcoords1D()) _self.request_halfedge_texcoords1D();
+				return flt2numpy(_self, _self.texcoord1D(OM::HalfedgeHandle(0)), _self.n_halfedges());
+			})
+		.def("halfedge_texcoords2D", [](Mesh& _self) {
+				if (!_self.has_halfedge_texcoords2D()) _self.request_halfedge_texcoords2D();
+				return vec2numpy(_self, _self.texcoord2D(OM::HalfedgeHandle(0)), _self.n_halfedges());
+			})
+		.def("halfedge_texcoords3D", [](Mesh& _self) {
+				if (!_self.has_halfedge_texcoords3D()) _self.request_halfedge_texcoords3D();
+				return vec2numpy(_self, _self.texcoord3D(OM::HalfedgeHandle(0)), _self.n_halfedges());
+			})
 
-		.def("edge_colors", [](Mesh& _self) { return vec2numpy(_self, _self.color(OM::EdgeHandle(0)), _self.n_edges()); })
+		.def("edge_colors", [](Mesh& _self) {
+				if (!_self.has_edge_colors()) _self.request_edge_colors();
+				return vec2numpy(_self, _self.color(OM::EdgeHandle(0)), _self.n_edges());
+			})
 
-		.def("face_normals", [](Mesh& _self) { return vec2numpy(_self, _self.normal(OM::FaceHandle(0)), _self.n_faces()); })
-		.def("face_colors",  [](Mesh& _self) { return vec2numpy(_self, _self.color (OM::FaceHandle(0)), _self.n_faces()); })
+		.def("face_normals", [](Mesh& _self) {
+				if (!_self.has_face_normals()) _self.request_face_normals();
+				return vec2numpy(_self, _self.normal(OM::FaceHandle(0)), _self.n_faces());
+			})
+		.def("face_colors",  [](Mesh& _self) {
+				if (!_self.has_face_colors()) _self.request_face_colors();
+				return vec2numpy(_self, _self.color (OM::FaceHandle(0)), _self.n_faces());
+			})
 
 		//======================================================================
 		//  property_array
