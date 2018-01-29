@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(openmesh)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(OPENMESH_BUILD_PYTHON_BINDINGS OFF)
 
 add_subdirectory(OpenMesh)
