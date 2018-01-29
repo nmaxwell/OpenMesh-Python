@@ -621,39 +621,39 @@ void expose_mesh(py::module& m, const char *_name) {
 	void (*set_status_fh)(Mesh&, OM::FaceHandle,     const StatusInfo&) = &set_status;
 
 	// Property management - add property
-	void (Mesh::*add_property_vph)(OM::VPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_eph)(OM::EPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_hph)(OM::HPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_fph)(OM::FPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_mph)(OM::MPropHandleT<py::object>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_vph)(OM::VPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_eph)(OM::EPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_hph)(OM::HPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_fph)(OM::FPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
+	void (Mesh::*add_property_mph)(OM::MPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
 
 	// Property management - remove property
-	void (Mesh::*remove_property_vph)(OM::VPropHandleT<py::object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_eph)(OM::EPropHandleT<py::object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_hph)(OM::HPropHandleT<py::object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_fph)(OM::FPropHandleT<py::object>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_mph)(OM::MPropHandleT<py::object>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_vph)(OM::VPropHandleT<py::none>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_eph)(OM::EPropHandleT<py::none>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_hph)(OM::HPropHandleT<py::none>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_fph)(OM::FPropHandleT<py::none>&) = &Mesh::remove_property;
+	void (Mesh::*remove_property_mph)(OM::MPropHandleT<py::none>&) = &Mesh::remove_property;
 
 	// Property management - get property by name
-	bool (Mesh::*get_property_handle_vph)(OM::VPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_eph)(OM::EPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_hph)(OM::HPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_fph)(OM::FPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_mph)(OM::MPropHandleT<py::object>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_vph)(OM::VPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_eph)(OM::EPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_hph)(OM::HPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_fph)(OM::FPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
+	bool (Mesh::*get_property_handle_mph)(OM::MPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
 
 	// Property management - get property value for an item
-	const py::object& (Mesh::*property_vertex  )(OM::VPropHandleT<py::object>, OM::VertexHandle  ) const = &Mesh::property;
-	const py::object& (Mesh::*property_edge    )(OM::EPropHandleT<py::object>, OM::EdgeHandle    ) const = &Mesh::property;
-	const py::object& (Mesh::*property_halfedge)(OM::HPropHandleT<py::object>, OM::HalfedgeHandle) const = &Mesh::property;
-	const py::object& (Mesh::*property_face    )(OM::FPropHandleT<py::object>, OM::FaceHandle    ) const = &Mesh::property;
-	const py::object& (Mesh::*property_mesh    )(OM::MPropHandleT<py::object>                    ) const = &Mesh::property;
+	const py::none& (Mesh::*property_vertex  )(OM::VPropHandleT<py::none>, OM::VertexHandle  ) const = &Mesh::property;
+	const py::none& (Mesh::*property_edge    )(OM::EPropHandleT<py::none>, OM::EdgeHandle    ) const = &Mesh::property;
+	const py::none& (Mesh::*property_halfedge)(OM::HPropHandleT<py::none>, OM::HalfedgeHandle) const = &Mesh::property;
+	const py::none& (Mesh::*property_face    )(OM::FPropHandleT<py::none>, OM::FaceHandle    ) const = &Mesh::property;
+	const py::none& (Mesh::*property_mesh    )(OM::MPropHandleT<py::none>                    ) const = &Mesh::property;
 
 	// Property management - set property value for an item
-	void (*set_property_vertex  )(Mesh&, OM::VPropHandleT<py::object>, OM::VertexHandle,   const py::object&) = &set_property;
-	void (*set_property_edge    )(Mesh&, OM::EPropHandleT<py::object>, OM::EdgeHandle,     const py::object&) = &set_property;
-	void (*set_property_halfedge)(Mesh&, OM::HPropHandleT<py::object>, OM::HalfedgeHandle, const py::object&) = &set_property;
-	void (*set_property_face    )(Mesh&, OM::FPropHandleT<py::object>, OM::FaceHandle,     const py::object&) = &set_property;
-	void (*set_property_mesh    )(Mesh&, OM::MPropHandleT<py::object>,                     const py::object&) = &set_property;
+	void (*set_property_vertex  )(Mesh&, OM::VPropHandleT<py::none>, OM::VertexHandle,   const py::object&) = &set_property;
+	void (*set_property_edge    )(Mesh&, OM::EPropHandleT<py::none>, OM::EdgeHandle,     const py::object&) = &set_property;
+	void (*set_property_halfedge)(Mesh&, OM::HPropHandleT<py::none>, OM::HalfedgeHandle, const py::object&) = &set_property;
+	void (*set_property_face    )(Mesh&, OM::FPropHandleT<py::none>, OM::FaceHandle,     const py::object&) = &set_property;
+	void (*set_property_mesh    )(Mesh&, OM::MPropHandleT<py::none>,                     const py::object&) = &set_property;
 
 	// Low-level adding new items
 	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
@@ -677,10 +677,10 @@ void expose_mesh(py::module& m, const char *_name) {
 	//======================================================================
 
 	// Copy property
-	void (Mesh::*copy_property_vprop)(OM::VPropHandleT<py::object>&, OM::VertexHandle,   OM::VertexHandle  ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_hprop)(OM::HPropHandleT<py::object>,  OM::HalfedgeHandle, OM::HalfedgeHandle) = &Mesh::copy_property;
-	void (Mesh::*copy_property_eprop)(OM::EPropHandleT<py::object>,  OM::EdgeHandle,     OM::EdgeHandle    ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_fprop)(OM::FPropHandleT<py::object>,  OM::FaceHandle,     OM::FaceHandle    ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_vprop)(OM::VPropHandleT<py::none>&, OM::VertexHandle,   OM::VertexHandle  ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_hprop)(OM::HPropHandleT<py::none>,  OM::HalfedgeHandle, OM::HalfedgeHandle) = &Mesh::copy_property;
+	void (Mesh::*copy_property_eprop)(OM::EPropHandleT<py::none>,  OM::EdgeHandle,     OM::EdgeHandle    ) = &Mesh::copy_property;
+	void (Mesh::*copy_property_fprop)(OM::FPropHandleT<py::none>,  OM::FaceHandle,     OM::FaceHandle    ) = &Mesh::copy_property;
 
 	// Copy all properties
 	void (Mesh::*copy_all_properties_vh_vh_bool)(OM::VertexHandle,   OM::VertexHandle,   bool) = &Mesh::copy_all_properties;
@@ -1193,34 +1193,34 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  property_array
 		//======================================================================
 
-		.def("property_array", [] (Mesh& _self, OM::VPropHandleT<py::object> _ph) {
-				return property_array<Mesh, OM::VPropHandleT<py::object>, OM::VertexHandle>(_self, _ph, _self.n_vertices());
+		.def("property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph) {
+				return property_array<Mesh, OM::VPropHandleT<py::none>, OM::VertexHandle>(_self, _ph, _self.n_vertices());
 			})
-		.def("property_array", [] (Mesh& _self, OM::HPropHandleT<py::object> _ph) {
-				return property_array<Mesh, OM::HPropHandleT<py::object>, OM::HalfedgeHandle>(_self, _ph, _self.n_halfedges());
+		.def("property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph) {
+				return property_array<Mesh, OM::HPropHandleT<py::none>, OM::HalfedgeHandle>(_self, _ph, _self.n_halfedges());
 			})
-		.def("property_array", [] (Mesh& _self, OM::EPropHandleT<py::object> _ph) {
-				return property_array<Mesh, OM::EPropHandleT<py::object>, OM::EdgeHandle>(_self, _ph, _self.n_edges());
+		.def("property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph) {
+				return property_array<Mesh, OM::EPropHandleT<py::none>, OM::EdgeHandle>(_self, _ph, _self.n_edges());
 			})
-		.def("property_array", [] (Mesh& _self, OM::FPropHandleT<py::object> _ph) {
-				return property_array<Mesh, OM::FPropHandleT<py::object>, OM::FaceHandle>(_self, _ph, _self.n_faces());
+		.def("property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph) {
+				return property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _self.n_faces());
 			})
 
 		//======================================================================
 		//  set_property_array
 		//======================================================================
 
-		.def("set_property_array", [] (Mesh& _self, OM::VPropHandleT<py::object> _ph, py::array_t<double> _arr) {
-				return set_property_array<Mesh, OM::VPropHandleT<py::object>, OM::VertexHandle>(_self, _ph, _arr, _self.n_vertices());
+		.def("set_property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+				return set_property_array<Mesh, OM::VPropHandleT<py::none>, OM::VertexHandle>(_self, _ph, _arr, _self.n_vertices());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::HPropHandleT<py::object> _ph, py::array_t<double> _arr) {
-				return set_property_array<Mesh, OM::HPropHandleT<py::object>, OM::HalfedgeHandle>(_self, _ph, _arr, _self.n_halfedges());
+		.def("set_property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+				return set_property_array<Mesh, OM::HPropHandleT<py::none>, OM::HalfedgeHandle>(_self, _ph, _arr, _self.n_halfedges());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::EPropHandleT<py::object> _ph, py::array_t<double> _arr) {
-				return set_property_array<Mesh, OM::EPropHandleT<py::object>, OM::EdgeHandle>(_self, _ph, _arr, _self.n_edges());
+		.def("set_property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+				return set_property_array<Mesh, OM::EPropHandleT<py::none>, OM::EdgeHandle>(_self, _ph, _arr, _self.n_edges());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::object> _ph, py::array_t<double> _arr) {
-				return set_property_array<Mesh, OM::FPropHandleT<py::object>, OM::FaceHandle>(_self, _ph, _arr, _self.n_faces());
+		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+				return set_property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _arr, _self.n_faces());
 			})
 		;
 

@@ -22,7 +22,7 @@ namespace OM = OpenMesh;
  * @return The requested property value.
  */
 template <class PropertyManager, class IndexHandle>
-py::object propman_get_item(PropertyManager& _self, IndexHandle _handle) {
+py::none propman_get_item(PropertyManager& _self, IndexHandle _handle) {
 	return _self[_handle];
 }
 
@@ -100,8 +100,8 @@ void expose_property_manager(py::module& m, const char *_name) {
 	typedef OM::PropertyManager<PropHandle, OM::PolyConnectivity> PropertyManager;
 
 	// Function pointers
-	py::object (*getitem)(PropertyManager&, IndexHandle            ) = &propman_get_item;
-	void       (*setitem)(PropertyManager&, IndexHandle, py::object) = &propman_set_item;
+	py::none (*getitem)(PropertyManager&, IndexHandle          ) = &propman_get_item;
+	void     (*setitem)(PropertyManager&, IndexHandle, py::object) = &propman_set_item;
 
 	void (*set_range)(PropertyManager&, Iterator, py::object) = &propman_set_range;
 

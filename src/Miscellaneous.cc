@@ -50,35 +50,35 @@ void expose_handles(py::module& m) {
 		.def(py::init<int>())
 		;
 
-	py::class_<OM::BasePropHandleT<py::object>, OM::BaseHandle>(m, "BasePropHandle")
+	py::class_<OM::BasePropHandleT<py::none>, OM::BaseHandle>(m, "BasePropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
 		;
 
-	py::class_<OM::VPropHandleT<py::object>, OM::BasePropHandleT<py::object> >(m, "VPropHandle")
+	py::class_<OM::VPropHandleT<py::none>, OM::BasePropHandleT<py::none> >(m, "VPropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
-		.def(py::init<const OM::BasePropHandleT<py::object>&>())
+		.def(py::init<const OM::BasePropHandleT<py::none>&>())
 		;
-	py::class_<OM::HPropHandleT<py::object>, OM::BasePropHandleT<py::object> >(m, "HPropHandle")
+	py::class_<OM::HPropHandleT<py::none>, OM::BasePropHandleT<py::none> >(m, "HPropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
-		.def(py::init<const OM::BasePropHandleT<py::object>&>())
+		.def(py::init<const OM::BasePropHandleT<py::none>&>())
 		;
-	py::class_<OM::EPropHandleT<py::object>, OM::BasePropHandleT<py::object> >(m, "EPropHandle")
+	py::class_<OM::EPropHandleT<py::none>, OM::BasePropHandleT<py::none> >(m, "EPropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
-		.def(py::init<const OM::BasePropHandleT<py::object>&>())
+		.def(py::init<const OM::BasePropHandleT<py::none>&>())
 		;
-	py::class_<OM::FPropHandleT<py::object>, OM::BasePropHandleT<py::object> >(m, "FPropHandle")
+	py::class_<OM::FPropHandleT<py::none>, OM::BasePropHandleT<py::none> >(m, "FPropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
-		.def(py::init<const OM::BasePropHandleT<py::object>&>())
+		.def(py::init<const OM::BasePropHandleT<py::none>&>())
 		;
-	py::class_<OM::MPropHandleT<py::object>, OM::BasePropHandleT<py::object> >(m, "MPropHandle")
+	py::class_<OM::MPropHandleT<py::none>, OM::BasePropHandleT<py::none> >(m, "MPropHandle")
 		.def(py::init<>())
 		.def(py::init<int>())
-		.def(py::init<const OM::BasePropHandleT<py::object>&>())
+		.def(py::init<const OM::BasePropHandleT<py::none>&>())
 		;
 }
 

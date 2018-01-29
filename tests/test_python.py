@@ -57,8 +57,8 @@ class Python(unittest.TestCase):
         self.assertTrue(propman.property_exists(self.mesh, "prop"))
         
         # Check initial property values
-        # for v in self.mesh.vertices():
-        #     self.assertEqual(propman[v], None)
+        for v in self.mesh.vertices():
+            self.assertEqual(propman[v], None)
         
         # Set property values
         propman.set_range(self.mesh.vertices(), 0.0)
