@@ -995,11 +995,13 @@ void expose_mesh(py::module& m, const char *_name) {
 				_self.delete_vertex(_vh, _delete_isolated);
 			}, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
 		.def("delete_edge", [](Mesh& _self, OM::EdgeHandle _eh, bool _delete_isolated) {
+				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
 				if (!_self.has_edge_status()) _self.request_edge_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_edge(_eh, _delete_isolated);
 			}, py::arg("eh"), py::arg("delete_isolated_vertices")=true)
 		.def("delete_face", [](Mesh& _self, OM::FaceHandle _fh, bool _delete_isolated) {
+				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_face(_fh, _delete_isolated);
 			}, py::arg("fh"), py::arg("delete_isolated_vertices")=true)
