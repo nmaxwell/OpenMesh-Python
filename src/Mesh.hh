@@ -1361,16 +1361,16 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  set_property_array
 		//======================================================================
 
-		.def("set_property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+		.def("set_property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
 				return set_property_array<Mesh, OM::VPropHandleT<py::none>, OM::VertexHandle>(_self, _ph, _arr, _self.n_vertices());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+		.def("set_property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
 				return set_property_array<Mesh, OM::HPropHandleT<py::none>, OM::HalfedgeHandle>(_self, _ph, _arr, _self.n_halfedges());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+		.def("set_property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
 				return set_property_array<Mesh, OM::EPropHandleT<py::none>, OM::EdgeHandle>(_self, _ph, _arr, _self.n_edges());
 			})
-		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph, py::array_t<double> _arr) {
+		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
 				return set_property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _arr, _self.n_faces());
 			})
 		;
