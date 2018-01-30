@@ -2,6 +2,8 @@
 #define OPENMESH_PYTHON_VECTOR_HH
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
 namespace py = pybind11;
 
 
@@ -192,6 +194,13 @@ void expose_vec(py::module& m, const char *_name) {
 
 		.def_static("size", &Vector::size)
 		.def_static("vectorized", &Vector::vectorized)
+
+		.def("__init__", [](Vector& _self, py::array_t<Scalar, py::array::c_style | py::array::forcecast> _arr) {
+				if (_arr.size() != N) {
+					throw std::runtime_error("Incompatible array size!");
+				}
+				new (&_self) Vector(_arr.data());
+			});
 		;
 
 	defInitMod<Scalar, Vector>(m, classVector);
