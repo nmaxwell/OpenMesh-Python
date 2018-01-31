@@ -257,7 +257,7 @@ py::array_t<double> flt2numpy(Mesh& _mesh, const double& _flt, size_t _n = 1) {
  * Note that the array is constructed on the fly and does not
  * reference the underlying mesh.
  */
-py::array_t<int> face_indices_tri(TriMesh& _self) {
+py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	if (_self.n_faces() == 0) {
 		return py::array_t<int>();
 	}
@@ -286,7 +286,7 @@ py::array_t<int> face_indices_tri(TriMesh& _self) {
  * Note that the array is constructed on the fly and does not
  * reference the underlying mesh.
  */
-py::array_t<int> face_indices_poly(PolyMesh& _self) {
+py::array_t<int> face_vertex_indices_polymesh(PolyMesh& _self) {
 	if (_self.n_faces() == 0) {
 		return py::array_t<int>();
 	}
@@ -314,6 +314,56 @@ py::array_t<int> face_indices_poly(PolyMesh& _self) {
 	});
 	return py::array_t<int>(shape, strides, indices, free_when_done);
 }
+
+/**
+ * Returns the edge indices of this mesh as a numpy array.
+ *
+ * Note that the array is constructed on the fly and does not
+ * reference the underlying mesh.
+ */
+template<class Mesh>
+py::array_t<int> edge_vertex_indices(Mesh& _self) {
+	if (_self.n_edges() == 0) {
+		return py::array_t<int>();
+	}
+	int *indices = new int[_self.n_edges() * 2];
+	for (auto eh : _self.edges()) {
+		auto heh = _self.halfedge_handle(eh, 0);
+		auto vh1 = _self.from_vertex_handle(heh);
+		auto vh2 = _self.to_vertex_handle(heh);
+		indices[eh.idx() * 2 + 0] = vh1.idx();
+		indices[eh.idx() * 2 + 1] = vh2.idx();
+	}
+	const auto shape = {_self.n_edges(), size_t(2)};
+	const auto strides = {2 * sizeof(int), sizeof(int)};
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
+}
+
+/**
+ * Returns the halfedge indices of this mesh as a numpy array.
+ *
+ * Note that the array is constructed on the fly and does not
+ * reference the underlying mesh.
+ */
+template<class Mesh>
+py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
+	if (_self.n_halfedges() == 0) {
+		return py::array_t<int>();
+	}
+	int *indices = new int[_self.n_halfedges() * 2];
+	for (auto heh : _self.halfedges()) {
+		auto vh1 = _self.from_vertex_handle(heh);
+		auto vh2 = _self.to_vertex_handle(heh);
+		indices[heh.idx() * 2 + 0] = vh1.idx();
+		indices[heh.idx() * 2 + 1] = vh2.idx();
+	}
+	const auto shape = {_self.n_halfedges(), size_t(2)};
+	const auto strides = {2 * sizeof(int), sizeof(int)};
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
+}
+
 
 /**
  * Attempts to return a custom property for all mesh items at once using a
@@ -453,7 +503,8 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 		.def("calc_face_normal_vec", calc_face_normal_pt)
 		.def("insert_edge", &PolyMesh::insert_edge)
 
-		.def("face_indices", &face_indices_poly)
+		.def("face_vertex_indices", &face_vertex_indices_polymesh)
+		.def("fv_indices", &face_vertex_indices_polymesh)
 
 		.def("calc_face_normal", [](PolyMesh& _self, ptarr_t _p0, ptarr_t _p1, ptarr_t _p2) {
 				const Point p0(_p0.at(0), _p0.at(1), _p0.at(2));
@@ -513,7 +564,8 @@ void expose_type_specific_functions(py::class_<TriMesh>& _class) {
 		.def("is_flip_ok", &TriMesh::is_flip_ok)
 		.def("flip", &TriMesh::flip)
 
-		.def("face_indices", &face_indices_tri)
+		.def("face_vertex_indices", &face_vertex_indices_trimesh)
+		.def("fv_indices", &face_vertex_indices_trimesh)
 		;
 }
 
@@ -1479,6 +1531,11 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
 				return set_property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _arr, _self.n_faces());
 			})
+
+		.def("edge_vertex_indices", &edge_vertex_indices<Mesh>)
+		.def("ev_indices", &edge_vertex_indices<Mesh>)
+		.def("halfedge_vertex_indices", &halfedge_vertex_indices<Mesh>)
+		.def("hv_indices", &halfedge_vertex_indices<Mesh>)
 		;
 
 	expose_type_specific_functions(class_mesh);
