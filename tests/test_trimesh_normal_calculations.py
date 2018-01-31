@@ -77,27 +77,24 @@ class Normals(unittest.TestCase):
         self.mesh.request_halfedge_normals()
         self.mesh.request_face_normals()
 
-        normal = openmesh.Vec3d()
-
-        self.mesh.calc_vertex_normal_fast(self.vhandle[2], normal)
+        n = self.mesh.calc_vertex_normal_fast(self.vhandle[2])
+        self.assertTrue(np.allclose(n, np.array([1, 2, 0])))
 
     def test_calc_vertex_normal_correct(self):
         self.mesh.request_vertex_normals()
         self.mesh.request_halfedge_normals()
         self.mesh.request_face_normals()
         
-        normal = openmesh.Vec3d()
-        
-        self.mesh.calc_vertex_normal_correct(self.vhandle[2], normal)
+        n = self.mesh.calc_vertex_normal_correct(self.vhandle[2])
+        self.assertTrue(np.allclose(n, np.array([1, 0, 0])))
 
     def test_calc_vertex_normal_loop(self):
         self.mesh.request_vertex_normals()
         self.mesh.request_halfedge_normals()
         self.mesh.request_face_normals()
         
-        normal = openmesh.Vec3d()
-        
-        self.mesh.calc_vertex_normal_loop(self.vhandle[2], normal)
+        n = self.mesh.calc_vertex_normal_loop(self.vhandle[2])
+        self.assertTrue(np.allclose(n, np.array([0.8660254, 0, 0])))
 
 
 if __name__ == '__main__':

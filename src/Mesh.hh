@@ -188,6 +188,29 @@ OM::FaceHandle add_face(Mesh& _self, const py::list& _vhandles) {
 	return _self.add_face(vector);
 }
 
+template<class dtype>
+py::capsule free_when_done(dtype *data) {
+	return 	py::capsule(data, [](void *f) {
+		dtype *ptr = reinterpret_cast<dtype *>(f);
+		delete[] ptr;
+	});
+}
+
+/**
+ * Converts OpenMesh vectors to numpy arrays.
+ *
+ * @tparam vector A Vector type.
+ * @param _vec The vector to be converted.
+ */
+template<class Vector>
+py::array_t<typename Vector::value_type> vec2numpy(const Vector& _vec) {
+	typedef typename Vector::value_type dtype;
+	dtype *data = new dtype[_vec.size()];
+	std::copy_n(_vec.data(), _vec.size(), data);
+	py::capsule base = free_when_done(data);
+	return py::array_t<dtype>({_vec.size()}, {sizeof(dtype)}, data, base);
+}
+
 /**
  * Converts OpenMesh vectors to numpy arrays.
  *
@@ -403,6 +426,8 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 	typedef PolyMesh::Normal Normal;
 	typedef PolyMesh::Color  Color;
 
+	typedef py::array_t<typename Point::value_type> ptarr_t;
+
 	OM::FaceHandle (PolyMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle                  ) = &PolyMesh::add_face;
 	OM::FaceHandle (PolyMesh::*add_face_4_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &PolyMesh::add_face;
 	OM::FaceHandle (*add_face_list)(PolyMesh&, const py::list&) = &add_face;
@@ -425,10 +450,17 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 		.def("split", split_fh_vh)
 
 		.def("split_copy", &PolyMesh::split_copy)
-		.def("calc_face_normal", calc_face_normal_pt)
+		.def("calc_face_normal_vec", calc_face_normal_pt)
 		.def("insert_edge", &PolyMesh::insert_edge)
 
 		.def("face_indices", &face_indices_poly)
+
+		.def("calc_face_normal", [](PolyMesh& _self, ptarr_t _p0, ptarr_t _p1, ptarr_t _p2) {
+				const Point p0(_p0.at(0), _p0.at(1), _p0.at(2));
+				const Point p1(_p1.at(0), _p1.at(1), _p1.at(2));
+				const Point p2(_p2.at(0), _p2.at(1), _p2.at(2));
+				return vec2numpy(_self.calc_face_normal(p0, p1, p2));
+			})
 		;
 }
 
@@ -1043,19 +1075,19 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("add_vertex", &Mesh::add_vertex)
 
-		.def("calc_edge_vector", calc_edge_vector_eh_normal)
-		.def("calc_edge_vector", calc_edge_vector_eh)
-		.def("calc_edge_vector", calc_edge_vector_hh_normal)
-		.def("calc_edge_vector", calc_edge_vector_hh)
+		.def("calc_edge_vector_vec", calc_edge_vector_eh_normal)
+		.def("calc_edge_vector_vec", calc_edge_vector_eh)
+		.def("calc_edge_vector_vec", calc_edge_vector_hh_normal)
+		.def("calc_edge_vector_vec", calc_edge_vector_hh)
 
 		.def("calc_edge_length", calc_edge_length_eh)
 		.def("calc_edge_length", calc_edge_length_hh)
 		.def("calc_edge_sqr_length", calc_edge_sqr_length_eh)
 		.def("calc_edge_sqr_length", calc_edge_sqr_length_hh)
 
-		.def("calc_sector_vectors", &Mesh::calc_sector_vectors)
+		.def("calc_sector_vectors_vec", &Mesh::calc_sector_vectors)
 		.def("calc_sector_angle", &Mesh::calc_sector_angle)
-		.def("calc_sector_normal", &Mesh::calc_sector_normal)
+		.def("calc_sector_normal_vec", &Mesh::calc_sector_normal)
 		.def("calc_sector_area", &Mesh::calc_sector_area)
 
 		.def("calc_dihedral_angle_fast", calc_dihedral_angle_fast_hh)
@@ -1085,6 +1117,7 @@ void expose_mesh(py::module& m, const char *_name) {
 				if (!_self.has_face_normals()) _self.request_face_normals();
 				_self.update_normal(_fh);
 			})
+
 		.def("update_face_normals", [](Mesh& _self) {
 				if (!_self.has_face_normals()) _self.request_face_normals();
 				_self.update_face_normals();
@@ -1100,6 +1133,7 @@ void expose_mesh(py::module& m, const char *_name) {
 				}
 				_self.update_normal(_hh, _feature_angle);
 			}, py::arg("heh"), py::arg("feature_angle")=0.8)
+
 		.def("update_halfedge_normals", [](Mesh& _self, double _feature_angle) {
 				if (!_self.has_face_normals()) {
 					_self.request_face_normals();
@@ -1121,6 +1155,7 @@ void expose_mesh(py::module& m, const char *_name) {
 				}
 				_self.update_normal(_vh);
 			})
+
 		.def("update_vertex_normals", [](Mesh& _self) {
 				if (!_self.has_face_normals()) {
 					_self.request_face_normals();
@@ -1132,21 +1167,92 @@ void expose_mesh(py::module& m, const char *_name) {
 				_self.update_vertex_normals();
 			})
 
-		.def("calc_face_normal", calc_face_normal)
-		.def("calc_halfedge_normal", &Mesh::calc_halfedge_normal, py::arg("heh"), py::arg("feature_angle")=0.8)
-
-		.def("calc_face_centroid", calc_face_centroid_fh_point)
-		.def("calc_face_centroid", calc_face_centroid_fh)
-
 		.def("is_estimated_feature_edge", &Mesh::is_estimated_feature_edge)
-
-		.def("calc_vertex_normal", &Mesh::calc_vertex_normal)
-		.def("calc_vertex_normal_fast", &Mesh::calc_vertex_normal_fast)
-		.def("calc_vertex_normal_correct", &Mesh::calc_vertex_normal_correct)
-		.def("calc_vertex_normal_loop", &Mesh::calc_vertex_normal_loop)
 
 		.def_static("is_polymesh", &Mesh::is_polymesh)
 		.def("is_trimesh", &Mesh::is_trimesh)
+
+		.def("calc_face_normal_vec", calc_face_normal)
+		.def("calc_halfedge_normal_vec", &Mesh::calc_halfedge_normal,
+			py::arg("heh"), py::arg("feature_angle")=0.8)
+		.def("calc_vertex_normal_vec", &Mesh::calc_vertex_normal)
+		.def("calc_vertex_normal_fast_vec", &Mesh::calc_vertex_normal_fast)
+		.def("calc_vertex_normal_correct_vec", &Mesh::calc_vertex_normal_correct)
+		.def("calc_vertex_normal_loop_vec", &Mesh::calc_vertex_normal_loop)
+
+		.def("calc_face_centroid_vec", calc_face_centroid_fh_point)
+		.def("calc_face_centroid_vec", calc_face_centroid_fh)
+
+		//======================================================================
+		//  numpy calc_*
+		//======================================================================
+
+		.def("calc_face_normal", [](Mesh& _self, OM::FaceHandle _fh) {
+				return vec2numpy(_self.calc_face_normal(_fh));
+			})
+
+		.def("calc_halfedge_normal", [](Mesh& _self, OM::HalfedgeHandle _heh, double _feature_angle) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				return vec2numpy(_self.calc_halfedge_normal(_heh, _feature_angle));
+			}, py::arg("heh"), py::arg("feature_angle")=0.8)
+
+		.def("calc_vertex_normal", [](Mesh& _self, OM::VertexHandle _vh) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				return vec2numpy(_self.calc_vertex_normal(_vh));
+			})
+
+		.def("calc_vertex_normal_fast", [](Mesh& _self, OM::VertexHandle _vh) {
+				if (!_self.has_face_normals()) {
+					_self.request_face_normals();
+					_self.update_face_normals();
+				}
+				typename Mesh::Normal n;
+				_self.calc_vertex_normal_fast(_vh, n);
+				return vec2numpy(n);
+			})
+
+		.def("calc_vertex_normal_correct", [](Mesh& _self, OM::VertexHandle _vh) {
+				typename Mesh::Normal n;
+				_self.calc_vertex_normal_correct(_vh, n);
+				return vec2numpy(n);
+			})
+
+		.def("calc_vertex_normal_loop", [](Mesh& _self, OM::VertexHandle _vh) {
+				typename Mesh::Normal n;
+				_self.calc_vertex_normal_loop(_vh, n);
+				return vec2numpy(n);
+			})
+
+		.def("calc_face_centroid", [](Mesh& _self, OM::FaceHandle _fh) {
+				return vec2numpy(_self.calc_face_centroid(_fh));
+			})
+
+		.def("calc_edge_vector", [](Mesh& _self, OM::EdgeHandle _eh) {
+				return vec2numpy(_self.calc_edge_vector(_eh));
+			})
+
+		.def("calc_edge_vector", [](Mesh& _self, OM::HalfedgeHandle _heh) {
+				return vec2numpy(_self.calc_edge_vector(_heh));
+			})
+
+		.def("calc_sector_vectors", [](Mesh& _self, OM::HalfedgeHandle _heh) {
+				typename Mesh::Normal vec0;
+				typename Mesh::Normal vec1;
+				_self.calc_sector_vectors(_heh, vec0, vec1);
+				return std::make_tuple(vec2numpy(vec0), vec2numpy(vec1));
+			})
+
+		.def("calc_sector_normal", [](Mesh& _self, OM::HalfedgeHandle _heh) {
+				typename Mesh::Normal n;
+				_self.calc_sector_normal(_heh, n);
+				return vec2numpy(n);
+			})
 
 		//======================================================================
 		//  numpy vector getter

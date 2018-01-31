@@ -184,6 +184,24 @@ class Python(unittest.TestCase):
         mesh = self.one_triangle()
         mesh.update_normals()
 
+    def test_on_demand_calc(self):
+        # check if standard properties are requested on demand,
+        # i.e. if it doesn't crash it works
+        mesh = self.one_triangle()
+        mesh.calc_halfedge_normal(openmesh.HalfedgeHandle(0))
+
+        mesh = self.one_triangle()
+        mesh.calc_vertex_normal(openmesh.VertexHandle(0))
+
+        mesh = self.one_triangle()
+        mesh.calc_vertex_normal_fast(openmesh.VertexHandle(0))
+
+        mesh = self.one_triangle()
+        mesh.calc_vertex_normal_correct(openmesh.VertexHandle(0))
+
+        mesh = self.one_triangle()
+        mesh.calc_vertex_normal_loop(openmesh.VertexHandle(0))
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Python)
