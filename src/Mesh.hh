@@ -270,11 +270,8 @@ py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	}
 	const auto shape = {_self.n_faces(), size_t(3)};
 	const auto strides = {3 * sizeof(int), sizeof(int)};
-	py::capsule free_when_done(indices, [](void *f) {
-		int *ptr = reinterpret_cast<int *>(f);
-		delete[] ptr;
-	});
-	return py::array_t<int>(shape, strides, indices, free_when_done);
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
 }
 
 /**
@@ -308,11 +305,8 @@ py::array_t<int> face_vertex_indices_polymesh(PolyMesh& _self) {
 	}
 	const auto shape = {_self.n_faces(), size_t(max_valence)};
 	const auto strides = {max_valence * sizeof(int), sizeof(int)};
-	py::capsule free_when_done(indices, [](void *f) {
-		int *ptr = reinterpret_cast<int *>(f);
-		delete[] ptr;
-	});
-	return py::array_t<int>(shape, strides, indices, free_when_done);
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
 }
 
 /**
@@ -415,11 +409,8 @@ py::array_t<double> property_array(Mesh& _self, PropHandle _ph, size_t _n) {
 	// make numpy array
 	const auto shape = {_n, size};
 	const auto strides = {size * sizeof(double), sizeof(double)};
-	py::capsule free_when_done(data, [](void *f) {
-		double *ptr = reinterpret_cast<double *>(f);
-		delete[] ptr;
-	});
-	return py::array_t<double>(shape, strides, data, free_when_done);
+	py::capsule base = free_when_done(data);
+	return py::array_t<double>(shape, strides, data, base);
 }
 
 /**
@@ -442,11 +433,8 @@ void set_property_array(Mesh& _self, PropHandle _ph, py::array_t<double> _arr, s
 		std::copy(_arr.data(i), _arr.data(i) + size, data);
 		const auto shape = {size};
 		const auto strides = {sizeof(double)};
-		py::capsule free_when_done(data, [](void *f) {
-			double *ptr = reinterpret_cast<double *>(f);
-			delete[] ptr;
-		});
-		py::array_t<double> tmp(shape, strides, data, free_when_done);
+		py::capsule base = free_when_done(data);
+		py::array_t<double> tmp(shape, strides, data, base);
 		_self.property(_ph, IndexHandle(i)) = tmp;
 	}
 }
