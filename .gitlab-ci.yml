@@ -1,0 +1,15 @@
+test-3.5:
+  script:
+  - virtualenv --clear -p python3.5 .
+  - source bin/activate
+  - pip install -e .
+  - cd tests
+  - python -m unittest discover
+
+test-2.7:
+  script:
+  - virtualenv --clear -p python2.7 .
+  - source bin/activate
+  - pip install -e .
+  - cd tests
+  - python -m unittest discover
