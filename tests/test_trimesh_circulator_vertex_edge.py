@@ -37,19 +37,21 @@ class TriMeshCirculatorVertexEdge(unittest.TestCase):
     def test_vertex_edge_iter_without_holes_increment(self):
         # Iterate around vertex 1 at the middle
         ve_it = openmesh.VertexEdgeIter(self.mesh, self.vhandle[1])
-        self.assertEqual(ve_it.__next__().idx(), 5)
-        self.assertEqual(ve_it.__next__().idx(), 3)
-        self.assertEqual(ve_it.__next__().idx(), 0)
-        self.assertEqual(ve_it.__next__().idx(), 1)
-        self.assertRaises(StopIteration, ve_it.__next__)
+        self.assertEqual(next(ve_it).idx(), 5)
+        self.assertEqual(next(ve_it).idx(), 3)
+        self.assertEqual(next(ve_it).idx(), 0)
+        self.assertEqual(next(ve_it).idx(), 1)
+        with self.assertRaises(StopIteration):
+            next(ve_it)
         
     def test_vertex_edge_iter_boundary_increment(self):
         # Iterate around vertex 2 at the boundary
         ve_it = openmesh.VertexEdgeIter(self.mesh, self.vhandle[2])
-        self.assertEqual(ve_it.__next__().idx(), 7)
-        self.assertEqual(ve_it.__next__().idx(), 1)
-        self.assertEqual(ve_it.__next__().idx(), 2)
-        self.assertRaises(StopIteration, ve_it.__next__)
+        self.assertEqual(next(ve_it).idx(), 7)
+        self.assertEqual(next(ve_it).idx(), 1)
+        self.assertEqual(next(ve_it).idx(), 2)
+        with self.assertRaises(StopIteration):
+            next(ve_it)
 
 
 if __name__ == '__main__':

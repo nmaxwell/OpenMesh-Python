@@ -66,10 +66,11 @@ class TrimeshCirculatorHalfedgeLoop(unittest.TestCase):
         # Circle around face 1
         hl_it = self.mesh.hl(self.mesh.halfedge_handle(3))
 
-        self.assertEqual(hl_it.__next__().idx(), 3)
-        self.assertEqual(hl_it.__next__().idx(), 6)
-        self.assertEqual(hl_it.__next__().idx(), 8)
-        self.assertRaises(StopIteration, hl_it.__next__)
+        self.assertEqual(next(hl_it).idx(), 3)
+        self.assertEqual(next(hl_it).idx(), 6)
+        self.assertEqual(next(hl_it).idx(), 8)
+        with self.assertRaises(StopIteration):
+            next(hl_it)
 
     def test_halfedge_loop_without_face(self):
         # Add some vertices
@@ -122,10 +123,11 @@ class TrimeshCirculatorHalfedgeLoop(unittest.TestCase):
         # Circle around the hole
         hl_it = self.mesh.hl(self.mesh.halfedge_handle(3))
 
-        self.assertEqual(hl_it.__next__().idx(), 3)
-        self.assertEqual(hl_it.__next__().idx(), 17)
-        self.assertEqual(hl_it.__next__().idx(), 7)
-        self.assertRaises(StopIteration, hl_it.__next__)
+        self.assertEqual(next(hl_it).idx(), 3)
+        self.assertEqual(next(hl_it).idx(), 17)
+        self.assertEqual(next(hl_it).idx(), 7)
+        with self.assertRaises(StopIteration):
+            next(hl_it)
 
 
 if __name__ == '__main__':

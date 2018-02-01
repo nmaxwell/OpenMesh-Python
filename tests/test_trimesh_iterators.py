@@ -29,12 +29,13 @@ class TriMeshIterators(unittest.TestCase):
         
         v_it = self.mesh.vertices()
         
-        self.assertEqual(v_it.__next__().idx(), 0)
-        self.assertEqual(v_it.__next__().idx(), 1)
-        self.assertEqual(v_it.__next__().idx(), 2)
-        self.assertEqual(v_it.__next__().idx(), 3)
+        self.assertEqual(next(v_it).idx(), 0)
+        self.assertEqual(next(v_it).idx(), 1)
+        self.assertEqual(next(v_it).idx(), 2)
+        self.assertEqual(next(v_it).idx(), 3)
         
-        self.assertRaises(StopIteration, v_it.__next__)
+        with self.assertRaises(StopIteration):
+            next(v_it)
         
     def test_vertex_iter_start_position(self):
         # Add some vertices
@@ -56,10 +57,11 @@ class TriMeshIterators(unittest.TestCase):
         
         v_it = openmesh.VertexIter(self.mesh, self.mesh.vertex_handle(2))
         
-        self.assertEqual(v_it.__next__().idx(), 2)
-        self.assertEqual(v_it.__next__().idx(), 3)
+        self.assertEqual(next(v_it).idx(), 2)
+        self.assertEqual(next(v_it).idx(), 3)
         
-        self.assertRaises(StopIteration, v_it.__next__)
+        with self.assertRaises(StopIteration):
+            next(v_it)
         
     def test_edge_iter(self):
         # Add some vertices
@@ -81,7 +83,7 @@ class TriMeshIterators(unittest.TestCase):
         
         e_it = self.mesh.edges()
         
-        e = e_it.__next__()
+        e = next(e_it)
         self.assertEqual(e.idx(), 0)
         
         he = self.mesh.halfedge_handle(e, 0)
@@ -91,7 +93,7 @@ class TriMeshIterators(unittest.TestCase):
         self.assertEqual(self.mesh.to_vertex_handle(he).idx(), 2)
         self.assertEqual(self.mesh.from_vertex_handle(he).idx(), 1)
         
-        e = e_it.__next__()
+        e = next(e_it)
         self.assertEqual(e.idx(), 1)
         
         he = self.mesh.halfedge_handle(e, 0)
@@ -101,7 +103,7 @@ class TriMeshIterators(unittest.TestCase):
         self.assertEqual(self.mesh.to_vertex_handle(he).idx(), 1)
         self.assertEqual(self.mesh.from_vertex_handle(he).idx(), 0)
         
-        e = e_it.__next__()
+        e = next(e_it)
         self.assertEqual(e.idx(), 2)
         
         he = self.mesh.halfedge_handle(e, 0)
@@ -111,7 +113,7 @@ class TriMeshIterators(unittest.TestCase):
         self.assertEqual(self.mesh.to_vertex_handle(he).idx(), 0)
         self.assertEqual(self.mesh.from_vertex_handle(he).idx(), 2)
         
-        e = e_it.__next__()
+        e = next(e_it)
         self.assertEqual(e.idx(), 3)
         
         he = self.mesh.halfedge_handle(e, 0)
@@ -121,7 +123,7 @@ class TriMeshIterators(unittest.TestCase):
         self.assertEqual(self.mesh.to_vertex_handle(he).idx(), 0)
         self.assertEqual(self.mesh.from_vertex_handle(he).idx(), 3)
         
-        e = e_it.__next__()
+        e = next(e_it)
         self.assertEqual(e.idx(), 4)
         
         he = self.mesh.halfedge_handle(e, 0)
@@ -384,13 +386,15 @@ class TriMeshIterators(unittest.TestCase):
         # Normal iterators
         f_it = self.mesh.faces()
         
-        self.assertEqual(f_it.__next__().idx(), 0)
-        self.assertRaises(StopIteration, f_it.__next__)
+        self.assertEqual(next(f_it).idx(), 0)
+        with self.assertRaises(StopIteration):
+            next(f_it)
         
         # Same with skipping iterators
         f_it = self.mesh.sfaces()
         
-        self.assertRaises(StopIteration, f_it.__next__)
+        with self.assertRaises(StopIteration):
+            next(f_it)
         
 
 if __name__ == '__main__':

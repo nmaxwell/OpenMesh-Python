@@ -35,9 +35,10 @@ class TriMeshCirculatorVertexFace(unittest.TestCase):
 
         # Iterate around vertex 1 at the middle (with holes in between)
         vf_it = openmesh.VertexFaceIter(self.mesh, self.vhandle[1])
-        self.assertEqual(vf_it.__next__().idx(), 0)
-        self.assertEqual(vf_it.__next__().idx(), 1)
-        self.assertRaises(StopIteration, vf_it.__next__)
+        self.assertEqual(next(vf_it).idx(), 0)
+        self.assertEqual(next(vf_it).idx(), 1)
+        with self.assertRaises(StopIteration):
+            next(vf_it)
 
     def test_vertex_face_iter_without_holes_increment(self):
         # Add four faces
@@ -59,11 +60,12 @@ class TriMeshCirculatorVertexFace(unittest.TestCase):
         
         # Iterate around vertex 1 at the middle (without holes in between)
         vf_it = openmesh.VertexFaceIter(self.mesh, self.vhandle[1])
-        self.assertEqual(vf_it.__next__().idx(), 3)
-        self.assertEqual(vf_it.__next__().idx(), 1)
-        self.assertEqual(vf_it.__next__().idx(), 2)
-        self.assertEqual(vf_it.__next__().idx(), 0)
-        self.assertRaises(StopIteration, vf_it.__next__)
+        self.assertEqual(next(vf_it).idx(), 3)
+        self.assertEqual(next(vf_it).idx(), 1)
+        self.assertEqual(next(vf_it).idx(), 2)
+        self.assertEqual(next(vf_it).idx(), 0)
+        with self.assertRaises(StopIteration):
+            next(vf_it)
         
     def test_vertex_face_iter_boundary_increment(self):
         # Add four faces
@@ -85,9 +87,10 @@ class TriMeshCirculatorVertexFace(unittest.TestCase):
         
         # Iterate around vertex 2 at the boundary (without holes in between)
         vf_it = openmesh.VertexFaceIter(self.mesh, self.vhandle[2])
-        self.assertEqual(vf_it.__next__().idx(), 3)
-        self.assertEqual(vf_it.__next__().idx(), 0)
-        self.assertRaises(StopIteration, vf_it.__next__)
+        self.assertEqual(next(vf_it).idx(), 3)
+        self.assertEqual(next(vf_it).idx(), 0)
+        with self.assertRaises(StopIteration):
+            next(vf_it)
 
 
 if __name__ == '__main__':

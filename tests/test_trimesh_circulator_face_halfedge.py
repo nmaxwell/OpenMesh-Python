@@ -41,10 +41,11 @@ class TriMeshCirculatorFaceHalfEdge(unittest.TestCase):
     def test_face_halfedge_iter_without_holes_increment(self):
         # Iterate around face 1 at the middle
         fh_it = openmesh.FaceHalfedgeIter(self.mesh, self.mesh.face_handle(1))
-        self.assertEqual(fh_it.__next__().idx(), 8)
-        self.assertEqual(fh_it.__next__().idx(), 3)
-        self.assertEqual(fh_it.__next__().idx(), 6)
-        self.assertRaises(StopIteration, fh_it.__next__)
+        self.assertEqual(next(fh_it).idx(), 8)
+        self.assertEqual(next(fh_it).idx(), 3)
+        self.assertEqual(next(fh_it).idx(), 6)
+        with self.assertRaises(StopIteration):
+            next(fh_it)
 
 
 if __name__ == '__main__':

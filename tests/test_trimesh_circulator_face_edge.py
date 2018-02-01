@@ -41,10 +41,11 @@ class TriMeshCirculatorFaceEdge(unittest.TestCase):
     def test_face_edge_iter_without_holes_increment(self):
         # Iterate around face 1 at the middle
         fe_it = openmesh.FaceEdgeIter(self.mesh, self.mesh.face_handle(1))
-        self.assertEqual(fe_it.__next__().idx(), 4)
-        self.assertEqual(fe_it.__next__().idx(), 1)
-        self.assertEqual(fe_it.__next__().idx(), 3)
-        self.assertRaises(StopIteration, fe_it.__next__)
+        self.assertEqual(next(fe_it).idx(), 4)
+        self.assertEqual(next(fe_it).idx(), 1)
+        self.assertEqual(next(fe_it).idx(), 3)
+        with self.assertRaises(StopIteration):
+            next(fe_it)
 
 
 if __name__ == '__main__':

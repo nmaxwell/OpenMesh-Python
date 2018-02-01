@@ -114,7 +114,6 @@ void expose_iterator(py::module& m, const char *_name) {
 		.def("__iter__", &IteratorWrapperT<Iterator, n_items>::iter)
 		.def("__next__", &IteratorWrapperT<Iterator, n_items>::next)
 		.def("__len__", &IteratorWrapperT<Iterator, n_items>::len)
-		.def("next", &IteratorWrapperT<Iterator, n_items>::next)
 		;
 }
 

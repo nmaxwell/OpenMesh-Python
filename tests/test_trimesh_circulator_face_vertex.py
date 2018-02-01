@@ -39,10 +39,11 @@ class TriMeshCirculatorFaceVertex(unittest.TestCase):
     
         # Iterate around face 0 at the top
         fv_it = openmesh.FaceVertexIter(self.mesh, self.fh0)
-        self.assertEqual(fv_it.__next__().idx(), 0)
-        self.assertEqual(fv_it.__next__().idx(), 1)
-        self.assertEqual(fv_it.__next__().idx(), 2)
-        self.assertRaises(StopIteration, fv_it.__next__)
+        self.assertEqual(next(fv_it).idx(), 0)
+        self.assertEqual(next(fv_it).idx(), 1)
+        self.assertEqual(next(fv_it).idx(), 2)
+        with self.assertRaises(StopIteration):
+            next(fv_it)
         
 
 if __name__ == '__main__':

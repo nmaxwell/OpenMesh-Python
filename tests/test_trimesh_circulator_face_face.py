@@ -49,9 +49,10 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
 
         ff_it = self.mesh.ff(self.mesh.face_handle(1))
 
-        self.assertEqual(ff_it.__next__().idx(), 2)
-        self.assertEqual(ff_it.__next__().idx(), 0)
-        self.assertRaises(StopIteration, ff_it.__next__)
+        self.assertEqual(next(ff_it).idx(), 2)
+        self.assertEqual(next(ff_it).idx(), 0)
+        with self.assertRaises(StopIteration):
+            next(ff_it)
 
     def test_face_face_iter_without_holes(self):
         # Add some vertices
@@ -106,10 +107,11 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
 
         ff_it = self.mesh.ff(self.mesh.face_handle(1))
         
-        self.assertEqual(ff_it.__next__().idx(), 2)
-        self.assertEqual(ff_it.__next__().idx(), 0)
-        self.assertEqual(ff_it.__next__().idx(), 3)
-        self.assertRaises(StopIteration, ff_it.__next__)
+        self.assertEqual(next(ff_it).idx(), 2)
+        self.assertEqual(next(ff_it).idx(), 0)
+        self.assertEqual(next(ff_it).idx(), 3)
+        with self.assertRaises(StopIteration):
+            next(ff_it)
 
     def test_face_face_iter_without_holes(self):
         # Add some vertices
@@ -147,7 +149,7 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
         face_iter = self.mesh.ff(fh1)
 
         # Get the face via the handle
-        faceHandle1 = face_iter.__next__()
+        faceHandle1 = next(face_iter)
         face1 = self.mesh.face(faceHandle1)
         
         self.assertEqual(faceHandle1.idx(), 1)

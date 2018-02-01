@@ -197,15 +197,15 @@ class Collapse(unittest.TestCase):
 
         fv_it = self.mesh.fv(fh_1)
 
-        self.assertTrue(fv_it.__next__().idx(), 1)
-        self.assertTrue(fv_it.__next__().idx(), 2)
-        self.assertTrue(fv_it.__next__().idx(), 3)
+        self.assertEqual(next(fv_it).idx(), 1)
+        self.assertEqual(next(fv_it).idx(), 2)
+        self.assertEqual(next(fv_it).idx(), 3)
 
         fv_it = self.mesh.fv(fh_2)
 
-        self.assertTrue(fv_it.__next__().idx(), 2)
-        self.assertTrue(fv_it.__next__().idx(), 1)
-        self.assertTrue(fv_it.__next__().idx(), 3)
+        self.assertEqual(next(fv_it).idx(), 2)
+        self.assertEqual(next(fv_it).idx(), 1)
+        self.assertEqual(next(fv_it).idx(), 3)
 
         # Get the first halfedge of face 1
         fh_1_he = self.mesh.halfedge_handle(fh_1)
@@ -213,13 +213,13 @@ class Collapse(unittest.TestCase):
         self.assertEqual(fh_1_he.idx(), 11)
         self.assertEqual(self.mesh.to_vertex_handle(fh_1_he).idx(), 1)
 
-        next = self.mesh.next_halfedge_handle(fh_1_he)
-        self.assertEqual(next.idx(), 2)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 2)
+        next_he = self.mesh.next_halfedge_handle(fh_1_he)
+        self.assertEqual(next_he.idx(), 2)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 2)
 
-        next = self.mesh.next_halfedge_handle(next)
-        self.assertEqual(next.idx(), 6)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 3)
+        next_he = self.mesh.next_halfedge_handle(next_he)
+        self.assertEqual(next_he.idx(), 6)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 3)
 
         # Get the first halfedge of face 2
         fh_2_he = self.mesh.halfedge_handle(fh_2)
@@ -227,31 +227,34 @@ class Collapse(unittest.TestCase):
         self.assertEqual(fh_2_he.idx(), 7)
         self.assertEqual(self.mesh.to_vertex_handle(fh_2_he).idx(), 2)
 
-        next = self.mesh.next_halfedge_handle(fh_2_he)
-        self.assertEqual(next.idx(), 3)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 1)
+        next_he = self.mesh.next_halfedge_handle(fh_2_he)
+        self.assertEqual(next_he.idx(), 3)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 1)
 
-        next = self.mesh.next_halfedge_handle(next)
-        self.assertEqual(next.idx(), 10)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 3)
+        next_he = self.mesh.next_halfedge_handle(next_he)
+        self.assertEqual(next_he.idx(), 10)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 3)
 
         # Vertex 1 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(1))
-        self.assertEqual(voh_it.__next__().idx(), 10)
-        self.assertEqual(voh_it.__next__().idx(), 2)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 10)
+        self.assertEqual(next(voh_it).idx(), 2)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         # Vertex 2 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(2))
-        self.assertEqual(voh_it.__next__().idx(), 3)
-        self.assertEqual(voh_it.__next__().idx(), 6)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 3)
+        self.assertEqual(next(voh_it).idx(), 6)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         # Vertex 2 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(3))
-        self.assertEqual(voh_it.__next__().idx(), 11)
-        self.assertEqual(voh_it.__next__().idx(), 7)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 11)
+        self.assertEqual(next(voh_it).idx(), 7)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         # ===================================================================
         # Cleanup
@@ -282,15 +285,15 @@ class Collapse(unittest.TestCase):
 
         fv_it = self.mesh.fv(fh_0)
 
-        self.assertEqual(fv_it.__next__().idx(), 2)
-        self.assertEqual(fv_it.__next__().idx(), 1)
-        self.assertEqual(fv_it.__next__().idx(), 0)
+        self.assertEqual(next(fv_it).idx(), 2)
+        self.assertEqual(next(fv_it).idx(), 1)
+        self.assertEqual(next(fv_it).idx(), 0)
 
         fv_it = self.mesh.fv(fh_1)
 
-        self.assertEqual(fv_it.__next__().idx(), 1)
-        self.assertEqual(fv_it.__next__().idx(), 2)
-        self.assertEqual(fv_it.__next__().idx(), 0)
+        self.assertEqual(next(fv_it).idx(), 1)
+        self.assertEqual(next(fv_it).idx(), 2)
+        self.assertEqual(next(fv_it).idx(), 0)
 
         # Get the first halfedge of face 1
         fh_0_he = self.mesh.halfedge_handle(fh_0)
@@ -298,13 +301,13 @@ class Collapse(unittest.TestCase):
         self.assertEqual(fh_0_he.idx(), 5)
         self.assertEqual(self.mesh.to_vertex_handle(fh_0_he).idx(), 2)
 
-        next = self.mesh.next_halfedge_handle(fh_0_he)
-        self.assertEqual(next.idx(), 3)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 1)
+        next_he = self.mesh.next_halfedge_handle(fh_0_he)
+        self.assertEqual(next_he.idx(), 3)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 1)
 
-        next = self.mesh.next_halfedge_handle(next)
-        self.assertEqual(next.idx(), 0)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 0)
+        next_he = self.mesh.next_halfedge_handle(next_he)
+        self.assertEqual(next_he.idx(), 0)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 0)
 
         # Get the first halfedge of face 1
         fh_1_he = self.mesh.halfedge_handle(fh_1)
@@ -312,31 +315,34 @@ class Collapse(unittest.TestCase):
         self.assertEqual(fh_1_he.idx(), 1)
         self.assertEqual(self.mesh.to_vertex_handle(fh_1_he).idx(), 1)
 
-        next = self.mesh.next_halfedge_handle(fh_1_he)
-        self.assertEqual(next.idx(), 2)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 2)
+        next_he = self.mesh.next_halfedge_handle(fh_1_he)
+        self.assertEqual(next_he.idx(), 2)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 2)
 
-        next = self.mesh.next_halfedge_handle(next)
-        self.assertEqual(next.idx(), 4)
-        self.assertEqual(self.mesh.to_vertex_handle(next).idx(), 0)
+        next_he = self.mesh.next_halfedge_handle(next_he)
+        self.assertEqual(next_he.idx(), 4)
+        self.assertEqual(self.mesh.to_vertex_handle(next_he).idx(), 0)
 
         # Vertex 0 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(0))
-        self.assertEqual(voh_it.__next__().idx(), 1)
-        self.assertEqual(voh_it.__next__().idx(), 5)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 1)
+        self.assertEqual(next(voh_it).idx(), 5)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         # Vertex 1 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(1))
-        self.assertEqual(voh_it.__next__().idx(), 0)
-        self.assertEqual(voh_it.__next__().idx(), 2)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 0)
+        self.assertEqual(next(voh_it).idx(), 2)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         # Vertex 2 outgoing
         voh_it = self.mesh.voh(self.mesh.vertex_handle(2))
-        self.assertEqual(voh_it.__next__().idx(), 3)
-        self.assertEqual(voh_it.__next__().idx(), 4)
-        self.assertRaises(StopIteration, voh_it.__next__)
+        self.assertEqual(next(voh_it).idx(), 3)
+        self.assertEqual(next(voh_it).idx(), 4)
+        with self.assertRaises(StopIteration):
+            next(voh_it)
 
         self.assertFalse(self.mesh.is_collapse_ok(self.mesh.halfedge_handle(0)))
         self.assertFalse(self.mesh.is_collapse_ok(self.mesh.halfedge_handle(1)))

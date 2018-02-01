@@ -89,7 +89,6 @@ void expose_circulator(py::module& m, const char *_name) {
 		.def(py::init<PolyMesh&, CenterEntityHandle>())
 		.def("__iter__", &CirculatorWrapperT<Circulator, CenterEntityHandle>::iter)
 		.def("__next__", &CirculatorWrapperT<Circulator, CenterEntityHandle>::next)
-		.def("next", &CirculatorWrapperT<Circulator, CenterEntityHandle>::next)
 		;
 }
 

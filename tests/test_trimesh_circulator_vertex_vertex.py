@@ -38,19 +38,21 @@ class TriMeshCirculatorVertexVertex(unittest.TestCase):
     def test_vertex_vertex_increment(self):
         # Iterate around vertex 1 at the middle
         vv_it = openmesh.VertexVertexIter(self.mesh, self.vhandle[1])
-        self.assertEqual(vv_it.__next__().idx(), 4)
-        self.assertEqual(vv_it.__next__().idx(), 3)
-        self.assertEqual(vv_it.__next__().idx(), 0)
-        self.assertEqual(vv_it.__next__().idx(), 2)
-        self.assertRaises(StopIteration, vv_it.__next__)
+        self.assertEqual(next(vv_it).idx(), 4)
+        self.assertEqual(next(vv_it).idx(), 3)
+        self.assertEqual(next(vv_it).idx(), 0)
+        self.assertEqual(next(vv_it).idx(), 2)
+        with self.assertRaises(StopIteration):
+            next(vv_it)
 
     def test_vertex_vertex_boundary_increment(self):
         # Iterate around vertex 2 at the boundary
         vv_it = openmesh.VertexVertexIter(self.mesh, self.vhandle[2])
-        self.assertEqual(vv_it.__next__().idx(), 4)
-        self.assertEqual(vv_it.__next__().idx(), 1)
-        self.assertEqual(vv_it.__next__().idx(), 0)
-        self.assertRaises(StopIteration, vv_it.__next__)
+        self.assertEqual(next(vv_it).idx(), 4)
+        self.assertEqual(next(vv_it).idx(), 1)
+        self.assertEqual(next(vv_it).idx(), 0)
+        with self.assertRaises(StopIteration):
+            next(vv_it)
 
 
 if __name__ == '__main__':

@@ -38,38 +38,40 @@ class TriMeshCirculatorVertexIHalfEdge(unittest.TestCase):
     def test_vertex_incoming_halfedge_without_holes_increment(self):
         # Iterate around vertex 1 at the middle
         vih_it = openmesh.VertexIHalfedgeIter(self.mesh, self.vhandle[1])
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 10)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 1)
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 7)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 2)
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 0)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 0)
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 3)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 3)
-        self.assertRaises(StopIteration, vih_it.__next__)
+        with self.assertRaises(StopIteration):
+            next(vih_it)
         
     def test_vertex_incoming_halfedge_boundary_increment(self):
         # Iterate around vertex 2 at the boundary
         vih_it = openmesh.VertexIHalfedgeIter(self.mesh, self.vhandle[2])
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 14)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 3)
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 2)
         self.assertEqual(self.mesh.face_handle(heh).idx(), 0)
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         self.assertEqual(heh.idx(), 5)
         self.assertEqual(self.mesh.face_handle(heh).idx(), -1)
-        self.assertRaises(StopIteration, vih_it.__next__)
+        with self.assertRaises(StopIteration):
+            next(vih_it)
         
     def test_vertex_incoming_halfedge_dereference_increment(self):
         # Iterate around vertex 1 at the middle
         vih_it = openmesh.VertexIHalfedgeIter(self.mesh, self.vhandle[1])
-        heh = vih_it.__next__()
+        heh = next(vih_it)
         eh = self.mesh.edge_handle(heh)
         vh = self.mesh.to_vertex_handle(heh)
         self.assertEqual(heh.idx(), 10)
