@@ -31,6 +31,22 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+    @staticmethod
+    def which(program, env=os.environ):
+        def isExe(fpath):
+            return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+        fpath, fname = os.path.split(program)
+        if fpath:
+            if isExe(program):
+                return program
+        else:
+            for path in env.get("PATH", "").split(os.pathsep):
+                path = path.strip("\"")
+                exe = os.path.join(path, program)
+                if isExe(exe):
+                    return exe
+        return None
+
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
@@ -51,6 +67,10 @@ class CMakeBuild(build_ext):
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
                                                               self.distribution.get_version())
+
+        if self.which('ninja', env) != None:
+          cmake_args += ['-GNinja']
+
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
