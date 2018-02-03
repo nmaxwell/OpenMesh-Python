@@ -87,4 +87,5 @@ setup(
     zip_safe=False,
     setup_requires=['numpy'],
     install_requires=['numpy'],
+    options={'build': {'build_base': 'build-setuptools'}}
 )
