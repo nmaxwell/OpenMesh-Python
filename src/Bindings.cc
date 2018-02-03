@@ -1,6 +1,5 @@
 #include "MeshTypes.hh"
 #include "Miscellaneous.hh"
-#include "Vector.hh"
 #include "Mesh.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
@@ -17,13 +16,6 @@ PYBIND11_MODULE(openmesh, m) {
 	expose_items(m);
 	expose_handles(m);
 	expose_status_bits_and_info(m);
-
-	expose_vec<float,  2>(m, "Vec2f");
-	expose_vec<float,  3>(m, "Vec3f");
-	expose_vec<float,  4>(m, "Vec4f");
-	expose_vec<double, 2>(m, "Vec2d");
-	expose_vec<double, 3>(m, "Vec3d");
-	expose_vec<double, 4>(m, "Vec4d");
 
 	expose_mesh<PolyMesh>(m, "PolyMesh");
 	expose_mesh<TriMesh>(m, "TriMesh");

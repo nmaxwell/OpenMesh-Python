@@ -475,8 +475,6 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 	void (PolyMesh::*split_fh_pt)(OM::FaceHandle, const Point&    ) = &PolyMesh::split;
 	void (PolyMesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &PolyMesh::split;
 
-	Normal (PolyMesh::*calc_face_normal_pt)(const Point&, const Point&, const Point&) const = &PolyMesh::calc_face_normal;
-
 	_class
 		.def("add_face", add_face_3_vh)
 		.def("add_face", add_face_4_vh)
@@ -488,7 +486,6 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 		.def("split", split_fh_vh)
 
 		.def("split_copy", &PolyMesh::split_copy)
-		.def("calc_face_normal_vec", calc_face_normal_pt)
 		.def("insert_edge", &PolyMesh::insert_edge)
 
 		.def("face_vertex_indices", &face_vertex_indices_polymesh)
@@ -620,46 +617,11 @@ void expose_mesh(py::module& m, const char *_name) {
 	OM::EdgeHandle     (Mesh::*handle_e)(const typename Mesh::Edge&    ) const = &Mesh::handle;
 	OM::FaceHandle     (Mesh::*handle_f)(const typename Mesh::Face&    ) const = &Mesh::handle;
 
-	// Get value of a standard property (point, normal, color)
-	const typename Mesh::Point&  (Mesh::*point_vh )(OM::VertexHandle  ) const = &Mesh::point;
-	const typename Mesh::Normal& (Mesh::*normal_vh)(OM::VertexHandle  ) const = &Mesh::normal;
-	const typename Mesh::Normal& (Mesh::*normal_hh)(OM::HalfedgeHandle) const = &Mesh::normal;
-	const typename Mesh::Normal& (Mesh::*normal_fh)(OM::FaceHandle    ) const = &Mesh::normal;
-	const typename Mesh::Color&  (Mesh::*color_vh )(OM::VertexHandle  ) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_hh )(OM::HalfedgeHandle) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_eh )(OM::EdgeHandle    ) const = &Mesh::color;
-	const typename Mesh::Color&  (Mesh::*color_fh )(OM::FaceHandle    ) const = &Mesh::color;
-
-	// Get value of a standard property (texture coordinate)
-	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord1D;
-	const typename Mesh::TexCoord1D& (Mesh::*texcoord1D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord1D;
-	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord2D;
-	const typename Mesh::TexCoord2D& (Mesh::*texcoord2D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord2D;
-	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_vh)(OM::VertexHandle  ) const = &Mesh::texcoord3D;
-	const typename Mesh::TexCoord3D& (Mesh::*texcoord3D_hh)(OM::HalfedgeHandle) const = &Mesh::texcoord3D;
-
 	// Get value of a standard property (status)
 	const StatusInfo& (Mesh::*status_vh)(OM::VertexHandle  ) const = &Mesh::status;
 	const StatusInfo& (Mesh::*status_hh)(OM::HalfedgeHandle) const = &Mesh::status;
 	const StatusInfo& (Mesh::*status_eh)(OM::EdgeHandle    ) const = &Mesh::status;
 	const StatusInfo& (Mesh::*status_fh)(OM::FaceHandle    ) const = &Mesh::status;
-
-	// Set value of a standard property (point, normal, color)
-	void (Mesh::*set_normal_vh)(OM::VertexHandle,   const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_normal_hh)(OM::HalfedgeHandle, const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_normal_fh)(OM::FaceHandle,     const typename Mesh::Normal&) = &Mesh::set_normal;
-	void (Mesh::*set_color_vh )(OM::VertexHandle,   const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_hh )(OM::HalfedgeHandle, const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_eh )(OM::EdgeHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
-	void (Mesh::*set_color_fh )(OM::FaceHandle,     const typename Mesh::Color& ) = &Mesh::set_color;
-
-	// Set value of a standard property (texture coordinate)
-	void (Mesh::*set_texcoord1D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
-	void (Mesh::*set_texcoord1D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord1D&) = &Mesh::set_texcoord1D;
-	void (Mesh::*set_texcoord2D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
-	void (Mesh::*set_texcoord2D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord2D&) = &Mesh::set_texcoord2D;
-	void (Mesh::*set_texcoord3D_vh)(OM::VertexHandle,   const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
-	void (Mesh::*set_texcoord3D_hh)(OM::HalfedgeHandle, const typename Mesh::TexCoord3D&) = &Mesh::set_texcoord3D;
 
 	// Set value of a standard property (status)
 	void (*set_status_vh)(Mesh&, OM::VertexHandle,   const StatusInfo&) = &set_status;
@@ -779,12 +741,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	//  PolyMeshT Function Pointers
 	//======================================================================
 
-	void (Mesh::*calc_edge_vector_eh_normal)(OM::EdgeHandle,     Normal&) const = &Mesh::calc_edge_vector;
-	void (Mesh::*calc_edge_vector_hh_normal)(OM::HalfedgeHandle, Normal&) const = &Mesh::calc_edge_vector;
-
-	Normal (Mesh::*calc_edge_vector_eh)(OM::EdgeHandle    ) const = &Mesh::calc_edge_vector;
-	Normal (Mesh::*calc_edge_vector_hh)(OM::HalfedgeHandle) const = &Mesh::calc_edge_vector;
-
 	Scalar (Mesh::*calc_edge_length_eh)(OM::EdgeHandle    ) const = &Mesh::calc_edge_length;
 	Scalar (Mesh::*calc_edge_length_hh)(OM::HalfedgeHandle) const = &Mesh::calc_edge_length;
 
@@ -801,11 +757,6 @@ void expose_mesh(py::module& m, const char *_name) {
 
 	void (Mesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &Mesh::split;
 	void (Mesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &Mesh::split;
-
-	Normal (Mesh::*calc_face_normal    )(OM::FaceHandle            ) const = &Mesh::calc_face_normal;
-
-	void  (Mesh::*calc_face_centroid_fh_point)(OM::FaceHandle, Point&) const = &Mesh::calc_face_centroid;
-	Point (Mesh::*calc_face_centroid_fh      )(OM::FaceHandle        ) const = &Mesh::calc_face_centroid;
 
 	//======================================================================
 	//  Mesh Type
@@ -875,40 +826,12 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("halfedge_handle", halfedge_handle_fh)
 		.def("set_halfedge_handle", set_halfedge_handle_fh_hh)
 
-		.def("point_vec", point_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_point_vec", &Mesh::set_point)
-		.def("normal_vec", normal_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal_vec", set_normal_vh)
-		.def("normal_vec", normal_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal_vec", set_normal_hh)
-		.def("color_vec", color_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color_vec", set_color_vh)
-		.def("texcoord1D_vec", texcoord1D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord1D_vec", set_texcoord1D_vh)
-		.def("texcoord2D_vec", texcoord2D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord2D_vec", set_texcoord2D_vh)
-		.def("texcoord3D_vec", texcoord3D_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord3D_vec", set_texcoord3D_vh)
-		.def("texcoord1D_vec", texcoord1D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord1D_vec", set_texcoord1D_hh)
-		.def("texcoord2D_vec", texcoord2D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord2D_vec", set_texcoord2D_hh)
-		.def("texcoord3D_vec", texcoord3D_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_texcoord3D_vec", set_texcoord3D_hh)
 		.def("status", status_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_vh)
 		.def("status", status_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_hh)
-		.def("color_vec", color_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color_vec", set_color_hh)
-		.def("color_vec", color_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color_vec", set_color_eh)
 		.def("status", status_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_eh)
-		.def("normal_vec", normal_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_normal_vec", set_normal_fh)
-		.def("color_vec", color_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_color_vec", set_color_fh)
 		.def("status", status_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
 		.def("set_status", set_status_fh)
 
@@ -1066,12 +989,14 @@ void expose_mesh(py::module& m, const char *_name) {
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_vertex(_vh, _delete_isolated);
 			}, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
+
 		.def("delete_edge", [](Mesh& _self, OM::EdgeHandle _eh, bool _delete_isolated) {
 				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
 				if (!_self.has_edge_status()) _self.request_edge_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_edge(_eh, _delete_isolated);
 			}, py::arg("eh"), py::arg("delete_isolated_vertices")=true)
+
 		.def("delete_face", [](Mesh& _self, OM::FaceHandle _fh, bool _delete_isolated) {
 				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
 				if (!_self.has_face_status()) _self.request_face_status();
@@ -1115,19 +1040,12 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("add_vertex", &Mesh::add_vertex)
 
-		.def("calc_edge_vector_vec", calc_edge_vector_eh_normal)
-		.def("calc_edge_vector_vec", calc_edge_vector_eh)
-		.def("calc_edge_vector_vec", calc_edge_vector_hh_normal)
-		.def("calc_edge_vector_vec", calc_edge_vector_hh)
-
 		.def("calc_edge_length", calc_edge_length_eh)
 		.def("calc_edge_length", calc_edge_length_hh)
 		.def("calc_edge_sqr_length", calc_edge_sqr_length_eh)
 		.def("calc_edge_sqr_length", calc_edge_sqr_length_hh)
 
-		.def("calc_sector_vectors_vec", &Mesh::calc_sector_vectors)
 		.def("calc_sector_angle", &Mesh::calc_sector_angle)
-		.def("calc_sector_normal_vec", &Mesh::calc_sector_normal)
 		.def("calc_sector_area", &Mesh::calc_sector_area)
 
 		.def("calc_dihedral_angle_fast", calc_dihedral_angle_fast_hh)
@@ -1211,17 +1129,6 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def_static("is_polymesh", &Mesh::is_polymesh)
 		.def("is_trimesh", &Mesh::is_trimesh)
-
-		.def("calc_face_normal_vec", calc_face_normal)
-		.def("calc_halfedge_normal_vec", &Mesh::calc_halfedge_normal,
-			py::arg("heh"), py::arg("feature_angle")=0.8)
-		.def("calc_vertex_normal_vec", &Mesh::calc_vertex_normal)
-		.def("calc_vertex_normal_fast_vec", &Mesh::calc_vertex_normal_fast)
-		.def("calc_vertex_normal_correct_vec", &Mesh::calc_vertex_normal_correct)
-		.def("calc_vertex_normal_loop_vec", &Mesh::calc_vertex_normal_loop)
-
-		.def("calc_face_centroid_vec", calc_face_centroid_fh_point)
-		.def("calc_face_centroid_vec", calc_face_centroid_fh)
 
 		//======================================================================
 		//  numpy calc_*
@@ -1527,16 +1434,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		;
 
 	expose_type_specific_functions(class_mesh);
-
-	//======================================================================
-	//  Nested Types
-	//======================================================================
-
-	class_mesh.attr("Point") = m.attr("Vec3d");
-	class_mesh.attr("Normal") = m.attr("Vec3d");
-	class_mesh.attr("Color") = m.attr("Vec4f");
-	class_mesh.attr("TexCoord2D") = m.attr("Vec2f");
-	class_mesh.attr("TexCoord3D") = m.attr("Vec3f");
 
 }
 
