@@ -1,16 +1,15 @@
-cache:
-  paths:
-    - ./venv3/
-    - ./venv2/
-    - ./dist3/
-    - ./dist2/
-
 stages:
   - build
   - test
 
 build-3.5:
   stage: build
+  cache:
+    key: wheel3
+    paths:
+      - ./venv3
+      - ./dist3
+    policy: push
   tags:
     - Linux
   variables:
@@ -19,9 +18,16 @@ build-3.5:
   - virtualenv --clear -p python3.5 ./venv3
   - source ./venv3/bin/activate
   - python setup.py bdist_wheel --dist-dir dist3
+  - pip install dist3/*.whl
 
 build-2.7:
   stage: build
+  cache:
+    key: wheel2
+    paths:
+      - ./venv2
+      - ./dist2
+    policy: push  
   tags:
     - Linux
   variables:
@@ -30,25 +36,36 @@ build-2.7:
   - virtualenv --clear -p python2.7 ./venv2
   - source ./venv2/bin/activate
   - python setup.py bdist_wheel --dist-dir dist2
+  - pip install dist2/*.whl
 
 test-3.5:
   stage: test
+  cache:
+    key: wheel3
+    paths:
+      - ./venv3
+      - ./dist3
+    policy: pull  
   tags:
     - Linux
   script:
   - source ./venv3/bin/activate
-  - pip install dist3/*.whl
   - cd tests
   - python -m unittest discover
 
 test-2.7:
   stage: test
+  cache:
+    key: wheel2
+    paths:
+      - ./venv2
+      - ./dist2
+    policy: pull
   tags:
     - Linux
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
-  - source venv2/bin/activate
-  - pip install dist2/*.whl
+  - source ./venv2/bin/activate
   - cd tests
   - python -m unittest discover
