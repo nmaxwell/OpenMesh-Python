@@ -464,34 +464,31 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 	typedef PolyMesh::Normal Normal;
 	typedef PolyMesh::Color  Color;
 
-	typedef py::array_t<typename Point::value_type> ptarr_t;
+	typedef py::array_t<typename Point::value_type> np_point_t;
 
 	OM::FaceHandle (PolyMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle                  ) = &PolyMesh::add_face;
 	OM::FaceHandle (PolyMesh::*add_face_4_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &PolyMesh::add_face;
 	OM::FaceHandle (*add_face_list)(PolyMesh&, const py::list&) = &add_face;
-
-	void (PolyMesh::*split_eh_pt)(OM::EdgeHandle, const Point&    ) = &PolyMesh::split;
-	void (PolyMesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &PolyMesh::split;
-	void (PolyMesh::*split_fh_pt)(OM::FaceHandle, const Point&    ) = &PolyMesh::split;
-	void (PolyMesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &PolyMesh::split;
 
 	_class
 		.def("add_face", add_face_3_vh)
 		.def("add_face", add_face_4_vh)
 		.def("add_face", add_face_list)
 
-		.def("split", split_eh_pt)
-		.def("split", split_eh_vh)
-		.def("split", split_fh_pt)
-		.def("split", split_fh_vh)
+		.def("split", [](PolyMesh& _self, OM::EdgeHandle _eh, np_point_t _arr) {
+				_self.split(_eh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
-		.def("split_copy", &PolyMesh::split_copy)
+		.def("split", [](PolyMesh& _self, OM::FaceHandle _fh, np_point_t _arr) {
+				_self.split(_fh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+
 		.def("insert_edge", &PolyMesh::insert_edge)
 
 		.def("face_vertex_indices", &face_vertex_indices_polymesh)
 		.def("fv_indices", &face_vertex_indices_polymesh)
 
-		.def("calc_face_normal", [](PolyMesh& _self, ptarr_t _p0, ptarr_t _p1, ptarr_t _p2) {
+		.def("calc_face_normal", [](PolyMesh& _self, np_point_t _p0, np_point_t _p1, np_point_t _p2) {
 				const Point p0(_p0.at(0), _p0.at(1), _p0.at(2));
 				const Point p1(_p1.at(0), _p1.at(1), _p1.at(2));
 				const Point p2(_p2.at(0), _p2.at(1), _p2.at(2));
@@ -510,41 +507,44 @@ void expose_type_specific_functions(py::class_<TriMesh>& _class) {
 	typedef TriMesh::Normal Normal;
 	typedef TriMesh::Color  Color;
 
+	typedef py::array_t<typename Point::value_type> np_point_t;
+
 	OM::FaceHandle (TriMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::add_face;
 	OM::FaceHandle (*add_face_list)(TriMesh&, const py::list&) = &add_face;
 
-	OM::VertexHandle (TriMesh::*split_eh_pt)(OM::EdgeHandle, const Point&    ) = &TriMesh::split;
-	void             (TriMesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split;
-	OM::VertexHandle (TriMesh::*split_fh_pt)(OM::FaceHandle, const Point&    ) = &TriMesh::split;
-	void             (TriMesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &TriMesh::split;
-
-	OM::VertexHandle (TriMesh::*split_copy_eh_pt)(OM::EdgeHandle, const Point&    ) = &TriMesh::split_copy;
-	void             (TriMesh::*split_copy_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split_copy;
-	OM::VertexHandle (TriMesh::*split_copy_fh_pt)(OM::FaceHandle, const Point&    ) = &TriMesh::split_copy;
-	void             (TriMesh::*split_copy_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &TriMesh::split_copy;
-
-	OM::HalfedgeHandle (TriMesh::*vertex_split_pt)(Point,            OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::vertex_split;
+	void (TriMesh::*split_copy_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split_copy;
 	OM::HalfedgeHandle (TriMesh::*vertex_split_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::vertex_split;
 
 	_class
 		.def("add_face", add_face_3_vh)
 		.def("add_face", add_face_list)
 
-		.def("split", split_eh_pt)
-		.def("split", split_eh_vh)
-		.def("split", split_fh_pt)
-		.def("split", split_fh_vh)
+		.def("split", [](TriMesh& _self, OM::EdgeHandle _eh, np_point_t _arr) {
+				return _self.split(_eh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
-		.def("split_copy", split_copy_eh_pt)
+		.def("split", [](TriMesh& _self, OM::FaceHandle _fh, np_point_t _arr) {
+				return _self.split(_fh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+
 		.def("split_copy", split_copy_eh_vh)
-		.def("split_copy", split_copy_fh_pt)
-		.def("split_copy", split_copy_fh_vh)
+
+		.def("split_copy", [](TriMesh& _self, OM::EdgeHandle _eh, np_point_t _arr) {
+				return _self.split_copy(_eh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+
+		.def("split_copy", [](TriMesh& _self, OM::FaceHandle _fh, np_point_t _arr) {
+				return _self.split_copy(_fh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
 		.def("opposite_vh", &TriMesh::opposite_vh)
 		.def("opposite_he_opposite_vh", &TriMesh::opposite_he_opposite_vh)
 
-		.def("vertex_split", vertex_split_pt)
 		.def("vertex_split", vertex_split_vh)
+
+		.def("vertex_split", [](TriMesh& _self, np_point_t _arr, OM::VertexHandle _v1, OM::VertexHandle _vl, OM::VertexHandle _vr) {
+				return _self.vertex_split(Point(_arr.at(0), _arr.at(1), _arr.at(2)), _v1, _vl, _vr);
+			})
 
 		.def("is_flip_ok", &TriMesh::is_flip_ok)
 		.def("flip", &TriMesh::flip)
@@ -666,7 +666,6 @@ void expose_mesh(py::module& m, const char *_name) {
 
 	// Low-level adding new items
 	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
-	OM::VertexHandle (Mesh::*new_vertex_point)(const typename Mesh::Point& ) = &Mesh::new_vertex;
 	OM::FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
 	OM::FaceHandle   (Mesh::*new_face_face   )(const typename Mesh::Face&  ) = &Mesh::new_face;
 
@@ -757,6 +756,8 @@ void expose_mesh(py::module& m, const char *_name) {
 
 	void (Mesh::*split_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &Mesh::split;
 	void (Mesh::*split_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &Mesh::split;
+
+	void (Mesh::*split_copy_fh_vh)(OM::FaceHandle, OM::VertexHandle) = &Mesh::split_copy;
 
 	//======================================================================
 	//  Mesh Type
@@ -923,8 +924,12 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("set_property", set_property_mesh)
 
 		.def("new_vertex", new_vertex_void)
-		.def("new_vertex", new_vertex_point)
+		.def("new_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr) {
+				return _self.new_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
+
 		.def("new_edge", &Mesh::new_edge)
+
 		.def("new_face", new_face_void)
 		.def("new_face", new_face_face)
 
@@ -978,7 +983,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("split_edge", &Mesh::split_edge)
 		.def("split_edge_copy", &Mesh::split_edge_copy)
 
-		.def("add_vertex", &Mesh::add_vertex)
 		.def("add_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr)
 			{ return _self.add_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2))); })
 
@@ -1038,8 +1042,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  PolyMeshT
 		//======================================================================
 
-		.def("add_vertex", &Mesh::add_vertex)
-
 		.def("calc_edge_length", calc_edge_length_eh)
 		.def("calc_edge_length", calc_edge_length_hh)
 		.def("calc_edge_sqr_length", calc_edge_sqr_length_eh)
@@ -1057,6 +1059,8 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("split", split_fh_vh)
 		.def("split", split_eh_vh)
+
+		.def("split_copy", split_copy_fh_vh)
 
 		.def("update_normals", [](Mesh& _self) {
 				if (!_self.has_face_normals()) {
