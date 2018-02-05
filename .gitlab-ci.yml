@@ -1,3 +1,10 @@
+cache:
+  paths:
+    - venv3/
+    - venv2/
+    - dist3/
+    - dist2/
+
 stages:
   - build
   - test
