@@ -1,6 +1,7 @@
 #ifndef OPENMESH_PYTHON_MESH_HH
 #define OPENMESH_PYTHON_MESH_HH
 
+#include "Utilities.hh"
 #include "MeshTypes.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
@@ -188,14 +189,6 @@ OM::FaceHandle add_face(Mesh& _self, const py::list& _vhandles) {
 	return _self.add_face(vector);
 }
 
-template<class dtype>
-py::capsule free_when_done(dtype *data) {
-	return 	py::capsule(data, [](void *f) {
-		dtype *ptr = reinterpret_cast<dtype *>(f);
-		delete[] ptr;
-	});
-}
-
 /**
  * Converts OpenMesh vectors to numpy arrays.
  *
@@ -356,87 +349,6 @@ py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
 	const auto strides = {2 * sizeof(int), sizeof(int)};
 	py::capsule base = free_when_done(indices);
 	return py::array_t<int>(shape, strides, indices, base);
-}
-
-
-/**
- * Attempts to return a custom property for all mesh items at once using a
- * numpy array. Returns an empty array if the property contains elements that
- * are not numpy arrays or at least one of the arrays has a non-uniform shape.
- *
- * @note The returned array is constructed on the fly and contains copies
- * of the actual property values.
- */
-template <class Mesh, class PropHandle, class IndexHandle>
-py::array_t<double> property_array(Mesh& _self, PropHandle _ph, size_t _n) {
-	// assume that all arrays have the same size and
-	// retrieve the size of the first array
-	const py::object tmp_obj = _self.property(_ph, IndexHandle(0));
-	py::array_t<double> tmp_arr;
-	try {
-		tmp_arr = tmp_obj.cast<py::array_t<double> >();
-	}
-	catch (py::error_already_set& e) {
-		return py::array_t<double>();
-	}
-	const size_t size = tmp_arr.size();
-
-	// better check this now
-	if (size == 0) {
-		return py::array_t<double>();
-	}
-
-	// allocate memory
-	double *data = new double[size * _n];
-
-	// copy one array at a time
-	for (size_t i = 0; i < _n; ++i) {
-		const IndexHandle ih(i);
-		const py::object obj = _self.property(_ph, ih);
-		try {
-			const auto arr = obj.cast<py::array_t<double> >();
-			if (arr.size() != size) {
-				throw py::error_already_set();
-			}
-			std::copy(arr.data(0), arr.data(0) + size, &data[size * i]);
-		}
-		catch (py::error_already_set& e) {
-			delete[] data;
-			return py::array_t<double>();
-		}
-	}
-
-	// make numpy array
-	const auto shape = {_n, size};
-	const auto strides = {size * sizeof(double), sizeof(double)};
-	py::capsule base = free_when_done(data);
-	return py::array_t<double>(shape, strides, data, base);
-}
-
-/**
- * Attempts to set a custom property for all mesh items at once using a
- * numpy array.
- *
- * @note The property is set to copies of slices of _arr.
- */
-template <class Mesh, class PropHandle, class IndexHandle>
-void set_property_array(Mesh& _self, PropHandle _ph, py::array_t<double> _arr, size_t _n) {
-	// array cannot be empty and its shape has to be (_n, m,...)
-	if (_arr.size() == 0 || _arr.ndim() < 2 || _arr.shape(0) != _n) {
-		return;
-	}
-
-	// copy one array at a time
-	const size_t size = _arr.strides(0) / sizeof(double);
-	for (size_t i = 0; i < _n; ++i) {
-		double *data = new double[size];
-		std::copy(_arr.data(i), _arr.data(i) + size, data);
-		const auto shape = {size};
-		const auto strides = {sizeof(double)};
-		py::capsule base = free_when_done(data);
-		py::array_t<double> tmp(shape, strides, data, base);
-		_self.property(_ph, IndexHandle(i)) = tmp;
-	}
 }
 
 /**
@@ -1398,43 +1310,65 @@ void expose_mesh(py::module& m, const char *_name) {
 			})
 
 		//======================================================================
-		//  property_array
+		//  numpy indices
 		//======================================================================
-
-		.def("property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph) {
-				return property_array<Mesh, OM::VPropHandleT<py::none>, OM::VertexHandle>(_self, _ph, _self.n_vertices());
-			})
-		.def("property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph) {
-				return property_array<Mesh, OM::HPropHandleT<py::none>, OM::HalfedgeHandle>(_self, _ph, _self.n_halfedges());
-			})
-		.def("property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph) {
-				return property_array<Mesh, OM::EPropHandleT<py::none>, OM::EdgeHandle>(_self, _ph, _self.n_edges());
-			})
-		.def("property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph) {
-				return property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _self.n_faces());
-			})
-
-		//======================================================================
-		//  set_property_array
-		//======================================================================
-
-		.def("set_property_array", [] (Mesh& _self, OM::VPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
-				return set_property_array<Mesh, OM::VPropHandleT<py::none>, OM::VertexHandle>(_self, _ph, _arr, _self.n_vertices());
-			})
-		.def("set_property_array", [] (Mesh& _self, OM::HPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
-				return set_property_array<Mesh, OM::HPropHandleT<py::none>, OM::HalfedgeHandle>(_self, _ph, _arr, _self.n_halfedges());
-			})
-		.def("set_property_array", [] (Mesh& _self, OM::EPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
-				return set_property_array<Mesh, OM::EPropHandleT<py::none>, OM::EdgeHandle>(_self, _ph, _arr, _self.n_edges());
-			})
-		.def("set_property_array", [] (Mesh& _self, OM::FPropHandleT<py::none> _ph, py::array_t<double, py::array::c_style | py::array::forcecast> _arr) {
-				return set_property_array<Mesh, OM::FPropHandleT<py::none>, OM::FaceHandle>(_self, _ph, _arr, _self.n_faces());
-			})
 
 		.def("edge_vertex_indices", &edge_vertex_indices<Mesh>)
 		.def("ev_indices", &edge_vertex_indices<Mesh>)
 		.def("halfedge_vertex_indices", &halfedge_vertex_indices<Mesh>)
 		.def("hv_indices", &halfedge_vertex_indices<Mesh>)
+
+		//======================================================================
+		//  new property interface: single item
+		//======================================================================
+
+		.def("vertex_property", &Mesh::template py_property<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("halfedge_property", &Mesh::template py_property<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("edge_property", &Mesh::template py_property<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("face_property", &Mesh::template py_property<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		.def("set_vertex_property", &Mesh::template py_set_property<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("set_halfedge_property", &Mesh::template py_set_property<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("set_edge_property", &Mesh::template py_set_property<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("set_face_property", &Mesh::template py_set_property<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		.def("has_vertex_property", &Mesh::template py_has_property<OM::VertexHandle>)
+		.def("has_halfedge_property", &Mesh::template py_has_property<OM::HalfedgeHandle>)
+		.def("has_edge_property", &Mesh::template py_has_property<OM::EdgeHandle>)
+		.def("has_face_property", &Mesh::template py_has_property<OM::FaceHandle>)
+
+		.def("remove_vertex_property", &Mesh::template py_remove_property<OM::VertexHandle>)
+		.def("remove_halfedge_property", &Mesh::template py_remove_property<OM::HalfedgeHandle>)
+		.def("remove_edge_property", &Mesh::template py_remove_property<OM::EdgeHandle>)
+		.def("remove_face_property", &Mesh::template py_remove_property<OM::FaceHandle>)
+
+		//======================================================================
+		//  new property interface: generic
+		//======================================================================
+
+		.def("vertex_property", &Mesh::template py_property_generic<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("halfedge_property", &Mesh::template py_property_generic<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("edge_property", &Mesh::template py_property_generic<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("face_property", &Mesh::template py_property_generic<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		.def("set_vertex_property", &Mesh::template py_set_property_generic<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("set_halfedge_property", &Mesh::template py_set_property_generic<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("set_edge_property", &Mesh::template py_set_property_generic<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("set_face_property", &Mesh::template py_set_property_generic<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		//======================================================================
+		//  new property interface: array
+		//======================================================================
+
+		.def("vertex_property_array", &Mesh::template py_property_array<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("halfedge_property_array", &Mesh::template py_property_array<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("edge_property_array", &Mesh::template py_property_array<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("face_property_array", &Mesh::template py_property_array<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		.def("set_vertex_property_array", &Mesh::template py_set_property_array<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("set_halfedge_property_array", &Mesh::template py_set_property_array<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("set_edge_property_array", &Mesh::template py_set_property_array<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("set_face_property_array", &Mesh::template py_set_property_array<OM::FaceHandle, typename Mesh::FPropHandle>)
 		;
 
 	expose_type_specific_functions(class_mesh);
