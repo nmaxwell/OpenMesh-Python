@@ -41,21 +41,20 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.n_faces(), 2)
         
         # Add a vertex property
-        intHandle = openmesh.VPropHandle()
-        self.assertFalse(self.mesh.get_property_handle(intHandle, "intProp"))
-        self.mesh.add_property(intHandle, "intProp")
-        self.assertTrue(self.mesh.get_property_handle(intHandle, "intProp"))
+        self.assertFalse(self.mesh.has_vertex_property("intProp"))
+        self.mesh.vertex_property("intProp") # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property("intProp"))
         
         # Fill property
         for vh in self.mesh.vertices():
-            self.mesh.set_property(intHandle, vh, vh.idx())
+            self.mesh.set_vertex_property("intProp", vh, vh.idx())
         
         # Check if property it is ok
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 0)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 3)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 0)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 3)
         
         # Check vertex positions
         v_it = self.mesh.vertices()
@@ -96,10 +95,10 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.point(vh)[1], 0)
         self.assertEqual(self.mesh.point(vh)[2], 0)
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 3)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 3)
 
         # Copy from vertex 2 to 3, including build in properties
         self.mesh.copy_all_properties(self.vhandle[2], self.vhandle[3], True)
@@ -121,10 +120,10 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.point(vh)[1], 1)
         self.assertEqual(self.mesh.point(vh)[2], 0)
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
         
     def test_check_status_properties_halfedge_edge_all_deleted(self):
         self.mesh.request_vertex_status()
@@ -192,30 +191,29 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.n_faces(), 2)
         
         # Add a double vertex property
-        doubleHandle = openmesh.VPropHandle()
-        self.assertFalse(self.mesh.get_property_handle(doubleHandle, "doubleProp"))
-        self.mesh.add_property(doubleHandle, "doubleProp")
-        self.assertTrue(self.mesh.get_property_handle(doubleHandle, "doubleProp"))
+        self.assertFalse(self.mesh.has_vertex_property("doubleProp"))
+        self.mesh.vertex_property("doubleProp") # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property("doubleProp"))
         
         # Add a int vertex property
-        intHandle = openmesh.VPropHandle()
-        self.assertFalse(self.mesh.get_property_handle(intHandle, "intProp"))
-        self.mesh.add_property(intHandle, "intProp")
-        self.assertTrue(self.mesh.get_property_handle(intHandle, "intProp"))
+        self.assertFalse(self.mesh.has_vertex_property("intProp"))
+        self.mesh.vertex_property("intProp") # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property("intProp"))
         
         # Now remove the double property again
-        self.mesh.remove_property(doubleHandle)
+        self.mesh.remove_vertex_property("doubleProp")
+        self.assertFalse(self.mesh.has_vertex_property("doubleProp"))
         
         # Fill int property
         for vh in self.mesh.vertices():
-            self.mesh.set_property(intHandle, vh, vh.idx())
+            self.mesh.set_vertex_property("intProp", vh, vh.idx())
         
         # Check if property it is ok
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 0)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 3)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 0)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 3)
 
         # Check vertex positions
         v_it = self.mesh.vertices()
@@ -256,10 +254,10 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.point(vh)[1], 0)
         self.assertEqual(self.mesh.point(vh)[2], 0)
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 3)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 3)
 
         # Copy from vertex 2 to 3, including build in properties
         self.mesh.copy_all_properties(self.vhandle[2], self.vhandle[3], True)
@@ -281,10 +279,12 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.point(vh)[1], 1)
         self.assertEqual(self.mesh.point(vh)[2], 0)
         v_it = self.mesh.vertices()
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 1)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
-        self.assertEqual(self.mesh.property(intHandle, next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 1)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
+        
+        
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Property)

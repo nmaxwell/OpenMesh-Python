@@ -32,16 +32,14 @@ class SplitCopy(unittest.TestCase):
         #  0
         
         # Set property
-        fprop_int = openmesh.FPropHandle()
-        self.mesh.add_property(fprop_int)
-        self.mesh.set_property(fprop_int, fh, 999)
+        self.mesh.set_face_property("fprop_int", fh, 999)
 
         # Split face with new vertex
         self.mesh.split_copy(fh, self.vhandle[3])
 
         # Check setup
-        for f in self.mesh.faces():
-            self.assertEqual(self.mesh.property(fprop_int, f), 999)
+        for fh in self.mesh.faces():
+            self.assertEqual(self.mesh.face_property("fprop_int", fh), 999)
 
     def test_split_copy_polymesh(self):
         self.mesh = openmesh.PolyMesh()
@@ -72,16 +70,14 @@ class SplitCopy(unittest.TestCase):
         #  0 === 3
         
         # Set property
-        fprop_int = openmesh.FPropHandle()
-        self.mesh.add_property(fprop_int)
-        self.mesh.set_property(fprop_int, fh, 999)
+        self.mesh.set_face_property("fprop_int", fh, 999)
         
         # Split face with new vertex
         self.mesh.split_copy(fh, self.vhandle[4])
         
         # Check setup
-        for f in self.mesh.faces():
-            self.assertEqual(self.mesh.property(fprop_int, f), 999)
+        for fh in self.mesh.faces():
+            self.assertEqual(self.mesh.face_property("fprop_int", fh), 999)
 
 
 if __name__ == '__main__':
