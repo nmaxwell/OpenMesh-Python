@@ -6,7 +6,8 @@ test-3.5:
   script:
   - virtualenv --clear -p python3.5 .
   - source bin/activate
-  - pip install -e .
+  - python setup.py bdist_wheel --dist-dir dist3
+  - pip install dist3/*.whl
   - cd tests
   - python -m unittest discover
 
@@ -18,6 +19,7 @@ test-2.7:
   script:
   - virtualenv --clear -p python2.7 .
   - source bin/activate
-  - pip install -e .
+  - python setup.py bdist_wheel --dist-dir dist2
+  - pip install dist2/*.whl
   - cd tests
   - python -m unittest discover
