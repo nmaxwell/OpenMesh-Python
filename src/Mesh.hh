@@ -41,46 +41,6 @@ void set_status(Mesh& _self, IndexHandle _h, const OpenMesh::Attributes::StatusI
 }
 
 /**
- * Set the value of a property of an item.
- *
- * @tparam Mesh A mesh type.
- * @tparam PropHandle A property handle type.
- * @tparam IndexHandle The appropriate handle type.
- *
- * @param _self The mesh instance that is to be used.
- * @param _ph The property that is to be set.
- * @param _h The handle of the item whose property is to be set.
- * @param _value The value to be set.
- *
- * Depending on @ref OPENMESH_PYTHON_DEFAULT_POLICY, Mesh::property may
- * return by value instead of reference. This function ensures that the
- * property value of an item can be changed nonetheless.
- */
-template <class Mesh, class PropHandle, class IndexHandle>
-void set_property(Mesh& _self, PropHandle _ph, IndexHandle _h, const py::object& _value) {
-	_self.property(_ph, _h) = _value;
-}
-
-/**
- * Set the value of a mesh property.
- *
- * @tparam Mesh A mesh type.
- * @tparam PropHandle A property handle type.
- *
- * @param _self The mesh instance that is to be used.
- * @param _ph The property that is to be set.
- * @param _value The value to be set.
- *
- * Depending on @ref OPENMESH_PYTHON_DEFAULT_POLICY, Mesh::property may
- * return by value instead of reference. This function ensures that the
- * property value of an item can be changed nonetheless.
- */
-template <class Mesh, class PropHandle>
-void set_property(Mesh& _self, PropHandle _ph, const py::object& _value) {
-	_self.property(_ph) = _value;
-}
-
-/**
  * Thin wrapper for assign_connectivity.
  *
  * @tparam Mesh A mesh type.
@@ -541,41 +501,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	void (*set_status_eh)(Mesh&, OM::EdgeHandle,     const StatusInfo&) = &set_status;
 	void (*set_status_fh)(Mesh&, OM::FaceHandle,     const StatusInfo&) = &set_status;
 
-	// Property management - add property
-	void (Mesh::*add_property_vph)(OM::VPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_eph)(OM::EPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_hph)(OM::HPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_fph)(OM::FPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
-	void (Mesh::*add_property_mph)(OM::MPropHandleT<py::none>&, const std::string&) = &Mesh::add_property;
-
-	// Property management - remove property
-	void (Mesh::*remove_property_vph)(OM::VPropHandleT<py::none>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_eph)(OM::EPropHandleT<py::none>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_hph)(OM::HPropHandleT<py::none>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_fph)(OM::FPropHandleT<py::none>&) = &Mesh::remove_property;
-	void (Mesh::*remove_property_mph)(OM::MPropHandleT<py::none>&) = &Mesh::remove_property;
-
-	// Property management - get property by name
-	bool (Mesh::*get_property_handle_vph)(OM::VPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_eph)(OM::EPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_hph)(OM::HPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_fph)(OM::FPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
-	bool (Mesh::*get_property_handle_mph)(OM::MPropHandleT<py::none>&, const std::string&) const = &Mesh::get_property_handle;
-
-	// Property management - get property value for an item
-	const py::none& (Mesh::*property_vertex  )(OM::VPropHandleT<py::none>, OM::VertexHandle  ) const = &Mesh::property;
-	const py::none& (Mesh::*property_edge    )(OM::EPropHandleT<py::none>, OM::EdgeHandle    ) const = &Mesh::property;
-	const py::none& (Mesh::*property_halfedge)(OM::HPropHandleT<py::none>, OM::HalfedgeHandle) const = &Mesh::property;
-	const py::none& (Mesh::*property_face    )(OM::FPropHandleT<py::none>, OM::FaceHandle    ) const = &Mesh::property;
-	const py::none& (Mesh::*property_mesh    )(OM::MPropHandleT<py::none>                    ) const = &Mesh::property;
-
-	// Property management - set property value for an item
-	void (*set_property_vertex  )(Mesh&, OM::VPropHandleT<py::none>, OM::VertexHandle,   const py::object&) = &set_property;
-	void (*set_property_edge    )(Mesh&, OM::EPropHandleT<py::none>, OM::EdgeHandle,     const py::object&) = &set_property;
-	void (*set_property_halfedge)(Mesh&, OM::HPropHandleT<py::none>, OM::HalfedgeHandle, const py::object&) = &set_property;
-	void (*set_property_face    )(Mesh&, OM::FPropHandleT<py::none>, OM::FaceHandle,     const py::object&) = &set_property;
-	void (*set_property_mesh    )(Mesh&, OM::MPropHandleT<py::none>,                     const py::object&) = &set_property;
-
 	// Low-level adding new items
 	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
 	OM::FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
@@ -595,12 +520,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	//======================================================================
 	//  BaseKernel Function Pointers
 	//======================================================================
-
-	// Copy property
-	void (Mesh::*copy_property_vprop)(OM::VPropHandleT<py::none>&, OM::VertexHandle,   OM::VertexHandle  ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_hprop)(OM::HPropHandleT<py::none>,  OM::HalfedgeHandle, OM::HalfedgeHandle) = &Mesh::copy_property;
-	void (Mesh::*copy_property_eprop)(OM::EPropHandleT<py::none>,  OM::EdgeHandle,     OM::EdgeHandle    ) = &Mesh::copy_property;
-	void (Mesh::*copy_property_fprop)(OM::FPropHandleT<py::none>,  OM::FaceHandle,     OM::FaceHandle    ) = &Mesh::copy_property;
 
 	// Copy all properties
 	void (Mesh::*copy_all_properties_vh_vh_bool)(OM::VertexHandle,   OM::VertexHandle,   bool) = &Mesh::copy_all_properties;
@@ -805,36 +724,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("has_face_status", &Mesh::has_face_status)
 		.def("has_face_texture_index", &Mesh::has_face_texture_index)
 
-		.def("add_property", add_property_vph, py::arg("ph"), py::arg("name")="<vprop>")
-		.def("add_property", add_property_eph, py::arg("ph"), py::arg("name")="<eprop>")
-		.def("add_property", add_property_hph, py::arg("ph"), py::arg("name")="<hprop>")
-		.def("add_property", add_property_fph, py::arg("ph"), py::arg("name")="<fprop>")
-		.def("add_property", add_property_mph, py::arg("ph"), py::arg("name")="<mprop>")
-
-		.def("remove_property", remove_property_vph)
-		.def("remove_property", remove_property_eph)
-		.def("remove_property", remove_property_hph)
-		.def("remove_property", remove_property_fph)
-		.def("remove_property", remove_property_mph)
-
-		.def("get_property_handle", get_property_handle_vph)
-		.def("get_property_handle", get_property_handle_eph)
-		.def("get_property_handle", get_property_handle_hph)
-		.def("get_property_handle", get_property_handle_fph)
-		.def("get_property_handle", get_property_handle_mph)
-
-		.def("property", property_vertex, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("property", property_edge, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("property", property_halfedge, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("property", property_face, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("property", property_mesh, OPENMESH_PYTHON_DEFAULT_POLICY)
-
-		.def("set_property", set_property_vertex)
-		.def("set_property", set_property_edge)
-		.def("set_property", set_property_halfedge)
-		.def("set_property", set_property_face)
-		.def("set_property", set_property_mesh)
-
 		.def("new_vertex", new_vertex_void)
 		.def("new_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr) {
 				return _self.new_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2)));
@@ -858,11 +747,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		//======================================================================
 		//  BaseKernel
 		//======================================================================
-
-		.def("copy_property", copy_property_vprop)
-		.def("copy_property", copy_property_hprop)
-		.def("copy_property", copy_property_eprop)
-		.def("copy_property", copy_property_fprop)
 
 		.def("copy_all_properties", copy_all_properties_vh_vh_bool,
 			py::arg("vh_from"), py::arg("vh_to"), py::arg("copy_build_in")=false)
@@ -1369,6 +1253,15 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("set_halfedge_property_array", &Mesh::template py_set_property_array<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
 		.def("set_edge_property_array", &Mesh::template py_set_property_array<OM::EdgeHandle, typename Mesh::EPropHandle>)
 		.def("set_face_property_array", &Mesh::template py_set_property_array<OM::FaceHandle, typename Mesh::FPropHandle>)
+
+		//======================================================================
+		//  new property interface: copy
+		//======================================================================
+
+		.def("copy_property", &Mesh::template py_copy_property<OM::VertexHandle, typename Mesh::VPropHandle>)
+		.def("copy_property", &Mesh::template py_copy_property<OM::HalfedgeHandle, typename Mesh::HPropHandle>)
+		.def("copy_property", &Mesh::template py_copy_property<OM::EdgeHandle, typename Mesh::EPropHandle>)
+		.def("copy_property", &Mesh::template py_copy_property<OM::FaceHandle, typename Mesh::FPropHandle>)
 		;
 
 	expose_type_specific_functions(class_mesh);

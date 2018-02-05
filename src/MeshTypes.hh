@@ -167,6 +167,12 @@ public:
 		}
 	}
 
+	template <class Handle, class PropHandle>
+	void py_copy_property(const std::string& _name, Handle _from, Handle _to) {
+		auto prop = py_prop_on_demand<Handle, PropHandle>(_name);
+		Mesh::copy_property(prop, _from, _to);
+	}
+
 private:
 
 	template <class Handle, class PropHandle>
