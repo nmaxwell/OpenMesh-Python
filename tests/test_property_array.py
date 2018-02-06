@@ -10,6 +10,7 @@ class Python(unittest.TestCase):
         openmesh.read_mesh(self.mesh, 'TestFiles/cube-minimal.obj')
 
     def test_vertex_property_array(self):
+        self.assertFalse(self.mesh.has_vertex_property('random'))
         # c_contiguous
         arr1 = np.random.rand(self.mesh.n_vertices(), 10)
         self.mesh.set_vertex_property_array('random', arr1)
@@ -26,8 +27,18 @@ class Python(unittest.TestCase):
         for vh in self.mesh.vertices():
             arr3 = self.mesh.vertex_property('random', vh)
             self.assertTrue(np.allclose(arr1.T[vh.idx()], arr3))
+        # single columns
+        arr1 = np.random.rand(10, self.mesh.n_vertices())
+        for vh in self.mesh.vertices():
+            self.mesh.set_vertex_property('random', vh, arr1[:, vh.idx()])
+        arr2 = self.mesh.vertex_property_array('random')
+        self.assertTrue(np.allclose(arr1.T, arr2))
+        for vh in self.mesh.vertices():
+            arr3 = self.mesh.vertex_property('random', vh)
+            self.assertTrue(np.allclose(arr1.T[vh.idx()], arr3))
 
     def test_halfedge_property_array(self):
+        self.assertFalse(self.mesh.has_halfedge_property('random'))
         # c_contiguous
         arr1 = np.random.rand(self.mesh.n_halfedges(), 10)
         self.mesh.set_halfedge_property_array('random', arr1)
@@ -44,8 +55,18 @@ class Python(unittest.TestCase):
         for hh in self.mesh.halfedges():
             arr3 = self.mesh.halfedge_property('random', hh)
             self.assertTrue(np.allclose(arr1.T[hh.idx()], arr3))
+        # single columns
+        arr1 = np.random.rand(10, self.mesh.n_halfedges())
+        for hh in self.mesh.halfedges():
+            self.mesh.set_halfedge_property('random', hh, arr1[:, hh.idx()])
+        arr2 = self.mesh.halfedge_property_array('random')
+        self.assertTrue(np.allclose(arr1.T, arr2))
+        for hh in self.mesh.halfedges():
+            arr3 = self.mesh.halfedge_property('random', hh)
+            self.assertTrue(np.allclose(arr1.T[hh.idx()], arr3))
 
     def test_edge_property_array(self):
+        self.assertFalse(self.mesh.has_edge_property('random'))
         # c_contiguous
         arr1 = np.random.rand(self.mesh.n_edges(), 10)
         self.mesh.set_edge_property_array('random', arr1)
@@ -62,8 +83,18 @@ class Python(unittest.TestCase):
         for eh in self.mesh.edges():
             arr3 = self.mesh.edge_property('random', eh)
             self.assertTrue(np.allclose(arr1.T[eh.idx()], arr3))
+        # single columns
+        arr1 = np.random.rand(10, self.mesh.n_edges())
+        for eh in self.mesh.edges():
+            self.mesh.set_edge_property('random', eh, arr1[:, eh.idx()])
+        arr2 = self.mesh.edge_property_array('random')
+        self.assertTrue(np.allclose(arr1.T, arr2))
+        for eh in self.mesh.edges():
+            arr3 = self.mesh.edge_property('random', eh)
+            self.assertTrue(np.allclose(arr1.T[eh.idx()], arr3))
 
     def test_face_property_array(self):
+        self.assertFalse(self.mesh.has_face_property('random'))
         # c_contiguous
         arr1 = np.random.rand(self.mesh.n_faces(), 10)
         self.mesh.set_face_property_array('random', arr1)
@@ -75,6 +106,15 @@ class Python(unittest.TestCase):
         # f_contiguous
         arr1 = np.random.rand(10, self.mesh.n_faces())
         self.mesh.set_face_property_array('random', arr1.T)
+        arr2 = self.mesh.face_property_array('random')
+        self.assertTrue(np.allclose(arr1.T, arr2))
+        for fh in self.mesh.faces():
+            arr3 = self.mesh.face_property('random', fh)
+            self.assertTrue(np.allclose(arr1.T[fh.idx()], arr3))
+        # single columns
+        arr1 = np.random.rand(10, self.mesh.n_faces())
+        for fh in self.mesh.faces():
+            self.mesh.set_face_property('random', fh, arr1[:, fh.idx()])
         arr2 = self.mesh.face_property_array('random')
         self.assertTrue(np.allclose(arr1.T, arr2))
         for fh in self.mesh.faces():

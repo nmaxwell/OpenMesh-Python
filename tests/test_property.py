@@ -284,7 +284,52 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
         self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
         
-        
+    def test_add_remove_property(self):
+        self.assertFalse(self.mesh.has_vertex_property('test'))
+        self.assertFalse(self.mesh.has_halfedge_property('test'))
+        self.assertFalse(self.mesh.has_edge_property('test'))
+        self.assertFalse(self.mesh.has_face_property('test'))
+        self.mesh.vertex_property('test') # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property('test'))
+        self.assertFalse(self.mesh.has_halfedge_property('test'))
+        self.assertFalse(self.mesh.has_edge_property('test'))
+        self.assertFalse(self.mesh.has_face_property('test'))
+        self.mesh.halfedge_property('test') # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property('test'))
+        self.assertTrue(self.mesh.has_halfedge_property('test'))
+        self.assertFalse(self.mesh.has_edge_property('test'))
+        self.assertFalse(self.mesh.has_face_property('test'))
+        self.mesh.edge_property('test') # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property('test'))
+        self.assertTrue(self.mesh.has_halfedge_property('test'))
+        self.assertTrue(self.mesh.has_edge_property('test'))
+        self.assertFalse(self.mesh.has_face_property('test'))
+        self.mesh.face_property('test') # adds the prop implicitly
+        self.assertTrue(self.mesh.has_vertex_property('test'))
+        self.assertTrue(self.mesh.has_halfedge_property('test'))
+        self.assertTrue(self.mesh.has_edge_property('test'))
+        self.assertTrue(self.mesh.has_face_property('test'))
+        self.mesh.remove_vertex_property('test')
+        self.assertFalse(self.mesh.has_vertex_property('test'))
+        self.assertTrue(self.mesh.has_halfedge_property('test'))
+        self.assertTrue(self.mesh.has_edge_property('test'))
+        self.assertTrue(self.mesh.has_face_property('test'))
+        self.mesh.remove_halfedge_property('test')
+        self.assertFalse(self.mesh.has_vertex_property('test'))
+        self.assertFalse(self.mesh.has_halfedge_property('test'))
+        self.assertTrue(self.mesh.has_edge_property('test'))
+        self.assertTrue(self.mesh.has_face_property('test'))
+        self.mesh.remove_edge_property('test')
+        self.assertFalse(self.mesh.has_vertex_property('test'))
+        self.assertFalse(self.mesh.has_halfedge_property('test'))
+        self.assertFalse(self.mesh.has_edge_property('test'))
+        self.assertTrue(self.mesh.has_face_property('test'))
+        self.mesh.remove_face_property('test')
+        self.assertFalse(self.mesh.has_vertex_property('test'))
+        self.assertFalse(self.mesh.has_halfedge_property('test'))
+        self.assertFalse(self.mesh.has_edge_property('test'))
+        self.assertFalse(self.mesh.has_face_property('test'))
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Property)
