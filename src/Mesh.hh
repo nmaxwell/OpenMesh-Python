@@ -204,12 +204,6 @@ py::array_t<double> flt2numpy(Mesh& _mesh, const double& _flt, size_t _n = 1) {
 	return py::array_t<double>({_n}, {sizeof(double)}, &_flt, py::cast(_mesh));
 }
 
-/**
- * Returns the face indices of this mesh as a numpy array.
- *
- * Note that the array is constructed on the fly and does not
- * reference the underlying mesh.
- */
 py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	if (_self.n_faces() == 0) {
 		return py::array_t<int>();
@@ -227,73 +221,7 @@ py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	return py::array_t<int>(shape, strides, indices, base);
 }
 
-/**
- * Returns the face indices of this mesh as a numpy array.
- *
- * If the faces of the mesh have different valences, the array
- * is padded with -1 entries.
- *
- * Note that the array is constructed on the fly and does not
- * reference the underlying mesh.
- */
-py::array_t<int> face_vertex_indices_polymesh(PolyMesh& _self) {
-	if (_self.n_faces() == 0) {
-		return py::array_t<int>();
-	}
-	int max_valence = 0;
-	for (auto fh : _self.faces()) {
-		max_valence = std::max(max_valence, int(_self.valence(fh)));
-	}
-	int *indices = new int[_self.n_faces() * max_valence];
-	for (auto fh : _self.faces()) {
-		auto fv_it = _self.fv_iter(fh);
-		const int valence = _self.valence(fh);
-		for (int i = 0; i < valence; ++i) {
-			indices[fh.idx() * max_valence + i] = fv_it->idx();
-			++fv_it;
-		}
-		for (int i = valence; i < max_valence; ++i) {
-			indices[fh.idx() * max_valence + i] = -1;
-		}
-	}
-	const auto shape = {_self.n_faces(), size_t(max_valence)};
-	const auto strides = {max_valence * sizeof(int), sizeof(int)};
-	py::capsule base = free_when_done(indices);
-	return py::array_t<int>(shape, strides, indices, base);
-}
-
-/**
- * Returns the edge indices of this mesh as a numpy array.
- *
- * Note that the array is constructed on the fly and does not
- * reference the underlying mesh.
- */
-template<class Mesh>
-py::array_t<int> edge_vertex_indices(Mesh& _self) {
-	if (_self.n_edges() == 0) {
-		return py::array_t<int>();
-	}
-	int *indices = new int[_self.n_edges() * 2];
-	for (auto eh : _self.edges()) {
-		auto heh = _self.halfedge_handle(eh, 0);
-		auto vh1 = _self.from_vertex_handle(heh);
-		auto vh2 = _self.to_vertex_handle(heh);
-		indices[eh.idx() * 2 + 0] = vh1.idx();
-		indices[eh.idx() * 2 + 1] = vh2.idx();
-	}
-	const auto shape = {_self.n_edges(), size_t(2)};
-	const auto strides = {2 * sizeof(int), sizeof(int)};
-	py::capsule base = free_when_done(indices);
-	return py::array_t<int>(shape, strides, indices, base);
-}
-
-/**
- * Returns the halfedge indices of this mesh as a numpy array.
- *
- * Note that the array is constructed on the fly and does not
- * reference the underlying mesh.
- */
-template<class Mesh>
+template <class Mesh>
 py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
 	if (_self.n_halfedges() == 0) {
 		return py::array_t<int>();
@@ -307,6 +235,121 @@ py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
 	}
 	const auto shape = {_self.n_halfedges(), size_t(2)};
 	const auto strides = {2 * sizeof(int), sizeof(int)};
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
+}
+
+struct FuncEdgeVertex {
+	static void call(const OM::ArrayKernel& _mesh, OM::EdgeHandle _eh, int *_ptr) {
+		const auto heh = _mesh.halfedge_handle(_eh, 0);
+		_ptr[0] = _mesh.from_vertex_handle(heh).idx();
+		_ptr[1] = _mesh.to_vertex_handle(heh).idx();
+	}
+};
+
+struct FuncEdgeFace {
+	static void call(const OM::ArrayKernel& _mesh, OM::EdgeHandle _eh, int *_ptr) {
+		const auto heh1 = _mesh.halfedge_handle(_eh, 0);
+		const auto heh2 = _mesh.halfedge_handle(_eh, 1);
+		_ptr[0] = _mesh.face_handle(heh1).idx();
+		_ptr[1] = _mesh.face_handle(heh2).idx();
+	}
+};
+
+struct FuncEdgeHalfedge {
+	static void call(const OM::ArrayKernel& _mesh, OM::EdgeHandle _eh, int *_ptr) {
+		_ptr[0] = _mesh.halfedge_handle(_eh, 0).idx();
+		_ptr[1] = _mesh.halfedge_handle(_eh, 1).idx();
+	}
+};
+
+struct FuncHalfedgeToVertex {
+	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
+		*_ptr = _mesh.to_vertex_handle(_heh).idx();
+	}
+};
+
+struct FuncHalfedgeFromVertex {
+	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
+		*_ptr = _mesh.from_vertex_handle(_heh).idx();
+	}
+};
+
+struct FuncHalfedgeFace {
+	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
+		*_ptr = _mesh.face_handle(_heh).idx();
+	}
+};
+
+struct FuncHalfedgeEdge {
+	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
+		*_ptr = _mesh.edge_handle(_heh).idx();
+	}
+};
+
+template <class Mesh, class CopyFunc>
+py::array_t<int> edge_other_indices(Mesh& _self) {
+	if (_self.n_edges() == 0) {
+		return py::array_t<int>();
+	}
+	int *indices = new int[_self.n_edges() * 2];
+	for (auto eh : _self.edges()) {
+		CopyFunc::call(_self, eh, &indices[eh.idx() * 2]);
+	}
+	const auto shape = {_self.n_edges(), size_t(2)};
+	const auto strides = {2 * sizeof(int), sizeof(int)};
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
+}
+
+template <class Mesh, class CopyFunc>
+py::array_t<int> halfedge_other_indices(Mesh& _self) {
+	if (_self.n_halfedges() == 0) {
+		return py::array_t<int>();
+	}
+	int *indices = new int[_self.n_halfedges()];
+	for (auto heh : _self.halfedges()) {
+		CopyFunc::call(_self, heh, &indices[heh.idx()]);
+	}
+	const auto shape = {_self.n_halfedges()};
+	const auto strides = {sizeof(int)};
+	py::capsule base = free_when_done(indices);
+	return py::array_t<int>(shape, strides, indices, base);
+}
+
+template <class Mesh, class Handle, class Circulator>
+py::array_t<int> indices(Mesh& _self) {
+	const size_t n = _self.py_n_items(Handle());
+	if (n == 0) return py::array_t<int>();
+
+	// find max valence
+	int max_valence = 0;
+	for (size_t i = 0; i < n; ++i) {
+		int valence = 0;
+		for (auto it = Circulator(_self, Handle(i)); it.is_valid(); ++it) {
+			valence++;
+		}
+		max_valence = std::max(max_valence, valence);
+	}
+
+	// allocate memory
+	int *indices = new int[n * max_valence];
+
+	// copy indices
+	for (size_t i = 0; i < n; ++i) {
+		int valence = 0;
+		for (auto it = Circulator(_self, Handle(i)); it.is_valid(); ++it) {
+			indices[i * max_valence + valence] = it->idx();
+			valence++;
+		}
+		for (size_t j = valence; j < max_valence; ++j) {
+			indices[i * max_valence + j] = -1;
+		}
+	}
+
+	// make numpy array
+	const auto shape = {n, size_t(max_valence)};
+	const auto strides = {max_valence * sizeof(int), sizeof(int)};
 	py::capsule base = free_when_done(indices);
 	return py::array_t<int>(shape, strides, indices, base);
 }
@@ -357,8 +400,8 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 
 		.def("insert_edge", &PolyMesh::insert_edge)
 
-		.def("face_vertex_indices", &face_vertex_indices_polymesh)
-		.def("fv_indices", &face_vertex_indices_polymesh)
+		.def("face_vertex_indices", &indices<PolyMesh, OM::FaceHandle, PolyMesh::FaceVertexIter>)
+		.def("fv_indices", &indices<PolyMesh, OM::FaceHandle, PolyMesh::FaceVertexIter>)
 
 		.def("calc_face_normal", [](PolyMesh& _self, np_point_t _p0, np_point_t _p1, np_point_t _p2) {
 				const Point p0(_p0.at(0), _p0.at(1), _p0.at(2));
@@ -1197,10 +1240,42 @@ void expose_mesh(py::module& m, const char *_name) {
 		//  numpy indices
 		//======================================================================
 
-		.def("edge_vertex_indices", &edge_vertex_indices<Mesh>)
-		.def("ev_indices", &edge_vertex_indices<Mesh>)
+		.def("vertex_vertex_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexVertexIter>)
+		.def("vv_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexVertexIter>)
+		.def("vertex_face_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexFaceIter>)
+		.def("vf_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexFaceIter>)
+		.def("vertex_edge_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexEdgeIter>)
+		.def("ve_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexEdgeIter>)
+		.def("vertex_outgoing_halfedge_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexOHalfedgeIter>)
+		.def("voh_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexOHalfedgeIter>)
+		.def("vertex_incoming_halfedge_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexIHalfedgeIter>)
+		.def("vih_indices", &indices<Mesh, OM::VertexHandle, typename Mesh::VertexIHalfedgeIter>)
+
+		.def("face_face_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceFaceIter>)
+		.def("ff_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceFaceIter>)
+		.def("face_edge_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceEdgeIter>)
+		.def("fe_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceEdgeIter>)
+		.def("face_halfedge_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceHalfedgeIter>)
+		.def("fh_indices", &indices<Mesh, OM::FaceHandle, typename Mesh::FaceHalfedgeIter>)
+
+		.def("edge_vertex_indices", &edge_other_indices<Mesh, FuncEdgeVertex>)
+		.def("ev_indices", &edge_other_indices<Mesh, FuncEdgeVertex>)
+		.def("edge_face_indices", &edge_other_indices<Mesh, FuncEdgeFace>)
+		.def("ef_indices", &edge_other_indices<Mesh, FuncEdgeFace>)
+		.def("edge_halfedge_indices", &edge_other_indices<Mesh, FuncEdgeHalfedge>)
+		.def("eh_indices", &edge_other_indices<Mesh, FuncEdgeHalfedge>)
+
 		.def("halfedge_vertex_indices", &halfedge_vertex_indices<Mesh>)
 		.def("hv_indices", &halfedge_vertex_indices<Mesh>)
+
+		.def("halfedge_to_vertex_indices", &halfedge_other_indices<Mesh, FuncHalfedgeToVertex>)
+		.def("htv_indices", &halfedge_other_indices<Mesh, FuncHalfedgeToVertex>)
+		.def("halfedge_from_vertex_indices", &halfedge_other_indices<Mesh, FuncHalfedgeFromVertex>)
+		.def("hfv_indices", &halfedge_other_indices<Mesh, FuncHalfedgeFromVertex>)
+		.def("halfedge_face_indices", &halfedge_other_indices<Mesh, FuncHalfedgeFace>)
+		.def("hf_indices", &halfedge_other_indices<Mesh, FuncHalfedgeFace>)
+		.def("halfedge_edge_indices", &halfedge_other_indices<Mesh, FuncHalfedgeEdge>)
+		.def("he_indices", &halfedge_other_indices<Mesh, FuncHalfedgeEdge>)
 
 		//======================================================================
 		//  new property interface: single item

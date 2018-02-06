@@ -173,6 +173,11 @@ public:
 		Mesh::copy_property(prop, _from, _to);
 	}
 
+	size_t py_n_items(OpenMesh::VertexHandle) const { return Mesh::n_vertices(); }
+	size_t py_n_items(OpenMesh::HalfedgeHandle) const { return Mesh::n_halfedges(); }
+	size_t py_n_items(OpenMesh::EdgeHandle) const { return Mesh::n_edges(); }
+	size_t py_n_items(OpenMesh::FaceHandle) const { return Mesh::n_faces(); }
+
 private:
 
 	template <class Handle, class PropHandle>
@@ -190,11 +195,6 @@ private:
 	std::map<std::string, HPropHandle>& py_prop_map(OpenMesh::HalfedgeHandle) { return hprop_map; }
 	std::map<std::string, EPropHandle>& py_prop_map(OpenMesh::EdgeHandle) { return eprop_map; }
 	std::map<std::string, FPropHandle>& py_prop_map(OpenMesh::FaceHandle) { return fprop_map; }
-
-	size_t py_n_items(OpenMesh::VertexHandle) const { return Mesh::n_vertices(); }
-	size_t py_n_items(OpenMesh::HalfedgeHandle) const { return Mesh::n_halfedges(); }
-	size_t py_n_items(OpenMesh::EdgeHandle) const { return Mesh::n_edges(); }
-	size_t py_n_items(OpenMesh::FaceHandle) const { return Mesh::n_faces(); }
 
 	std::map<std::string, VPropHandle> vprop_map;
 	std::map<std::string, HPropHandle> hprop_map;
