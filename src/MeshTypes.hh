@@ -125,7 +125,7 @@ public:
 			const Handle hnd(i);
 			const py::object obj = Mesh::property(prop, hnd);
 			try {
-				const auto arr = obj.cast<py::array_t<double> >();
+				const auto arr = make_c_style(obj.cast<py::array_t<double> >());
 				if (arr.size() != size) {
 					throw py::error_already_set();
 				}
