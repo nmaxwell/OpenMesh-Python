@@ -7,19 +7,29 @@ set(OPENMESH_BUILD_PYTHON_BINDINGS OFF)
 add_subdirectory(OpenMesh)
 add_subdirectory(pybind11)
 
-set_target_properties(
-	OpenMeshCore OpenMeshTools PROPERTIES
-	EXCLUDE_FROM_ALL ON
-	EXCLUDE_FROM_DEFAULT_BUILD ON
-)
+if (NOT WIN32)
+	set_target_properties(
+		OpenMeshCore OpenMeshTools PROPERTIES
+		EXCLUDE_FROM_ALL ON
+		EXCLUDE_FROM_DEFAULT_BUILD ON
+	)
+endif ()
 
 acg_append_files(HEADERS "src/*.hh" .)
 acg_append_files(SOURCES "src/*.cc" .)
 
 include_directories(${OPENMESH_INCLUDE_DIRS})
 pybind11_add_module(openmesh ${HEADERS} ${SOURCES})
-target_link_libraries(openmesh PRIVATE OpenMeshCoreStatic)
-target_link_libraries(openmesh PRIVATE OpenMeshToolsStatic)
+
+if (WIN32)
+	target_link_libraries(openmesh PRIVATE OpenMeshCore)
+	target_link_libraries(openmesh PRIVATE OpenMeshTools)
+	target_compile_definitions(openmesh PRIVATE _USE_MATH_DEFINES)
+else ()
+	target_link_libraries(openmesh PRIVATE OpenMeshCoreStatic)
+	target_link_libraries(openmesh PRIVATE OpenMeshToolsStatic)
+endif ()
+
 
 enable_testing()
 add_test(
