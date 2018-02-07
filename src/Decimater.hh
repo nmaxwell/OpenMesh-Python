@@ -1,7 +1,7 @@
 #ifndef OPENMESH_PYTHON_DECIMATER_HH
 #define OPENMESH_PYTHON_DECIMATER_HH
 
-#include "Bindings.hh"
+#include "MeshTypes.hh"
 #include <OpenMesh/Tools/Decimater/ModBaseT.hh>
 #include <OpenMesh/Tools/Decimater/ModAspectRatioT.hh>
 #include <OpenMesh/Tools/Decimater/ModEdgeLengthT.hh>
@@ -16,28 +16,24 @@
 
 #include <cstdio>
 
-namespace OpenMesh {
-namespace Python {
+#include <pybind11/pybind11.h>
 
-#define INIT_MESH_REF init<Mesh&>()[with_custodian_and_ward<1,2>()]
-
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(decimate_overloads, decimate, 0, 1)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(decimate_to_faces_overloads, decimate_to_faces, 0, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_max_err_overloads, set_max_err, 1, 2)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_min_roundness_overloads, set_min_roundness, 1, 2)
+namespace py = pybind11;
+namespace OM = OpenMesh;
 
 
 template <class Handle>
-void expose_module_handle(const char *_name) {
-	class_<Handle, boost::noncopyable>(_name)
+void expose_module_handle(py::module& m, const char *_name) {
+	py::class_<Handle>(m, _name)
+		.def(py::init<>())
 		.def("is_valid", &Handle::is_valid)
 		;
 }
 
 template <class Module>
-list infolist(Module& _self) {
+py::list infolist(Module& _self) {
 	const typename Module::InfoList& infos = _self.infolist();
-	list res;
+	py::list res;
 	for (size_t i = 0; i < infos.size(); ++i) {
 		res.append(infos[i]);
 	}
@@ -45,64 +41,34 @@ list infolist(Module& _self) {
 }
 
 template <class Mesh>
-void expose_decimater(const char *_name) {
+void expose_decimater(py::module& m, const char *_name) {
 
-	typedef Decimater::ModBaseT<Mesh> ModBase;
-	typedef Decimater::ModAspectRatioT<Mesh> ModAspectRatio;
-	typedef Decimater::ModEdgeLengthT<Mesh> ModEdgeLength;
-	typedef Decimater::ModHausdorffT<Mesh> ModHausdorff;
-	typedef Decimater::ModIndependentSetsT<Mesh> ModIndependentSets;
-	typedef Decimater::ModNormalDeviationT<Mesh> ModNormalDeviation;
-	typedef Decimater::ModNormalFlippingT<Mesh> ModNormalFlipping;
-	typedef Decimater::ModProgMeshT<Mesh> ModProgMesh;
-	typedef Decimater::ModQuadricT<Mesh> ModQuadric;
-	typedef Decimater::ModRoundnessT<Mesh> ModRoundness;
+	typedef OM::Decimater::ModBaseT<Mesh> ModBase;
+	typedef OM::Decimater::ModAspectRatioT<Mesh> ModAspectRatio;
+	typedef OM::Decimater::ModEdgeLengthT<Mesh> ModEdgeLength;
+	typedef OM::Decimater::ModHausdorffT<Mesh> ModHausdorff;
+	typedef OM::Decimater::ModIndependentSetsT<Mesh> ModIndependentSets;
+	typedef OM::Decimater::ModNormalDeviationT<Mesh> ModNormalDeviation;
+	typedef OM::Decimater::ModNormalFlippingT<Mesh> ModNormalFlipping;
+	typedef OM::Decimater::ModProgMeshT<Mesh> ModProgMesh;
+	typedef OM::Decimater::ModQuadricT<Mesh> ModQuadric;
+	typedef OM::Decimater::ModRoundnessT<Mesh> ModRoundness;
 
-	typedef Decimater::ModHandleT<ModAspectRatio> ModAspectRatioHandle;
-	typedef Decimater::ModHandleT<ModEdgeLength> ModEdgeLengthHandle;
-	typedef Decimater::ModHandleT<ModHausdorff> ModHausdorffHandle;
-	typedef Decimater::ModHandleT<ModIndependentSets> ModIndependentSetsHandle;
-	typedef Decimater::ModHandleT<ModNormalDeviation> ModNormalDeviationHandle;
-	typedef Decimater::ModHandleT<ModNormalFlipping> ModNormalFlippingHandle;
-	typedef Decimater::ModHandleT<ModProgMesh> ModProgMeshHandle;
-	typedef Decimater::ModHandleT<ModQuadric> ModQuadricHandle;
-	typedef Decimater::ModHandleT<ModRoundness> ModRoundnessHandle;
+	typedef OM::Decimater::ModHandleT<ModAspectRatio> ModAspectRatioHandle;
+	typedef OM::Decimater::ModHandleT<ModEdgeLength> ModEdgeLengthHandle;
+	typedef OM::Decimater::ModHandleT<ModHausdorff> ModHausdorffHandle;
+	typedef OM::Decimater::ModHandleT<ModIndependentSets> ModIndependentSetsHandle;
+	typedef OM::Decimater::ModHandleT<ModNormalDeviation> ModNormalDeviationHandle;
+	typedef OM::Decimater::ModHandleT<ModNormalFlipping> ModNormalFlippingHandle;
+	typedef OM::Decimater::ModHandleT<ModProgMesh> ModProgMeshHandle;
+	typedef OM::Decimater::ModHandleT<ModQuadric> ModQuadricHandle;
+	typedef OM::Decimater::ModHandleT<ModRoundness> ModRoundnessHandle;
 
-	typedef Decimater::BaseDecimaterT<Mesh> BaseDecimater;
-	typedef Decimater::DecimaterT<Mesh> Decimater;
+	typedef OM::Decimater::BaseDecimaterT<Mesh> BaseDecimater;
+	typedef OM::Decimater::DecimaterT<Mesh> Decimater;
 
 	typedef typename ModProgMesh::Info Info;
 	typedef std::vector<Info> InfoList;
-
-	bool (BaseDecimater::*add1)(ModAspectRatioHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add2)(ModEdgeLengthHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add3)(ModHausdorffHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add4)(ModIndependentSetsHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add5)(ModNormalDeviationHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add6)(ModNormalFlippingHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add7)(ModProgMeshHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add8)(ModQuadricHandle&) = &Decimater::add;
-	bool (BaseDecimater::*add9)(ModRoundnessHandle&) = &Decimater::add;
-
-	bool (BaseDecimater::*remove1)(ModAspectRatioHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove2)(ModEdgeLengthHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove3)(ModHausdorffHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove4)(ModIndependentSetsHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove5)(ModNormalDeviationHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove6)(ModNormalFlippingHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove7)(ModProgMeshHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove8)(ModQuadricHandle&) = &Decimater::remove;
-	bool (BaseDecimater::*remove9)(ModRoundnessHandle&) = &Decimater::remove;
-
-	ModAspectRatio& (BaseDecimater::*module1)(ModAspectRatioHandle&) = &Decimater::module;
-	ModEdgeLength& (BaseDecimater::*module2)(ModEdgeLengthHandle&) = &Decimater::module;
-	ModHausdorff& (BaseDecimater::*module3)(ModHausdorffHandle&) = &Decimater::module;
-	ModIndependentSets& (BaseDecimater::*module4)(ModIndependentSetsHandle&) = &Decimater::module;
-	ModNormalDeviation& (BaseDecimater::*module5)(ModNormalDeviationHandle&) = &Decimater::module;
-	ModNormalFlipping& (BaseDecimater::*module6)(ModNormalFlippingHandle&) = &Decimater::module;
-	ModProgMesh& (BaseDecimater::*module7)(ModProgMeshHandle&) = &Decimater::module;
-	ModQuadric& (BaseDecimater::*module8)(ModQuadricHandle&) = &Decimater::module;
-	ModRoundness& (BaseDecimater::*module9)(ModRoundnessHandle&) = &Decimater::module;
 
 	// Decimater
 	// ----------------------------------------
@@ -110,43 +76,45 @@ void expose_decimater(const char *_name) {
 	char buffer[64];
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "Decimater");
 
-	class_<Decimater, boost::noncopyable>(buffer, INIT_MESH_REF)
-		.def("decimate", &Decimater::decimate, decimate_overloads())
+	py::class_<Decimater>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
+		.def("decimate", &Decimater::decimate, py::arg("n_collapses")=0)
 		.def("decimate_to", &Decimater::decimate_to)
-		.def("decimate_to_faces", &Decimater::decimate_to_faces, decimate_to_faces_overloads())
+		.def("decimate_to_faces", &Decimater::decimate_to_faces,
+			py::arg("n_vertices")=0, py::arg("n_faces")=0)
 
-		.def("initialize", &Decimater::initialize)
-		.def("is_initialized", &Decimater::is_initialized)
+		.def("initialize", [](Decimater& _self) { return _self.initialize(); })
+		.def("is_initialized", [](Decimater& _self) { return _self.is_initialized(); })
 
-		.def("add", add1)
-		.def("add", add2)
-		.def("add", add3)
-		.def("add", add4)
-		.def("add", add5)
-		.def("add", add6)
-		.def("add", add7)
-		.def("add", add8)
-		.def("add", add9)
+		.def("add", [](Decimater& _self, ModAspectRatioHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModEdgeLengthHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModHausdorffHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModIndependentSetsHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModNormalDeviationHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModNormalFlippingHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModProgMeshHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModQuadricHandle& _mod) { return _self.add(_mod); })
+		.def("add", [](Decimater& _self, ModRoundnessHandle& _mod) { return _self.add(_mod); })
 
-		.def("remove", remove1)
-		.def("remove", remove2)
-		.def("remove", remove3)
-		.def("remove", remove4)
-		.def("remove", remove5)
-		.def("remove", remove6)
-		.def("remove", remove7)
-		.def("remove", remove8)
-		.def("remove", remove9)
+		.def("remove", [](Decimater& _self, ModAspectRatioHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModEdgeLengthHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModHausdorffHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModIndependentSetsHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModNormalDeviationHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModNormalFlippingHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModProgMeshHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModQuadricHandle& _mod) { return _self.remove(_mod); })
+		.def("remove", [](Decimater& _self, ModRoundnessHandle& _mod) { return _self.remove(_mod); })
 
-		.def("module", module1, return_value_policy<reference_existing_object>())
-		.def("module", module2, return_value_policy<reference_existing_object>())
-		.def("module", module3, return_value_policy<reference_existing_object>())
-		.def("module", module4, return_value_policy<reference_existing_object>())
-		.def("module", module5, return_value_policy<reference_existing_object>())
-		.def("module", module6, return_value_policy<reference_existing_object>())
-		.def("module", module7, return_value_policy<reference_existing_object>())
-		.def("module", module8, return_value_policy<reference_existing_object>())
-		.def("module", module9, return_value_policy<reference_existing_object>())
+		.def("module", [](Decimater& _self, ModAspectRatioHandle& _mod) -> ModAspectRatio& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModEdgeLengthHandle& _mod) -> ModEdgeLength& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModHausdorffHandle& _mod) -> ModHausdorff& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModIndependentSetsHandle& _mod) -> ModIndependentSets& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModNormalDeviationHandle& _mod) -> ModNormalDeviation& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModNormalFlippingHandle& _mod) -> ModNormalFlipping& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModProgMeshHandle& _mod) -> ModProgMesh& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModQuadricHandle& _mod) -> ModQuadric& { return _self.module(_mod); }, py::return_value_policy::reference)
+		.def("module", [](Decimater& _self, ModRoundnessHandle& _mod) -> ModRoundness& { return _self.module(_mod); }, py::return_value_policy::reference)
 		;
 
 	// ModBase
@@ -154,8 +122,8 @@ void expose_decimater(const char *_name) {
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModBase");
 
-	class_<ModBase, boost::noncopyable>(buffer, no_init)
-		.def("name", &ModBase::name, OPENMESH_PYTHON_DEFAULT_POLICY)
+	py::class_<ModBase>(m, buffer)
+		.def("name", &ModBase::name, py::return_value_policy::copy)
 		.def("is_binary", &ModBase::is_binary)
 		.def("set_binary", &ModBase::set_binary)
 		.def("initialize", &ModBase::initialize) // TODO VIRTUAL
@@ -170,80 +138,89 @@ void expose_decimater(const char *_name) {
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModAspectRatio");
 
-	class_<ModAspectRatio, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModAspectRatio, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("aspect_ratio", &ModAspectRatio::aspect_ratio)
 		.def("set_aspect_ratio", &ModAspectRatio::set_aspect_ratio)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModAspectRatioHandle");
-	expose_module_handle<ModAspectRatioHandle>(buffer);
+	expose_module_handle<ModAspectRatioHandle>(m, buffer);
 
 	// ModEdgeLength
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModEdgeLength");
 
-	class_<ModEdgeLength, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModEdgeLength, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("edge_length", &ModEdgeLength::edge_length)
 		.def("set_edge_length", &ModEdgeLength::set_edge_length)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModEdgeLengthHandle");
-	expose_module_handle<ModEdgeLengthHandle>(buffer);
+	expose_module_handle<ModEdgeLengthHandle>(m, buffer);
 
 	// ModHausdorff
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModHausdorff");
 
-	class_<ModHausdorff, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModHausdorff, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("tolerance", &ModHausdorff::tolerance)
 		.def("set_tolerance", &ModHausdorff::set_tolerance)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModHausdorffHandle");
-	expose_module_handle<ModHausdorffHandle>(buffer);
+	expose_module_handle<ModHausdorffHandle>(m, buffer);
 
 	// ModIndependentSets
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModIndependentSets");
 
-	class_<ModIndependentSets, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF);
+	py::class_<ModIndependentSets, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
+		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModIndependentSetsHandle");
-	expose_module_handle<ModIndependentSetsHandle>(buffer);
+	expose_module_handle<ModIndependentSetsHandle>(m, buffer);
 
 	// ModNormalDeviation
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModNormalDeviation");
 
-	class_<ModNormalDeviation, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModNormalDeviation, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("normal_deviation", &ModNormalDeviation::normal_deviation)
 		.def("set_normal_deviation", &ModNormalDeviation::set_normal_deviation)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModNormalDeviationHandle");
-	expose_module_handle<ModNormalDeviationHandle>(buffer);
+	expose_module_handle<ModNormalDeviationHandle>(m, buffer);
 
 	// ModNormalFlipping
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModNormalFlipping");
 
-	class_<ModNormalFlipping, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModNormalFlipping, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("max_normal_deviation", &ModNormalFlipping::max_normal_deviation)
 		.def("set_max_normal_deviation", &ModNormalFlipping::set_max_normal_deviation)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModNormalFlippingHandle");
-	expose_module_handle<ModNormalFlippingHandle>(buffer);
+	expose_module_handle<ModNormalFlippingHandle>(m, buffer);
 
 	// ModProgMesh
 	// ----------------------------------------
 
-	class_<Info>("Info", no_init)
+	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModProgMeshInfo");
+
+	py::class_<Info>(m, buffer)
 		.def_readwrite("v0", &Info::v0)
 		.def_readwrite("v1", &Info::v1)
 		.def_readwrite("vl", &Info::vl)
@@ -252,46 +229,48 @@ void expose_decimater(const char *_name) {
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModProgMesh");
 
-	class_<ModProgMesh, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModProgMesh, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("pmi", &infolist<ModProgMesh>)
 		.def("infolist", &infolist<ModProgMesh>)
 		.def("write", &ModProgMesh::write)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModProgMeshHandle");
-	expose_module_handle<ModProgMeshHandle>(buffer);
+	expose_module_handle<ModProgMeshHandle>(m, buffer);
 
 	// ModQuadric
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModQuadric");
 
-	class_<ModQuadric, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
-		.def("set_max_err", &ModQuadric::set_max_err, set_max_err_overloads())
+	py::class_<ModQuadric, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
+		.def("set_max_err", &ModQuadric::set_max_err,
+			py::arg("err"), py::arg("binary")=true)
 		.def("unset_max_err", &ModQuadric::unset_max_err)
 		.def("max_err", &ModQuadric::max_err)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModQuadricHandle");
-	expose_module_handle<ModQuadricHandle>(buffer);
+	expose_module_handle<ModQuadricHandle>(m, buffer);
 
 	// ModRoundness
 	// ----------------------------------------
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModRoundness");
 
-	class_<ModRoundness, bases<ModBase>, boost::noncopyable>(buffer, INIT_MESH_REF)
+	py::class_<ModRoundness, ModBase>(m, buffer)
+		.def(py::init<Mesh&>(), py::keep_alive<1,2>())
 		.def("set_min_angle", &ModRoundness::set_min_angle)
-		.def("set_min_roundness", &ModRoundness::set_min_roundness, set_min_roundness_overloads())
+		.def("set_min_roundness", &ModRoundness::set_min_roundness,
+			py::arg("min_roundness"), py::arg("binary")=true)
 		.def("unset_min_roundness", &ModRoundness::unset_min_roundness)
 		.def("roundness", &ModRoundness::roundness)
 		;
 
 	snprintf(buffer, sizeof buffer, "%s%s", _name, "ModRoundnessHandle");
-	expose_module_handle<ModRoundnessHandle>(buffer);
+	expose_module_handle<ModRoundnessHandle>(m, buffer);
 }
-
-} // namespace OpenMesh
-} // namespace Python
 
 #endif

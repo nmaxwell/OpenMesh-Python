@@ -5,6 +5,7 @@
 #include "Circulator.hh"
 #include "PropertyManager.hh"
 #include "InputOutput.hh"
+#include "Decimater.hh"
 
 #include <pybind11/pybind11.h>
 
@@ -50,6 +51,6 @@ PYBIND11_MODULE(openmesh, m) {
 
 	expose_io(m);
 
-//	expose_decimater<PolyMesh>("PolyMesh");
-//	expose_decimater<TriMesh>("TriMesh");
+	expose_decimater<PolyMesh>(m, "PolyMesh");
+	expose_decimater<TriMesh>(m, "TriMesh");
 }
