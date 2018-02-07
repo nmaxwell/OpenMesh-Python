@@ -11,14 +11,12 @@ build-3.5:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
-    - virtualenv --clear -p python3.5 ./venv3
-    - source ./venv3/bin/activate
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
     - python setup.py bdist_wheel --dist-dir dist3
-    - pip install dist3/*.whl
   artifacts:
     paths:
       - dist3/
-      - venv3/
 
 build-2.7:
   stage:
@@ -28,14 +26,12 @@ build-2.7:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
-    - virtualenv --clear -p python2.7 ./venv2
-    - source ./venv2/bin/activate
+    - virtualenv --clear -p python2.7 .
+    - source bin/activate
     - python setup.py bdist_wheel --dist-dir dist2
-    - pip install dist2/*.whl
   artifacts:
     paths:
       - dist2/
-      - venv2/
 
 test-3.5:
   stage:
@@ -45,7 +41,9 @@ test-3.5:
   dependencies:
     - build-3.5
   script:
-    - source ./venv3/bin/activate
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
+    - pip install dist3/*.whl
     - cd tests
     - python -m unittest discover
 
@@ -57,7 +55,9 @@ test-2.7:
   dependencies:
     - build-2.7
   script:
-    - source ./venv2/bin/activate
+    - virtualenv --clear -p python2.7 .
+    - source bin/activate
+    - pip install dist2/*.whl
     - cd tests
     - python -m unittest discover
 
