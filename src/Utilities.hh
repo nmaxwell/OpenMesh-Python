@@ -9,7 +9,7 @@ namespace py = pybind11;
 
 template<class dtype>
 py::capsule free_when_done(dtype *data) {
-	return 	py::capsule(data, [](void *f) {
+	return py::capsule(data, [](void *f) {
 		dtype *ptr = reinterpret_cast<dtype *>(f);
 		delete[] ptr;
 	});

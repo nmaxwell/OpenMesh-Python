@@ -103,49 +103,45 @@ public:
 		// assume that all arrays have the same size and
 		// retrieve the size of the first array
 		const py::object tmp_obj = Mesh::property(prop, Handle(0));
-		py::array_t<double> tmp_arr;
-		try {
-			tmp_arr = tmp_obj.cast<py::array_t<double> >();
-			tmp_arr = make_c_style(tmp_arr);
-		}
-		catch (py::error_already_set& e) {
-			return py::array_t<double>();
-		}
-		const size_t size = tmp_arr.size();
+		const auto first_arr = make_c_style(tmp_obj.cast<py::array_t<double> >());
+		const size_t size = first_arr.size();
 
 		// better check this now
 		if (size == 0) {
-			return py::array_t<double>();
+			PyErr_SetString(PyExc_RuntimeError, "One of the arrays has size 0.");
+			throw py::error_already_set();
 		}
 
 		// preserve array shape and strides
 		std::vector<size_t> shape({n});
 		std::vector<size_t> strides({size * sizeof(double)});
-		shape.insert(shape.end(), tmp_arr.shape(), tmp_arr.shape() + tmp_arr.ndim());
-		strides.insert(strides.end(), tmp_arr.strides(), tmp_arr.strides() + tmp_arr.ndim());
+		shape.insert(shape.end(), first_arr.shape(), first_arr.shape() + first_arr.ndim());
+		strides.insert(strides.end(), first_arr.strides(), first_arr.strides() + first_arr.ndim());
 
 		// allocate memory
 		double *data = new double[size * n];
+		py::capsule base = free_when_done(data);
 
 		// copy one array at a time
 		for (size_t i = 0; i < n; ++i) {
 			const Handle hnd(i);
 			const py::object obj = Mesh::property(prop, hnd);
-			try {
-				const auto arr = make_c_style(obj.cast<py::array_t<double> >());
-				if (arr.size() != size) {
-					throw py::error_already_set();
-				}
-				std::copy(arr.data(0), arr.data(0) + size, &data[size * i]);
+			const auto arr = make_c_style(obj.cast<py::array_t<double> >());
+			if (arr.size() != first_arr.size()) {
+				PyErr_SetString(PyExc_RuntimeError, "Array sizes do not match.");
+				throw py::error_already_set();
 			}
-			catch (py::error_already_set& e) {
-				delete[] data;
-				return py::array_t<double>();
+			if (arr.ndim() != first_arr.ndim()) {
+				PyErr_SetString(PyExc_RuntimeError, "Array dimensions do not match.");
+				throw py::error_already_set();
 			}
+			if (!std::equal(arr.shape(), arr.shape() + arr.ndim(), first_arr.shape())) {
+				PyErr_SetString(PyExc_RuntimeError, "Array shapes do not match.");
+				throw py::error_already_set();
+			}
+			std::copy(arr.data(0), arr.data(0) + size, &data[size * i]);
 		}
 
-		// make numpy array
-		py::capsule base = free_when_done(data);
 		return py::array_t<double>(shape, strides, data, base);
 	}
 
@@ -168,7 +164,6 @@ public:
 			const std::vector<size_t> strides(_arr.strides() + 1, _arr.strides() + _arr.ndim());
 			py::capsule base = free_when_done(data);
 			py::array_t<double> tmp(shape, strides, data, base);
-
 			Mesh::property(prop, Handle(i)) = tmp;
 		}
 	}
