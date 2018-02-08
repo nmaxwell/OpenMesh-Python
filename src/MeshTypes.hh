@@ -106,6 +106,7 @@ public:
 		py::array_t<double> tmp_arr;
 		try {
 			tmp_arr = tmp_obj.cast<py::array_t<double> >();
+			tmp_arr = make_c_style(tmp_arr);
 		}
 		catch (py::error_already_set& e) {
 			return py::array_t<double>();
@@ -116,6 +117,12 @@ public:
 		if (size == 0) {
 			return py::array_t<double>();
 		}
+
+		// preserve array shape and strides
+		std::vector<size_t> shape({n});
+		std::vector<size_t> strides({size * sizeof(double)});
+		shape.insert(shape.end(), tmp_arr.shape(), tmp_arr.shape() + tmp_arr.ndim());
+		strides.insert(strides.end(), tmp_arr.strides(), tmp_arr.strides() + tmp_arr.ndim());
 
 		// allocate memory
 		double *data = new double[size * n];
@@ -138,8 +145,6 @@ public:
 		}
 
 		// make numpy array
-		const auto shape = {n, size};
-		const auto strides = {size * sizeof(double), sizeof(double)};
 		py::capsule base = free_when_done(data);
 		return py::array_t<double>(shape, strides, data, base);
 	}
@@ -159,10 +164,11 @@ public:
 		for (size_t i = 0; i < n; ++i) {
 			double *data = new double[size];
 			std::copy(_arr.data(i), _arr.data(i) + size, data);
-			const auto shape = {size};
-			const auto strides = {sizeof(double)};
+			const std::vector<size_t> shape(_arr.shape() + 1, _arr.shape() + _arr.ndim());
+			const std::vector<size_t> strides(_arr.strides() + 1, _arr.strides() + _arr.ndim());
 			py::capsule base = free_when_done(data);
 			py::array_t<double> tmp(shape, strides, data, base);
+
 			Mesh::property(prop, Handle(i)) = tmp;
 		}
 	}
