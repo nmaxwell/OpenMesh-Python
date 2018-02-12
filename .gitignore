@@ -7,3 +7,7 @@ tests/OutFiles
 build-setuptools/
 dist/
 openmesh.egg-info/
+
+CMakeLists.txt.user
+
+docs/_build/
