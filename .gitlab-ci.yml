@@ -3,14 +3,16 @@ stages:
   - test
   - deploy
 
-build-3.5:
+build-3.5-linux-macos:
   stage:
     build
   tags:
     - Linux
+    - Apple
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
+    - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python3.5 .
     - source bin/activate
     - python setup.py bdist_wheel --dist-dir dist3
@@ -18,14 +20,16 @@ build-3.5:
     paths:
       - dist3/
 
-build-2.7:
+build-2.7-linux-macos:
   stage:
     build
   tags:
     - Linux
+    - Apple
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
+    - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python2.7 .
     - source bin/activate
     - python setup.py bdist_wheel --dist-dir dist2
@@ -33,39 +37,44 @@ build-2.7:
     paths:
       - dist2/
 
-test-3.5:
+test-3.5-linux-macos:
   stage:
     test
   tags:
     - Linux
+    - Apple
   dependencies:
     - build-3.5
   script:
+    - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python3.5 .
     - source bin/activate
     - pip install dist3/*.whl
     - cd tests
     - python -m unittest discover
 
-test-2.7:
+test-2.7-linux-macos:
   stage:
     test
   tags:
     - Linux
+    - Apple
   dependencies:
     - build-2.7
   script:
+    - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python2.7 .
     - source bin/activate
     - pip install dist2/*.whl
     - cd tests
     - python -m unittest discover
 
-deploy-3.5:
+deploy-3.5-linux-macos:
   stage:
     deploy
   tags:
     - Linux
+    - Apple
   dependencies:
     - build-3.5
   script:
@@ -75,11 +84,12 @@ deploy-3.5:
     paths:
       - release/*.whl
 
-deploy-2.7:
+deploy-2.7-linux-macos:
   stage:
     deploy
   tags:
     - Linux
+    - Apple
   dependencies:
     - build-2.7
   script:
