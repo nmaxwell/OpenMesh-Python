@@ -44,7 +44,7 @@ test-3.5-linux-macos:
     - Linux
     - Apple
   dependencies:
-    - build-3.5
+    - build-3.5-linux-macos
   script:
     - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python3.5 .
@@ -60,7 +60,7 @@ test-2.7-linux-macos:
     - Linux
     - Apple
   dependencies:
-    - build-2.7
+    - build-2.7-linux-macos
   script:
     - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python2.7 .
@@ -76,7 +76,7 @@ deploy-3.5-linux-macos:
     - Linux
     - Apple
   dependencies:
-    - build-3.5
+    - build-3.5-linux-macos
   script:
     - mkdir release
     - cp dist3/*.whl release
@@ -91,7 +91,7 @@ deploy-2.7-linux-macos:
     - Linux
     - Apple
   dependencies:
-    - build-2.7
+    - build-2.7-linux-macos
   script:
     - mkdir release
     - cp dist2/*.whl release
