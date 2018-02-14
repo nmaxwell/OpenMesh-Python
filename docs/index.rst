@@ -10,7 +10,30 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :caption: Tutorial
 
+   install
+   firststeps
+   iterators
+   properties
+   indexarrays
+   garbagecollection
+   readwrite
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced Topics
+
+   datastructure
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Class Reference
+
+   trimesh
+   polymesh
 
 
 Indices and tables
@@ -19,4 +42,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
