@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.1.0)
-# Fix behavior of CMAKE_CXX_STANDARD when targeting macOS.
-if (POLICY CMP0025)
-  cmake_policy(SET CMP0025 NEW)
-endif ()
 
 project(openmesh)
 
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(OPENMESH_BUILD_PYTHON_BINDINGS OFF)
 
@@ -25,11 +22,6 @@ acg_append_files(SOURCES "src/*.cc" .)
 
 include_directories(${OPENMESH_INCLUDE_DIRS})
 pybind11_add_module(openmesh ${HEADERS} ${SOURCES})
-
-set_target_properties(
-	openmesh OpenMeshCore OpenMeshTools PROPERTIES
-	CXX_STANDARD 11
-)
 
 if (WIN32)
 	target_link_libraries(openmesh PRIVATE OpenMeshCore)
