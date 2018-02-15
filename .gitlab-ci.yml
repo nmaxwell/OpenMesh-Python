@@ -93,8 +93,9 @@ test-3.6-VS2017:
     - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
     - virtualenv --clear -p "C:\Program Files\Python36\python.exe" .
     - .\Scripts\activate
-    - FOR %a in (dist3\*.whl) DO pip install %a
-    - cd tests
+    - cd dist3
+    - FOR %wheel in (*.whl) DO pip install %wheel
+    - cd ..\tests
     - python -m unittest discover
 
 test-3.5-linux:
@@ -164,7 +165,8 @@ deploy-3.6-VS2017:
     - build-3.6-VS2017
   script:
     - mkdir release
-    - FOR %a in (dist3\*.whl) DO cp %a release
+    - cd dist3
+    - FOR %wheel in (*.whl) DO copy %wheel ..\release
   artifacts:
     paths:
       - release/*.whl
