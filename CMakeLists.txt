@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.0)
 project(openmesh)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -21,6 +21,11 @@ acg_append_files(SOURCES "src/*.cc" .)
 include_directories(${OPENMESH_INCLUDE_DIRS})
 pybind11_add_module(openmesh ${HEADERS} ${SOURCES})
 
+set_target_properties(
+	openmesh OpenMeshCore OpenMeshTools PROPERTIES
+	CXX_STANDARD 11
+)
+
 if (WIN32)
 	target_link_libraries(openmesh PRIVATE OpenMeshCore)
 	target_link_libraries(openmesh PRIVATE OpenMeshTools)
@@ -29,7 +34,6 @@ else ()
 	target_link_libraries(openmesh PRIVATE OpenMeshCoreStatic)
 	target_link_libraries(openmesh PRIVATE OpenMeshToolsStatic)
 endif ()
-
 
 enable_testing()
 add_test(
