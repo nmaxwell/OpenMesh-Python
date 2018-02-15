@@ -3,11 +3,25 @@ stages:
   - test
   - deploy
 
-build-3.5-linux-macos:
+build-3.5-linux:
   stage:
     build
   tags:
     - Linux
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
+    - python setup.py bdist_wheel --dist-dir dist3
+  artifacts:
+    paths:
+      - dist3/
+
+build-3.5-macos:
+  stage:
+    build
+  tags:
     - Apple
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -20,11 +34,25 @@ build-3.5-linux-macos:
     paths:
       - dist3/
 
-build-2.7-linux-macos:
+build-2.7-linux:
   stage:
     build
   tags:
     - Linux
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - virtualenv --clear -p python2.7 .
+    - source bin/activate
+    - python setup.py bdist_wheel --dist-dir dist2
+  artifacts:
+    paths:
+      - dist2/
+
+build-2.7-macos:
+  stage:
+    build
+  tags:
     - Apple
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -37,14 +65,27 @@ build-2.7-linux-macos:
     paths:
       - dist2/
 
-test-3.5-linux-macos:
+test-3.5-linux:
   stage:
     test
   tags:
     - Linux
+  dependencies:
+    - build-3.5-linux
+  script:
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
+    - pip install dist3/*.whl
+    - cd tests
+    - python -m unittest discover
+
+test-3.5-macos:
+  stage:
+    test
+  tags:
     - Apple
   dependencies:
-    - build-3.5-linux-macos
+    - build-3.5-macos
   script:
     - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python3.5 .
@@ -53,14 +94,27 @@ test-3.5-linux-macos:
     - cd tests
     - python -m unittest discover
 
-test-2.7-linux-macos:
+test-2.7-linux:
   stage:
     test
   tags:
     - Linux
+  dependencies:
+    - build-2.7-linux
+  script:
+    - virtualenv --clear -p python2.7 .
+    - source bin/activate
+    - pip install dist2/*.whl
+    - cd tests
+    - python -m unittest discover
+
+test-2.7-macos:
+  stage:
+    test
+  tags:
     - Apple
   dependencies:
-    - build-2.7-linux-macos
+    - build-2.7-macos
   script:
     - export PATH=/opt/local/bin:$PATH
     - virtualenv --clear -p python2.7 .
@@ -69,14 +123,13 @@ test-2.7-linux-macos:
     - cd tests
     - python -m unittest discover
 
-deploy-3.5-linux-macos:
+deploy-3.5-linux:
   stage:
     deploy
   tags:
     - Linux
-    - Apple
   dependencies:
-    - build-3.5-linux-macos
+    - build-3.5-linux
   script:
     - mkdir release
     - cp dist3/*.whl release
@@ -84,14 +137,41 @@ deploy-3.5-linux-macos:
     paths:
       - release/*.whl
 
-deploy-2.7-linux-macos:
+deploy-3.5-macos:
+  stage:
+    deploy
+  tags:
+    - Apple
+  dependencies:
+    - build-3.5-macos
+  script:
+    - mkdir release
+    - cp dist3/*.whl release
+  artifacts:
+    paths:
+      - release/*.whl
+
+deploy-2.7-linux:
   stage:
     deploy
   tags:
     - Linux
+  dependencies:
+    - build-2.7-linux
+  script:
+    - mkdir release
+    - cp dist2/*.whl release
+  artifacts:
+    paths:
+      - release/*.whl
+
+deploy-2.7-macos:
+  stage:
+    deploy
+  tags:
     - Apple
   dependencies:
-    - build-2.7-linux-macos
+    - build-2.7-macos
   script:
     - mkdir release
     - cp dist2/*.whl release
