@@ -88,7 +88,7 @@ test-3.6-VS2017:
   tags:
     - VS2017
   dependencies:
-    - build-3.5-VS2017
+    - build-3.6-VS2017
   script:
     - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
     - virtualenv --clear -p "C:\Program Files\Python36\python.exe" .
@@ -161,7 +161,7 @@ deploy-3.6-VS2017:
   tags:
     - VS2017
   dependencies:
-    - build-3.5-VS2017
+    - build-3.6-VS2017
   script:
     - mkdir release
     - FOR %a in (dist3\*.whl) DO cp %a release
