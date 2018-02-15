@@ -2,7 +2,24 @@ stages:
   - build
   - test
   - deploy
-
+      
+build-3.6-VS2017:
+  stage:
+    build
+  tags:
+    - VS2017
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    COMPILER: "VS2017"
+  script:
+    - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
+    - virtualenv --clear -p "C:\Program Files\Python36\python.exe" .
+    - .\Scripts\activate
+    - python setup.py bdist_wheel --dist-dir dist3
+  artifacts:
+    paths:
+      - dist3/
+      
 build-3.5-linux:
   stage:
     build
@@ -65,6 +82,21 @@ build-2.7-macos:
     paths:
       - dist2/
 
+test-3.6-VS2017:
+  stage:
+    test
+  tags:
+    - VS2017
+  dependencies:
+    - build-3.5-VS2017
+  script:
+    - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
+    - virtualenv --clear -p "C:\Program Files\Python36\python.exe" .
+    - .\Scripts\activate
+    - FOR %a in (dist3\*.whl) DO pip install %a
+    - cd tests
+    - python -m unittest discover
+
 test-3.5-linux:
   stage:
     test
@@ -122,6 +154,20 @@ test-2.7-macos:
     - pip install dist2/*.whl
     - cd tests
     - python -m unittest discover
+    
+deploy-3.6-VS2017:
+  stage:
+    deploy
+  tags:
+    - VS2017
+  dependencies:
+    - build-3.5-VS2017
+  script:
+    - mkdir release
+    - FOR %a in (dist3\*.whl) DO cp %a release
+  artifacts:
+    paths:
+      - release/*.whl
 
 deploy-3.5-linux:
   stage:
