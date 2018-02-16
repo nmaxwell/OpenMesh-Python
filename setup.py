@@ -76,15 +76,19 @@ class CMakeBuild(build_ext):
 
 setup(
     name='openmesh',
-    version='0.0.1',
-    author='',
+    use_scm_version={
+      'version_scheme': 'post-release',
+    },
+    author='Alexander Dielen, Isaak Lim, Janis Born',
     author_email='',
     description='Python bindings for OpenMesh.',
     long_description='OpenMesh is a generic and efficient data structure for representing and manipulating polygonal meshes.',
     ext_modules=[CMakeExtension('openmesh')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    setup_requires=['numpy'],
+    setup_requires=['setuptools_scm', 'numpy'],
     install_requires=['numpy'],
-    options={'build': {'build_base': 'build-setuptools'}}
+    options={'build': {'build_base': 'build-setuptools'}},
+    license='BSD 3-Clause',
+    url='https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python',
 )
