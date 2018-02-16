@@ -241,6 +241,7 @@ deploy-documentation:
     - virtualenv --clear -p python3.5 .
     - source bin/activate
     - pip install dist3/*.whl
+    - pip install sphinx sphinx_rtd_theme
     - mkdir documentation
     - cd docs
     - make html
