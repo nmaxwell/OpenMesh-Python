@@ -229,3 +229,22 @@ deploy-2.7-macos:
   artifacts:
     paths:
       - release/*.whl
+
+deploy-documentation:
+  stage:
+    deploy
+  tags:
+    - Linux
+  dependencies:
+    - build-3.5-linux
+  script:
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
+    - pip install dist3/*.whl
+    - mkdir documentation
+    - cd docs
+    - make html
+    - cp -r _build/html/* ../documentation
+  artifacts:
+    paths:
+      - documentation/
