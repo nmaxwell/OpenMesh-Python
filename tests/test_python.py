@@ -35,7 +35,9 @@ class Python(unittest.TestCase):
         #  | /  \ |
         #  |/  1 \|
         #  3 ==== 4
-        
+
+        self.assertEqual(self.mesh.n_faces(), 4)
+
     def test_python_iterator(self):
         # Iterate over all vertices
         indices = [0, 1, 2, 3, 4]

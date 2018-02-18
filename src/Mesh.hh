@@ -10,6 +10,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 namespace OM = OpenMesh;
@@ -127,26 +128,6 @@ void garbage_collection(Mesh& _self, py::list& _vh_to_update, py::list& _hh_to_u
 
 	// Call garbage collection
 	_self.garbage_collection(vh_vector, hh_vector, fh_vector, _v, _e, _f);
-}
-
-/**
- * Add a new face from a %Python list of vertex handles.
- *
- * @tparam Mesh A Mesh type.
- *
- * @param _self The mesh instance that is to be used.
- * @param _vhandles The list of vertex handles.
- */
-template<class Mesh>
-OM::FaceHandle add_face(Mesh& _self, const py::list& _vhandles) {
-	// TODO Use automatic conversion instead?
-	std::vector<OM::VertexHandle> vector;
-	for (auto item : _vhandles) {
-		if (py::isinstance<OM::VertexHandle>(item)) {
-			vector.push_back(item.cast<OM::VertexHandle>());
-		}
-	}
-	return _self.add_face(vector);
 }
 
 /**
@@ -381,14 +362,10 @@ void expose_type_specific_functions(py::class_<PolyMesh>& _class) {
 
 	typedef py::array_t<typename Point::value_type> np_point_t;
 
-	OM::FaceHandle (PolyMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle                  ) = &PolyMesh::add_face;
 	OM::FaceHandle (PolyMesh::*add_face_4_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &PolyMesh::add_face;
-	OM::FaceHandle (*add_face_list)(PolyMesh&, const py::list&) = &add_face;
 
 	_class
-		.def("add_face", add_face_3_vh)
 		.def("add_face", add_face_4_vh)
-		.def("add_face", add_face_list)
 
 		.def("split", [](PolyMesh& _self, OM::EdgeHandle _eh, np_point_t _arr) {
 				_self.split(_eh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
@@ -424,16 +401,10 @@ void expose_type_specific_functions(py::class_<TriMesh>& _class) {
 
 	typedef py::array_t<typename Point::value_type> np_point_t;
 
-	OM::FaceHandle (TriMesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::add_face;
-	OM::FaceHandle (*add_face_list)(TriMesh&, const py::list&) = &add_face;
-
 	void (TriMesh::*split_copy_eh_vh)(OM::EdgeHandle, OM::VertexHandle) = &TriMesh::split_copy;
 	OM::HalfedgeHandle (TriMesh::*vertex_split_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &TriMesh::vertex_split;
 
 	_class
-		.def("add_face", add_face_3_vh)
-		.def("add_face", add_face_list)
-
 		.def("split", [](TriMesh& _self, OM::EdgeHandle _eh, np_point_t _arr) {
 				return _self.split(_eh, Point(_arr.at(0), _arr.at(1), _arr.at(2)));
 			})
@@ -577,6 +548,10 @@ void expose_mesh(py::module& m, const char *_name) {
 	// Assign connectivity
 	void (*assign_connectivity_poly)(Mesh&, const PolyMesh&) = &assign_connectivity;
 	void (*assign_connectivity_tri )(Mesh&, const TriMesh& ) = &assign_connectivity;
+
+	// Adding items to a mesh
+	OM::FaceHandle (Mesh::*add_face_3_vh)(OM::VertexHandle, OM::VertexHandle, OM::VertexHandle) = &Mesh::add_face;
+	OM::FaceHandle (Mesh::*add_face_list)(const std::vector<OM::VertexHandle>&) = &Mesh::add_face;
 
 	// Vertex and face valence
 	unsigned int (Mesh::*valence_vh)(OM::VertexHandle) const = &Mesh::valence;
@@ -806,6 +781,9 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("assign_connectivity", assign_connectivity_poly)
 		.def("assign_connectivity", assign_connectivity_tri)
+
+		.def("add_face", add_face_3_vh)
+		.def("add_face", add_face_list)
 
 		.def("opposite_face_handle", &Mesh::opposite_face_handle)
 		.def("adjust_outgoing_halfedge", &Mesh::adjust_outgoing_halfedge)
