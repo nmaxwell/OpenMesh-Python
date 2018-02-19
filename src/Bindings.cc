@@ -3,7 +3,6 @@
 #include "Mesh.hh"
 #include "Iterator.hh"
 #include "Circulator.hh"
-#include "PropertyManager.hh"
 #include "InputOutput.hh"
 #include "Decimater.hh"
 
@@ -38,16 +37,6 @@ PYBIND11_MODULE(openmesh, m) {
 	expose_circulator<OM::PolyConnectivity::FaceFaceIter, OM::FaceHandle>(m, "FaceFaceIter");
 
 	expose_circulator<OM::PolyConnectivity::HalfedgeLoopIter, OM::HalfedgeHandle>(m, "HalfedgeLoopIter");
-
-	typedef IteratorWrapperT<OM::PolyConnectivity::VertexIter, &OM::ArrayKernel::n_vertices> VertexIterWrapper;
-	typedef IteratorWrapperT<OM::PolyConnectivity::HalfedgeIter, &OM::ArrayKernel::n_halfedges> HalfedgeIterWrapper;
-	typedef IteratorWrapperT<OM::PolyConnectivity::EdgeIter, &OM::ArrayKernel::n_edges> EdgeIterWrapper;
-	typedef IteratorWrapperT<OM::PolyConnectivity::FaceIter, &OM::ArrayKernel::n_faces> FaceIterWrapper;
-
-	expose_property_manager<OM::VPropHandleT<py::none>, OM::VertexHandle, VertexIterWrapper>(m, "VPropertyManager");
-	expose_property_manager<OM::HPropHandleT<py::none>, OM::HalfedgeHandle, HalfedgeIterWrapper>(m, "HPropertyManager");
-	expose_property_manager<OM::EPropHandleT<py::none>, OM::EdgeHandle, EdgeIterWrapper>(m, "EPropertyManager");
-	expose_property_manager<OM::FPropHandleT<py::none>, OM::FaceHandle, FaceIterWrapper>(m, "FPropertyManager");
 
 	expose_io(m);
 

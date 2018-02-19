@@ -50,25 +50,6 @@ class Python(unittest.TestCase):
         for v, idx in zip(self.mesh.vv(self.vhandle[1]), indices):
              self.assertEqual(v.idx(), idx)
 
-    def test_property_manager(self):
-        # Check if vertex property exists
-        self.assertFalse(openmesh.VPropertyManager.property_exists(self.mesh, "prop"))
-        
-        # Create a new vertex property
-        propman = openmesh.VPropertyManager(self.mesh, "prop")
-        self.assertTrue(propman.property_exists(self.mesh, "prop"))
-        
-        # Check initial property values
-        for v in self.mesh.vertices():
-            self.assertEqual(propman[v], None)
-        
-        # Set property values
-        propman.set_range(self.mesh.vertices(), 0.0)
-        
-        # Check again
-        for v in self.mesh.vertices():
-            self.assertEqual(propman[v], 0.0)
-
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(Python)
