@@ -150,8 +150,6 @@ class TrimeshCirculatorFaceFace(unittest.TestCase):
 
         # Get the face via the handle
         faceHandle1 = next(face_iter)
-        face1 = self.mesh.face(faceHandle1)
-        
         self.assertEqual(faceHandle1.idx(), 1)
 
 

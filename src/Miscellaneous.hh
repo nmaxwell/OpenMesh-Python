@@ -5,7 +5,6 @@
 namespace py = pybind11;
 
 
-void expose_items(py::module& m);
 void expose_handles(py::module& m);
 void expose_status_bits_and_info(py::module& m);
 

@@ -1,21 +1,10 @@
 #include "Miscellaneous.hh"
 
-#include <OpenMesh/Core/Mesh/ArrayItems.hh>
 #include <OpenMesh/Core/Mesh/Handles.hh>
 #include <OpenMesh/Core/Utils/Property.hh>
 
 namespace OM = OpenMesh;
 
-
-/**
- * Expose mesh items to %Python.
- */
-void expose_items(py::module& m) {
-	py::class_<OM::ArrayItems::Vertex>(m, "Vertex");
-	py::class_<OM::ArrayItems::Halfedge>(m, "Halfedge");
-	py::class_<OM::ArrayItems::Edge>(m, "Edge");
-	py::class_<OM::ArrayItems::Face>(m, "Face");
-}
 
 /**
  * Expose item and property handles to %Python.

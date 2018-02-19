@@ -497,12 +497,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	const typename Mesh::Edge&     (Mesh::*edge    )(OM::EdgeHandle    ) const = &Mesh::edge;
 	const typename Mesh::Face&     (Mesh::*face    )(OM::FaceHandle    ) const = &Mesh::face;
 
-	// Item -> Handle
-	OM::VertexHandle   (Mesh::*handle_v)(const typename Mesh::Vertex&  ) const = &Mesh::handle;
-	OM::HalfedgeHandle (Mesh::*handle_h)(const typename Mesh::Halfedge&) const = &Mesh::handle;
-	OM::EdgeHandle     (Mesh::*handle_e)(const typename Mesh::Edge&    ) const = &Mesh::handle;
-	OM::FaceHandle     (Mesh::*handle_f)(const typename Mesh::Face&    ) const = &Mesh::handle;
-
 	// Get value of a standard property (status)
 	const StatusInfo& (Mesh::*status_vh)(OM::VertexHandle  ) const = &Mesh::status;
 	const StatusInfo& (Mesh::*status_hh)(OM::HalfedgeHandle) const = &Mesh::status;
@@ -579,12 +573,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	bool (Mesh::*is_boundary_vh)(OM::VertexHandle    ) const = &Mesh::is_boundary;
 	bool (Mesh::*is_boundary_fh)(OM::FaceHandle, bool) const = &Mesh::is_boundary;
 
-	// Generic handle derefertiation
-	const typename Mesh::Vertex&   (Mesh::*deref_vh)(OM::VertexHandle  ) const = &Mesh::deref;
-	const typename Mesh::Halfedge& (Mesh::*deref_hh)(OM::HalfedgeHandle) const = &Mesh::deref;
-	const typename Mesh::Edge&     (Mesh::*deref_eh)(OM::EdgeHandle    ) const = &Mesh::deref;
-	const typename Mesh::Face&     (Mesh::*deref_fh)(OM::FaceHandle    ) const = &Mesh::deref;
-
 	//======================================================================
 	//  PolyMeshT Function Pointers
 	//======================================================================
@@ -622,16 +610,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		//======================================================================
 
 		.def("reserve", &Mesh::reserve)
-
-		.def("vertex", vertex, py::return_value_policy::reference)
-		.def("halfedge", halfedge, py::return_value_policy::reference)
-		.def("edge", edge, py::return_value_policy::reference)
-		.def("face", face, py::return_value_policy::reference)
-
-		.def("handle", handle_v)
-		.def("handle", handle_h)
-		.def("handle", handle_e)
-		.def("handle", handle_f)
 
 		.def("vertex_handle", vertex_handle_uint)
 		.def("halfedge_handle", halfedge_handle_uint)
@@ -842,11 +820,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("is_boundary", is_boundary_vh)
 		.def("is_boundary", is_boundary_fh, py::arg("fh"), py::arg("check_vertex")=false)
 		.def("is_manifold", &Mesh::is_manifold)
-
-		.def("deref", deref_vh, py::return_value_policy::reference)
-		.def("deref", deref_hh, py::return_value_policy::reference)
-		.def("deref", deref_eh, py::return_value_policy::reference)
-		.def("deref", deref_fh, py::return_value_policy::reference)
 
 		.def_static("is_triangles", &Mesh::is_triangles)
 

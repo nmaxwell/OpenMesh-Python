@@ -13,7 +13,6 @@ namespace OM = OpenMesh;
 
 
 PYBIND11_MODULE(openmesh, m) {
-	expose_items(m);
 	expose_handles(m);
 	expose_status_bits_and_info(m);
 
