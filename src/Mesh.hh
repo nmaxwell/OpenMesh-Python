@@ -17,31 +17,6 @@ namespace OM = OpenMesh;
 
 
 /**
- * Return value policy for functions that return references to objects that are
- * managed by %OpenMesh.
- */
-#define OPENMESH_PYTHON_DEFAULT_POLICY py::return_value_policy::copy
-
-/**
- * Set the status of an item.
- *
- * @tparam Mesh A mesh type.
- * @tparam PropHandle A handle type.
- *
- * @param _self The mesh instance that is to be used.
- * @param _h The handle of the item whose status is to be set.
- * @param _info The status to be set.
- *
- * Depending on @ref OPENMESH_PYTHON_DEFAULT_POLICY, Mesh::status may
- * return by value instead of reference. This function ensures that the
- * status of an item can be changed nonetheless.
- */
-template <class Mesh, class IndexHandle>
-void set_status(Mesh& _self, IndexHandle _h, const OpenMesh::Attributes::StatusInfo& _info) {
-	_self.status(_h) = _info;
-}
-
-/**
  * Thin wrapper for assign_connectivity.
  *
  * @tparam Mesh A mesh type.
@@ -497,18 +472,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	const typename Mesh::Edge&     (Mesh::*edge    )(OM::EdgeHandle    ) const = &Mesh::edge;
 	const typename Mesh::Face&     (Mesh::*face    )(OM::FaceHandle    ) const = &Mesh::face;
 
-	// Get value of a standard property (status)
-	const StatusInfo& (Mesh::*status_vh)(OM::VertexHandle  ) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_hh)(OM::HalfedgeHandle) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_eh)(OM::EdgeHandle    ) const = &Mesh::status;
-	const StatusInfo& (Mesh::*status_fh)(OM::FaceHandle    ) const = &Mesh::status;
-
-	// Set value of a standard property (status)
-	void (*set_status_vh)(Mesh&, OM::VertexHandle,   const StatusInfo&) = &set_status;
-	void (*set_status_hh)(Mesh&, OM::HalfedgeHandle, const StatusInfo&) = &set_status;
-	void (*set_status_eh)(Mesh&, OM::EdgeHandle,     const StatusInfo&) = &set_status;
-	void (*set_status_fh)(Mesh&, OM::FaceHandle,     const StatusInfo&) = &set_status;
-
 	// Low-level adding new items
 	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
 	OM::FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
@@ -654,14 +617,45 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("halfedge_handle", halfedge_handle_fh)
 		.def("set_halfedge_handle", set_halfedge_handle_fh_hh)
 
-		.def("status", status_vh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_status", set_status_vh)
-		.def("status", status_hh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_status", set_status_hh)
-		.def("status", status_eh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_status", set_status_eh)
-		.def("status", status_fh, OPENMESH_PYTHON_DEFAULT_POLICY)
-		.def("set_status", set_status_fh)
+		.def("status", [](Mesh& _self, OM::VertexHandle _vh) -> StatusInfo& {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				return _self.status(_vh);
+			}, py::return_value_policy::reference_internal)
+
+		.def("set_status", [](Mesh& _self, OM::VertexHandle _vh, const StatusInfo& _info) {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				_self.status(_vh) = _info;
+			})
+
+		.def("status", [](Mesh& _self, OM::HalfedgeHandle _hh) -> StatusInfo& {
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				return _self.status(_hh);
+			}, py::return_value_policy::reference_internal)
+
+		.def("set_status", [](Mesh& _self, OM::HalfedgeHandle _hh, const StatusInfo& _info) {
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				_self.status(_hh) = _info;
+			})
+
+		.def("status", [](Mesh& _self, OM::EdgeHandle _eh) -> StatusInfo& {
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				return _self.status(_eh);
+			}, py::return_value_policy::reference_internal)
+
+		.def("set_status", [](Mesh& _self, OM::EdgeHandle _eh, const StatusInfo& _info) {
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				_self.status(_eh) = _info;
+			})
+
+		.def("status", [](Mesh& _self, OM::FaceHandle _fh) -> StatusInfo& {
+				if (!_self.has_face_status()) _self.request_face_status();
+				return _self.status(_fh);
+			}, py::return_value_policy::reference_internal)
+
+		.def("set_status", [](Mesh& _self, OM::FaceHandle _fh, const StatusInfo& _info) {
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.status(_fh) = _info;
+			})
 
 		.def("request_vertex_normals", &Mesh::request_vertex_normals)
 		.def("request_vertex_colors", &Mesh::request_vertex_colors)
