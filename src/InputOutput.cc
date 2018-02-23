@@ -6,83 +6,179 @@
 namespace OM = OpenMesh;
 
 
-/**
- * Expose the input/output functions and options to Python.
- */
+template <class Mesh>
+void def_read_mesh(py::module& m, const char *_name) {
+	m.def(_name,
+		[](
+			const std::string& _filename,
+			bool _binary,
+			bool _msb,
+			bool _lsb,
+			bool _swap,
+			bool _vertex_normal,
+			bool _vertex_color,
+			bool _vertex_tex_coord,
+			bool _edge_color,
+			bool _face_normal,
+			bool _face_color,
+			bool _face_tex_coord,
+			bool _color_alpha,
+			bool _color_float
+		)
+		{
+			Mesh mesh;
+			OM::IO::Options options;
+
+			if (_binary) options += OM::IO::Options::Binary;
+			if (_msb) options += OM::IO::Options::MSB;
+			if (_lsb) options += OM::IO::Options::LSB;
+			if (_swap) options += OM::IO::Options::Swap;
+
+			if (_vertex_normal) {
+				options += OM::IO::Options::VertexNormal;
+				mesh.request_vertex_normals();
+			}
+			if (_vertex_color) {
+				options += OM::IO::Options::VertexColor;
+				mesh.request_vertex_colors();
+			}
+			if (_vertex_tex_coord) {
+				options += OM::IO::Options::VertexTexCoord;
+				// TODO request only one property
+				mesh.request_vertex_texcoords1D();
+				mesh.request_vertex_texcoords2D();
+				mesh.request_vertex_texcoords3D();
+			}
+			if (_edge_color) {
+				options += OM::IO::Options::EdgeColor;
+				mesh.request_edge_colors();
+			}
+			if (_face_normal) {
+				options += OM::IO::Options::FaceNormal;
+				mesh.request_face_normals();
+			}
+			if (_face_color) {
+				options += OM::IO::Options::FaceColor;
+				mesh.request_face_colors();
+			}
+
+			if (_face_tex_coord) options += OM::IO::Options::FaceTexCoord;
+			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
+			if (_color_float) options += OM::IO::Options::ColorFloat;
+
+			OM::IO::read_mesh(mesh,_filename, options);
+
+			if (_vertex_normal && !options.vertex_has_normal()) {
+				PyErr_SetString(PyExc_RuntimeError, "Vertex normals could not be read.");
+				throw py::error_already_set();
+			}
+			if (_vertex_color && !options.vertex_has_color()) {
+				PyErr_SetString(PyExc_RuntimeError, "Vertex colors could not be read.");
+				throw py::error_already_set();
+			}
+			if (_vertex_tex_coord && !options.vertex_has_texcoord()) {
+				PyErr_SetString(PyExc_RuntimeError, "Vertex texcoords could not be read.");
+				throw py::error_already_set();
+			}
+			if (_edge_color && !options.edge_has_color()) {
+				PyErr_SetString(PyExc_RuntimeError, "Edge colors could not be read.");
+				throw py::error_already_set();
+			}
+			if (_face_normal && !options.face_has_normal()) {
+				PyErr_SetString(PyExc_RuntimeError, "Face normals could not be read.");
+				throw py::error_already_set();
+			}
+			if (_face_color && !options.face_has_color()) {
+				PyErr_SetString(PyExc_RuntimeError, "Face colors could not be read.");
+				throw py::error_already_set();
+			}
+			if (_face_tex_coord && !options.face_has_texcoord()) {
+				PyErr_SetString(PyExc_RuntimeError, "Face texcoords could not be read.");
+				throw py::error_already_set();
+			}
+
+			return mesh;
+		},
+		py::arg("filename"),
+		py::arg("binary")=false,
+		py::arg("msb")=false,
+		py::arg("lsb")=false,
+		py::arg("swap")=false,
+		py::arg("vertex_normal")=false,
+		py::arg("vertex_color")=false,
+		py::arg("vertex_tex_coord")=false,
+		py::arg("edge_color")=false,
+		py::arg("face_normal")=false,
+		py::arg("face_color")=false,
+		py::arg("face_tex_coord")=false,
+		py::arg("color_alpha")=false,
+		py::arg("color_float")=false
+	);
+}
+
+template <class Mesh>
+void def_write_mesh(py::module& m) {
+	m.def("write_mesh",
+		[](
+			const std::string& _filename,
+			const Mesh& _mesh,
+			bool _binary,
+			bool _msb,
+			bool _lsb,
+			bool _swap,
+			bool _vertex_normal,
+			bool _vertex_color,
+			bool _vertex_tex_coord,
+			bool _edge_color,
+			bool _face_normal,
+			bool _face_color,
+			bool _face_tex_coord,
+			bool _color_alpha,
+			bool _color_float
+		)
+		{
+			OM::IO::Options options;
+
+			if (_binary) options += OM::IO::Options::Binary;
+			if (_msb) options += OM::IO::Options::MSB;
+			if (_lsb) options += OM::IO::Options::LSB;
+			if (_swap) options += OM::IO::Options::Swap;
+
+			if (_vertex_normal) options += OM::IO::Options::VertexNormal;
+			if (_vertex_color) options += OM::IO::Options::VertexColor;
+			if (_vertex_tex_coord) options += OM::IO::Options::VertexTexCoord;
+			if (_edge_color) options += OM::IO::Options::EdgeColor;
+			if (_face_normal) options += OM::IO::Options::FaceNormal;
+			if (_face_color) options += OM::IO::Options::FaceColor;
+
+			if (_face_tex_coord) options += OM::IO::Options::FaceTexCoord;
+			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
+			if (_color_float) options += OM::IO::Options::ColorFloat;
+
+			OM::IO::write_mesh(_mesh, _filename, options);
+		},
+		py::arg("filename"),
+		py::arg("mesh"),
+		py::arg("binary")=false,
+		py::arg("msb")=false,
+		py::arg("lsb")=false,
+		py::arg("swap")=false,
+		py::arg("vertex_normal")=false,
+		py::arg("vertex_color")=false,
+		py::arg("vertex_tex_coord")=false,
+		py::arg("edge_color")=false,
+		py::arg("face_normal")=false,
+		py::arg("face_color")=false,
+		py::arg("face_tex_coord")=false,
+		py::arg("color_alpha")=false,
+		py::arg("color_float")=false
+	);
+}
+
 void expose_io(py::module& m) {
-
-	//======================================================================
-	//  Options
-	//======================================================================
-
-	py::class_<OM::IO::Options> class_options(m, "Options");
-
-	class_options
-		.def(py::init<>())
-		.def(py::init<OM::IO::Options::Flag>())
-		.def("cleanup", &OM::IO::Options::cleanup)
-		.def("clear", &OM::IO::Options::clear)
-		.def("is_empty", &OM::IO::Options::is_empty)
-		.def("check", &OM::IO::Options::check)
-		.def("is_binary", &OM::IO::Options::is_binary)
-		.def("vertex_has_normal", &OM::IO::Options::vertex_has_normal)
-		.def("vertex_has_color", &OM::IO::Options::vertex_has_color)
-		.def("vertex_has_texcoord", &OM::IO::Options::vertex_has_texcoord)
-		.def("edge_has_color", &OM::IO::Options::edge_has_color)
-		.def("face_has_normal", &OM::IO::Options::face_has_normal)
-		.def("face_has_color", &OM::IO::Options::face_has_color)
-		.def("face_has_texcoord", &OM::IO::Options::face_has_texcoord)
-		.def("color_has_alpha", &OM::IO::Options::color_has_alpha)
-		.def("color_is_float", &OM::IO::Options::color_is_float)
-
-		.def(py::self == py::self)
-		.def(py::self != py::self)
-		.def(py::self -= OM::IO::Options::Flag())
-		.def(py::self += OM::IO::Options::Flag())
-		;
-
-	py::enum_<OM::IO::Options::Flag>(class_options, "Flag", py::arithmetic())
-		.value("Default", OM::IO::Options::Default)
-		.value("Binary", OM::IO::Options::Binary)
-		.value("MSB", OM::IO::Options::MSB)
-		.value("LSB", OM::IO::Options::LSB)
-		.value("Swap", OM::IO::Options::Swap)
-		.value("VertexNormal", OM::IO::Options::VertexNormal)
-		.value("VertexColor", OM::IO::Options::VertexColor)
-		.value("VertexTexCoord", OM::IO::Options::VertexTexCoord)
-		.value("EdgeColor", OM::IO::Options::EdgeColor)
-		.value("FaceNormal", OM::IO::Options::FaceNormal)
-		.value("FaceColor", OM::IO::Options::FaceColor)
-		.value("FaceTexCoord", OM::IO::Options::FaceTexCoord)
-		.value("ColorAlpha", OM::IO::Options::ColorAlpha)
-		.value("ColorFloat", OM::IO::Options::ColorFloat)
-		.export_values()
-		;
-
-	//======================================================================
-	//  Functions
-	//======================================================================
-
-	bool (*read_mesh_poly        )(PolyMesh&, const std::string&                        ) = &OM::IO::read_mesh;
-	bool (*read_mesh_poly_options)(PolyMesh&, const std::string&, OM::IO::Options&, bool) = &OM::IO::read_mesh;
-	bool (*read_mesh_tri         )(TriMesh&,  const std::string&                        ) = &OM::IO::read_mesh;
-	bool (*read_mesh_tri_options )(TriMesh&,  const std::string&, OM::IO::Options&, bool) = &OM::IO::read_mesh;
-
-	bool (*write_mesh_poly)(const PolyMesh&, const std::string&, OM::IO::Options, std::streamsize) = &OM::IO::write_mesh;
-	bool (*write_mesh_tri )(const TriMesh&,  const std::string&, OM::IO::Options, std::streamsize) = &OM::IO::write_mesh;
-
-	m.def("read_mesh", read_mesh_poly);
-	m.def("read_mesh", read_mesh_poly_options,
-		py::arg("mesh"), py::arg("filename"), py::arg("opt"), py::arg("clear")=true);
-	m.def("read_mesh", read_mesh_tri);
-	m.def("read_mesh", read_mesh_tri_options,
-		py::arg("mesh"), py::arg("filename"), py::arg("opt"), py::arg("clear")=true);
-
-	m.def("write_mesh", write_mesh_poly,
-		py::arg("mesh"), py::arg("filename"),
-		py::arg("opt")=OM::IO::Options(), py::arg("precision")=6);
-	m.def("write_mesh", write_mesh_tri,
-		py::arg("mesh"), py::arg("filename"),
-		py::arg("opt")=OM::IO::Options(), py::arg("precision")=6);
+	def_read_mesh<TriMesh>(m, "read_trimesh");
+	def_read_mesh<PolyMesh>(m, "read_polymesh");
+	def_write_mesh<TriMesh>(m);
+	def_write_mesh<PolyMesh>(m);
 }
 
