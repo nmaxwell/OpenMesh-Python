@@ -35,7 +35,7 @@ endif ()
 enable_testing()
 add_test(
 	NAME discover_tests
-	COMMAND ${PYTHON_EXECUTABLE} -m unittest discover
+	COMMAND ${PYTHON_EXECUTABLE} -m unittest discover --failfast
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
 )
 set_tests_properties(
