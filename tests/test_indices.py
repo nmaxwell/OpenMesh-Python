@@ -96,8 +96,7 @@ class Python(unittest.TestCase):
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 3))
         
     def test_face_vertex_indices_trimesh(self):
-        self.mesh = openmesh.TriMesh()
-        openmesh.read_mesh(self.mesh, 'TestFiles/cube-minimal.obj')
+        self.mesh = openmesh.read_trimesh('TestFiles/cube-minimal.obj')
         
         indices1 = self.mesh.face_vertex_indices()
         indices2 = self.mesh.fv_indices()

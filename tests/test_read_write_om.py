@@ -7,40 +7,15 @@ import numpy as np
 class ReadWriteOM(unittest.TestCase):
 
     def setUp(self):
-        self.mesh = openmesh.TriMesh()
         if not os.path.exists('OutFiles'):
             os.makedirs('OutFiles')
 
     def test_load_simple_om_force_vertex_colors_although_not_available(self):
-        self.mesh.request_vertex_colors()
-        
-        file_name = "TestFiles/cube-minimal.om"
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
-        
-        self.assertEqual(self.mesh.n_vertices(), 8)
-        self.assertEqual(self.mesh.n_edges(), 18)
-        self.assertEqual(self.mesh.n_faces(), 12)
-        self.assertEqual(self.mesh.n_halfedges(), 36)
-
-        self.assertFalse(options.vertex_has_normal())
-        self.assertFalse(options.vertex_has_texcoord())
-        self.assertFalse(options.vertex_has_color())
+        with self.assertRaises(RuntimeError):
+            openmesh.read_trimesh("TestFiles/cube-minimal.om", vertex_color=True)
 
     def test_load_simple_om_with_texcoords(self):
-        self.mesh.request_vertex_texcoords2D()
-
-        options = openmesh.Options()
-        options += openmesh.Options.VertexTexCoord
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-texCoords.om", options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal-texCoords.om", vertex_tex_coord=True)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -58,21 +33,16 @@ class ReadWriteOM(unittest.TestCase):
         self.assertEqual(self.mesh.texcoord2D(self.mesh.vertex_handle(7))[0], 12.0)
         self.assertEqual(self.mesh.texcoord2D(self.mesh.vertex_handle(7))[1], 12.0)
         
-        self.assertFalse(options.vertex_has_normal())
-        self.assertTrue(options.vertex_has_texcoord())
-        self.assertFalse(options.vertex_has_color())
+        self.assertFalse(self.mesh.has_vertex_normals())
+        self.assertTrue(self.mesh.has_vertex_texcoords1D())
+        self.assertTrue(self.mesh.has_vertex_texcoords2D())
+        self.assertTrue(self.mesh.has_vertex_texcoords3D())
+        self.assertFalse(self.mesh.has_vertex_colors())
         
         self.mesh.release_vertex_texcoords2D()
 
     def test_load_simple_om_with_vertex_colors(self):
-        self.mesh.request_vertex_colors()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal-vertexColors.om", options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal-vertexColors.om", vertex_color=True)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -94,14 +64,16 @@ class ReadWriteOM(unittest.TestCase):
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[1], 0.0)
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[2], 1.0)
         
-        self.assertFalse(options.vertex_has_normal())
-        self.assertFalse(options.vertex_has_texcoord())
-        self.assertTrue(options.vertex_has_color())
+        self.assertFalse(self.mesh.has_vertex_normals())
+        self.assertFalse(self.mesh.has_vertex_texcoords1D())
+        self.assertFalse(self.mesh.has_vertex_texcoords2D())
+        self.assertFalse(self.mesh.has_vertex_texcoords3D())
+        self.assertTrue(self.mesh.has_vertex_colors())
         
         self.mesh.release_vertex_colors()
 
     def test_write_triangle(self):
-        filename = "OutFiles/triangle-minimal.om";
+        self.mesh = openmesh.TriMesh()
         
         # Generate data
         v1 = self.mesh.add_vertex(np.array([1.0, 0.0, 0.0]))
@@ -110,15 +82,11 @@ class ReadWriteOM(unittest.TestCase):
         self.mesh.add_face(v1, v2, v3)
         
         # Save
-        ok = openmesh.write_mesh(self.mesh, filename)
-        self.assertTrue(ok)
-        
-        # Reset
-        self.mesh.clear()
+        filename = "OutFiles/triangle-minimal.om"
+        openmesh.write_mesh(filename, self.mesh)
         
         # Load
-        ok = openmesh.read_mesh(self.mesh, filename)
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh(filename)
         
         # Compare
         self.assertEqual(self.mesh.n_vertices(), 3)
@@ -133,14 +101,8 @@ class ReadWriteOM(unittest.TestCase):
         os.remove(filename)
 
     def test_write_triangle_vertex_integer_color(self):
-        self.mesh.request_vertex_colors()
-            
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        options += openmesh.Options.ColorFloat
-
-        filename = "OutFiles/triangle-minimal-ColorsPerVertex.om"
-            
+        self.mesh = openmesh.TriMesh()
+        
         # Generate data
         v1 = self.mesh.add_vertex(np.array([1.0, 0.0, 0.0]))
         v2 = self.mesh.add_vertex(np.array([0.0, 1.0, 0.0]))
@@ -156,16 +118,13 @@ class ReadWriteOM(unittest.TestCase):
         self.mesh.set_color(v3, c3)
             
         # Save
-        ok = openmesh.write_mesh(self.mesh, filename, options)
-        self.assertTrue(ok)
+        filename = "OutFiles/triangle-minimal-ColorsPerVertex.om"
+        openmesh.write_mesh(filename, self.mesh, vertex_color=True, color_float=True)
             
         self.mesh.release_vertex_colors()
             
         # Load
-        cmpMesh = openmesh.TriMesh()
-        cmpMesh.request_vertex_colors()
-        ok = openmesh.read_mesh(cmpMesh, filename, options)
-        self.assertTrue(ok)
+        cmpMesh = openmesh.read_trimesh(filename, vertex_color=True, color_float=True)
             
         self.assertTrue(cmpMesh.has_vertex_colors())
             

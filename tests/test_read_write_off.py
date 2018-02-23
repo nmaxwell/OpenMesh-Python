@@ -8,20 +8,17 @@ import numpy as np
 class ReadWriteOFF(unittest.TestCase):
 
     def setUp(self):
-        self.mesh = openmesh.TriMesh()
         if not os.path.exists('OutFiles'):
             os.makedirs('OutFiles')
 
     def test_load_simple_off_file(self):
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1.off")
-        
-        self.assertTrue(ok)
-        
+        self.mesh = openmesh.read_trimesh("TestFiles/cube1.off")
         self.assertEqual(self.mesh.n_vertices(), 7526)
         self.assertEqual(self.mesh.n_edges(), 22572)
         self.assertEqual(self.mesh.n_faces(), 15048)
 
     def test_write_and_read_vertex_colors_to_and_from_off_file(self):
+        self.mesh = openmesh.TriMesh()
         self.mesh.request_vertex_colors()
 
         self.mesh.add_vertex(np.array([0, 0, 1]))
@@ -45,12 +42,8 @@ class ReadWriteOFF(unittest.TestCase):
 
         self.assertEqual(count, 0)
 
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        options += openmesh.Options.ColorFloat
-        
-        openmesh.write_mesh(self.mesh, "OutFiles/temp.off", options)
-        openmesh.read_mesh(self.mesh, "OutFiles/temp.off", options)
+        openmesh.write_mesh("OutFiles/temp.off", self.mesh, vertex_color=True, color_float=True)
+        self.mesh = openmesh.read_trimesh("OutFiles/temp.off", vertex_color=True, color_float=True)
 
         # Check if vertices still have the same color
         count = 0
@@ -64,23 +57,14 @@ class ReadWriteOFF(unittest.TestCase):
         self.mesh.release_vertex_colors()
 
     def test_write_and_read_float_vertex_colors_to_and_from_off_file(self):
-        self.mesh.request_vertex_colors()
-        
-        options = openmesh.Options(openmesh.Options.VertexColor)
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
-
-        self.assertTrue(ok)
-
-        options.clear()
-        options += openmesh.Options.VertexColor
-        options += openmesh.Options.ColorFloat
+        # Read the mesh
+        self.mesh = openmesh.read_trimesh("TestFiles/meshlab.ply", vertex_color=True)
 
         # Write the mesh
-        ok = openmesh.write_mesh(self.mesh, "OutFiles/cube_floating.off", options)
-        self.assertTrue(ok)
-        ok = openmesh.read_mesh(self.mesh, "OutFiles/cube_floating.off", options)
-        self.assertTrue(ok)
+        openmesh.write_mesh("OutFiles/cube_floating.off", self.mesh, vertex_color=True, color_float=True)
+        
+        # Read the mesh again
+        self.mesh = openmesh.read_trimesh("OutFiles/cube_floating.off", vertex_color=True, color_float=True)
 
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -102,37 +86,23 @@ class ReadWriteOFF(unittest.TestCase):
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[1], 0.0)
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[2], 1.0)
 
-        self.assertFalse(options.vertex_has_normal())
-        self.assertFalse(options.vertex_has_texcoord())
-        self.assertTrue(options.vertex_has_color())
-        self.assertTrue(options.color_is_float())
+        self.assertFalse(self.mesh.has_vertex_normals())
+        self.assertFalse(self.mesh.has_vertex_texcoords1D())
+        self.assertFalse(self.mesh.has_vertex_texcoords2D())
+        self.assertFalse(self.mesh.has_vertex_texcoords3D())
+        self.assertTrue(self.mesh.has_vertex_colors())
 
         self.mesh.release_vertex_colors()
 
     def test_write_and_read_binary_float_vertex_colors_to_and_from_off_file(self):
-        self.mesh.request_vertex_colors()
-        
-        options = openmesh.Options(openmesh.Options.VertexColor)
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/meshlab.ply", options)
-        
-        self.assertTrue(ok)
-        
-        options.clear()
-        options += openmesh.Options.VertexColor
-        options += openmesh.Options.Binary
-        options += openmesh.Options.ColorFloat
-        
+        # Read the mesh
+        self.mesh = openmesh.read_trimesh("TestFiles/meshlab.ply", vertex_color=True)
+
         # Write the mesh
-        ok = openmesh.write_mesh(self.mesh, "OutFiles/cube_floating_binary.off", options)
-        self.assertTrue(ok)
-        self.mesh.clear()
-        options.clear()
-        options += openmesh.Options.VertexColor
-        options += openmesh.Options.Binary
-        options += openmesh.Options.ColorFloat
-        ok = openmesh.read_mesh(self.mesh, "OutFiles/cube_floating_binary.off", options)
-        self.assertTrue(ok)
+        openmesh.write_mesh("OutFiles/cube_floating_binary.off", self.mesh, vertex_color=True, binary=True, color_float=True)
+
+        # Read the mesh again
+        self.mesh = openmesh.read_trimesh("OutFiles/cube_floating_binary.off", vertex_color=True, binary=True, color_float=True)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -154,12 +124,12 @@ class ReadWriteOFF(unittest.TestCase):
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[1], 0.0)
         self.assertEqual(self.mesh.color(self.mesh.vertex_handle(7))[2], 1.0)
         
-        self.assertFalse(options.vertex_has_normal())
-        self.assertFalse(options.vertex_has_texcoord())
-        self.assertFalse(options.face_has_color())
-        self.assertTrue(options.vertex_has_color())
-        self.assertTrue(options.color_is_float())
-        self.assertTrue(options.is_binary())
+        self.assertFalse(self.mesh.has_vertex_normals())
+        self.assertFalse(self.mesh.has_vertex_texcoords1D())
+        self.assertFalse(self.mesh.has_vertex_texcoords2D())
+        self.assertFalse(self.mesh.has_vertex_texcoords3D())
+        self.assertFalse(self.mesh.has_face_colors())
+        self.assertTrue(self.mesh.has_vertex_colors())
         
         self.mesh.release_vertex_colors()
 

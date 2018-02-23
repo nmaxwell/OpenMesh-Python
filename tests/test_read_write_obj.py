@@ -3,30 +3,15 @@ import openmesh
 
 class ReadWriteOBJ(unittest.TestCase):
 
-    def setUp(self):
-        self.mesh = openmesh.TriMesh()
-
     def test_load_simple_obj(self):
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube-minimal.obj")
-        
-        self.assertTrue(ok)
-        
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal.obj")
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
         self.assertEqual(self.mesh.n_faces(), 12)
 
     def test_load_simple_obj_check_halfedge_and_vertex_normals(self):
-        self.mesh.request_halfedge_normals()
-        self.mesh.request_vertex_normals()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexNormal
-        
-        file_name = "TestFiles/cube-minimal.obj"
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal.obj", vertex_normal=True)
+        self.mesh.update_halfedge_normals()
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -85,66 +70,11 @@ class ReadWriteOBJ(unittest.TestCase):
         self.mesh.release_halfedge_normals()
 
     def test_load_simple_obj_force_vertex_colors_although_not_available(self):
-        self.mesh.request_vertex_colors()
-        
-        file_name = "TestFiles/cube-minimal.obj"
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
-        
-        self.assertEqual(self.mesh.n_vertices(), 8)
-        self.assertEqual(self.mesh.n_edges(), 18)
-        self.assertEqual(self.mesh.n_faces(), 12)
-        self.assertEqual(self.mesh.n_halfedges(), 36)
-
-    def test_load_simple_obj_check_texcoords(self):
-        self.mesh.request_halfedge_texcoords2D()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.FaceTexCoord
-        
-        file_name = "TestFiles/cube-minimal-texCoords.obj"
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle( 0))[0], 1.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle( 0))[1], 1.0)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(10))[0], 3.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(10))[1], 3.0)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(19))[0], 6.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(19))[1], 6.0)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(24))[0], 7.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(24))[1], 7.0)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(30))[0], 9.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(30))[1], 9.0)
-        
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(35))[0], 12.0)
-        self.assertEqual(self.mesh.texcoord2D(self.mesh.halfedge_handle(35))[1], 12.0)
-        
-        self.mesh.release_halfedge_texcoords2D()
+        with self.assertRaises(RuntimeError):
+            openmesh.read_trimesh("TestFiles/cube-minimal.obj", vertex_color=True)
 
     def test_load_obj_with_material(self):
-        self.mesh.request_face_colors()
-
-        options = openmesh.Options()
-        options += openmesh.Options.FaceColor
-
-        file_name = "TestFiles/square_material.obj"
-
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-
-        self.assertTrue(ok)
-
+        self.mesh = openmesh.read_trimesh("TestFiles/square_material.obj", face_color=True)
         fh = self.mesh.face_handle(self.mesh.halfedge_handle(0))
 
         self.assertTrue(fh.is_valid())
@@ -156,16 +86,7 @@ class ReadWriteOBJ(unittest.TestCase):
         self.mesh.release_face_colors()
 
     def test_load_simple_obj_with_vertex_colors_after_vertices(self):
-        self.mesh.request_vertex_colors()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        
-        file_name = "TestFiles/cube-minimal-vertex-colors-after-vertex-definition.obj"
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal-vertex-colors-after-vertex-definition.obj", vertex_color=True)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)
@@ -190,16 +111,7 @@ class ReadWriteOBJ(unittest.TestCase):
         self.mesh.release_vertex_colors()
 
     def test_load_simple_obj_with_vertex_colors_as_vc_lines(self):
-        self.mesh.request_vertex_colors()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.VertexColor
-        
-        file_name = "TestFiles/cube-minimal-vertex-colors-as-vc-lines.obj"
-        
-        ok = openmesh.read_mesh(self.mesh, file_name, options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube-minimal-vertex-colors-as-vc-lines.obj", vertex_color=True)
         
         self.assertEqual(self.mesh.n_vertices(), 8)
         self.assertEqual(self.mesh.n_edges(), 18)

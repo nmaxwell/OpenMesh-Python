@@ -3,27 +3,14 @@ import openmesh
 
 class ReadWriteSTL(unittest.TestCase):
 
-    def setUp(self):
-        self.mesh = openmesh.TriMesh()
-
     def test_load_simple_stl_file(self):
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1.stl")
-        
-        self.assertTrue(ok)
-        
+        self.mesh = openmesh.read_trimesh("TestFiles/cube1.stl")
         self.assertEqual(self.mesh.n_vertices(), 7526)
         self.assertEqual(self.mesh.n_edges(), 22572)
         self.assertEqual(self.mesh.n_faces(), 15048)
     
     def test_load_simple_stl_file_with_normals(self):
-        self.mesh.request_face_normals()
-        
-        options = openmesh.Options()
-        options += openmesh.Options.FaceNormal
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1.stl", options)
-        
-        self.assertTrue(ok)
+        self.mesh = openmesh.read_trimesh("TestFiles/cube1.stl", face_normal=True)
         
         self.assertAlmostEqual(self.mesh.normal(self.mesh.face_handle(0))[0], -0.038545)
         self.assertAlmostEqual(self.mesh.normal(self.mesh.face_handle(0))[1], -0.004330)
@@ -36,28 +23,16 @@ class ReadWriteSTL(unittest.TestCase):
         self.mesh.release_face_normals()
 
     def test_load_simple_stl_binary_file(self):
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1Binary.stl")
-        
-        self.assertTrue(ok)
-        
+        self.mesh = openmesh.read_trimesh("TestFiles/cube1Binary.stl")
         self.assertEqual(self.mesh.n_vertices(), 7526)
         self.assertEqual(self.mesh.n_edges(), 22572)
         self.assertEqual(self.mesh.n_faces(), 15048)
 
     def test_load_simple_stl_binary_file_with_normals(self):
-        self.mesh.request_face_normals()
+        self.mesh = openmesh.read_trimesh("TestFiles/cube1Binary.stl", face_normal=True, binary=True)
         
-        options = openmesh.Options()
-        options += openmesh.Options.FaceNormal
-        options += openmesh.Options.Binary
-        
-        ok = openmesh.read_mesh(self.mesh, "TestFiles/cube1Binary.stl", options)
-        
-        self.assertTrue(ok)
-        
-        self.assertTrue(options.is_binary())
-        self.assertTrue(options.face_has_normal())
-        self.assertFalse(options.vertex_has_normal())
+        self.assertTrue(self.mesh.has_face_normals())
+        self.assertFalse(self.mesh.has_vertex_normals())
         
         self.assertAlmostEqual(self.mesh.normal(self.mesh.face_handle(0))[0], -0.038545, 5)
         self.assertAlmostEqual(self.mesh.normal(self.mesh.face_handle(0))[1], -0.004330, 5)

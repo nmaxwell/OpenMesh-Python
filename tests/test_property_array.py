@@ -6,8 +6,7 @@ import numpy as np
 class Python(unittest.TestCase):
 
     def setUp(self):
-        self.mesh = openmesh.TriMesh()
-        openmesh.read_mesh(self.mesh, 'TestFiles/cube-minimal.obj')
+        self.mesh = openmesh.read_trimesh('TestFiles/cube-minimal.obj')
 
     def test_vertex_property_array(self):
         self.assertFalse(self.mesh.has_vertex_property('random'))
