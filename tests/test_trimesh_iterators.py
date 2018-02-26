@@ -178,10 +178,6 @@ class TriMeshIterators(unittest.TestCase):
         
         # Run over all halfedges
         heCounter = 0
-
-        self.mesh.request_face_status()
-        self.mesh.request_vertex_status()
-        self.mesh.request_halfedge_status()
         
         # Get second edge
         eh = self.mesh.edge_handle(2)
@@ -280,10 +276,6 @@ class TriMeshIterators(unittest.TestCase):
         
         # Run over all halfedges
         heCounter = 0
-
-        self.mesh.request_face_status()
-        self.mesh.request_vertex_status()
-        self.mesh.request_halfedge_status()
         
         # Get second edge
         eh = self.mesh.edge_handle(2)
@@ -360,11 +352,6 @@ class TriMeshIterators(unittest.TestCase):
         self.assertFalse(found_37)
         
     def test_face_iter_empty_mesh_one_deleted_face(self):
-        # Request delete_face capability
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_face_status()
-        
         # Add some vertices
         self.vhandle.append(self.mesh.add_vertex(np.array([0, 0, 0])))
         self.vhandle.append(self.mesh.add_vertex(np.array([0, 1, 0])))

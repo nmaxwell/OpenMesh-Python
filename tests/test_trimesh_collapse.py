@@ -56,10 +56,6 @@ class Collapse(unittest.TestCase):
         face_vhandles.append(self.vhandle[2])
         self.mesh.add_face(face_vhandles)
 
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_face_status()
-
         # Get the halfedge
         v2v1 = self.mesh.find_halfedge(self.vhandle[2], self.vhandle[1])
 
@@ -104,10 +100,6 @@ class Collapse(unittest.TestCase):
         face_vhandles.append(self.vhandle[1])
         face_vhandles.append(self.vhandle[0])
         self.mesh.add_face(face_vhandles)
-        
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_face_status()
         
         v0v1 = self.mesh.halfedge_handle(0)
         v1v0 = self.mesh.opposite_halfedge_handle(v0v1)
@@ -186,10 +178,10 @@ class Collapse(unittest.TestCase):
         self.assertEqual(self.mesh.n_faces(), 4)
 
         # Check if the right vertices got deleted
-        self.assertTrue(self.mesh.status(self.mesh.face_handle(0)).deleted())
-        self.assertFalse(self.mesh.status(self.mesh.face_handle(1)).deleted())
-        self.assertFalse(self.mesh.status(self.mesh.face_handle(2)).deleted())
-        self.assertTrue(self.mesh.status(self.mesh.face_handle(3)).deleted())
+        self.assertTrue(self.mesh.is_deleted(self.mesh.face_handle(0)))
+        self.assertFalse(self.mesh.is_deleted(self.mesh.face_handle(1)))
+        self.assertFalse(self.mesh.is_deleted(self.mesh.face_handle(2)))
+        self.assertTrue(self.mesh.is_deleted(self.mesh.face_handle(3)))
 
         # Check the vertices of the two remaining faces
         fh_1 = self.mesh.face_handle(1)
@@ -395,10 +387,6 @@ class Collapse(unittest.TestCase):
         face_vhandles.append(self.vhandle[3])
         self.mesh.add_face(face_vhandles)
 
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_face_status()
-
         # =============================================
         # Collapse halfedge from 0 to 4
         # =============================================
@@ -488,11 +476,6 @@ class Collapse(unittest.TestCase):
         #   \ /    \|/
         #    3 ==== 4
 
-        # Request the status bits
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_face_status()
-
         # =============================================
         # Collapse halfedge from 1 to 4
         # =============================================
@@ -515,8 +498,8 @@ class Collapse(unittest.TestCase):
         # Collapse it
         self.mesh.collapse(heh_collapse)
 
-        self.assertTrue(self.mesh.status(vh_from).deleted())
-        self.assertFalse(self.mesh.status(vh_to).deleted())
+        self.assertTrue(self.mesh.is_deleted(vh_from))
+        self.assertFalse(self.mesh.is_deleted(vh_to))
 
 
 if __name__ == '__main__':

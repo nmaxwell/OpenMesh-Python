@@ -7,11 +7,6 @@ class TriMeshGarbageCollection(unittest.TestCase):
 
     def setUp(self):
         self.mesh = openmesh.TriMesh()
-        
-        self.mesh.request_vertex_status()
-        self.mesh.request_edge_status()
-        self.mesh.request_halfedge_status()
-        self.mesh.request_face_status()
 
         # Add some vertices
         self.vhandle = []

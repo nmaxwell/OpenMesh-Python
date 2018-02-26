@@ -126,11 +126,6 @@ class Property(unittest.TestCase):
         self.assertEqual(self.mesh.vertex_property("intProp", next(v_it)), 2)
         
     def test_check_status_properties_halfedge_edge_all_deleted(self):
-        self.mesh.request_vertex_status()
-        self.mesh.request_face_status()
-        self.mesh.request_halfedge_status()
-        self.mesh.request_edge_status()
-
         # Define positions
         p1 = np.array([0, 0, 0])
         p2 = np.array([0, 1, 0])
@@ -156,8 +151,8 @@ class Property(unittest.TestCase):
         self.mesh.delete_face(f4)
 
         for heh in self.mesh.halfedges():
-            self.assertTrue(self.mesh.status(self.mesh.edge_handle(heh)).deleted())
-            self.assertTrue(self.mesh.status(heh).deleted())
+            self.assertTrue(self.mesh.is_deleted(self.mesh.edge_handle(heh)))
+            self.assertTrue(self.mesh.is_deleted(heh))
 
     def test_copy_all_properties_vertex_after_remove_of_property(self):
         # Add some vertices
