@@ -14,7 +14,6 @@ namespace OM = OpenMesh;
 
 PYBIND11_MODULE(openmesh, m) {
 	expose_handles(m);
-	expose_status_bits_and_info(m);
 
 	expose_mesh<PolyMesh>(m, "PolyMesh");
 	expose_mesh<TriMesh>(m, "TriMesh");

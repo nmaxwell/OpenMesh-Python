@@ -425,8 +425,6 @@ void expose_type_specific_functions(py::class_<TriMesh>& _class) {
  */
 template <class Mesh>
 void expose_mesh(py::module& m, const char *_name) {
-	using OpenMesh::Attributes::StatusInfo;
-
 	typedef typename Mesh::Scalar Scalar;
 	typedef typename Mesh::Point  Point;
 	typedef typename Mesh::Normal Normal;
@@ -617,44 +615,44 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("halfedge_handle", halfedge_handle_fh)
 		.def("set_halfedge_handle", set_halfedge_handle_fh_hh)
 
-		.def("status", [](Mesh& _self, OM::VertexHandle _vh) -> StatusInfo& {
+		.def("is_deleted", [](Mesh& _self, OM::VertexHandle _h) {
 				if (!_self.has_vertex_status()) _self.request_vertex_status();
-				return _self.status(_vh);
-			}, py::return_value_policy::reference_internal)
+				return _self.status(_h).deleted();
+			})
 
-		.def("set_status", [](Mesh& _self, OM::VertexHandle _vh, const StatusInfo& _info) {
+		.def("set_deleted", [](Mesh& _self, OM::VertexHandle _h, bool _val) {
 				if (!_self.has_vertex_status()) _self.request_vertex_status();
-				_self.status(_vh) = _info;
+				_self.status(_h).set_deleted(_val);
 			})
 
-		.def("status", [](Mesh& _self, OM::HalfedgeHandle _hh) -> StatusInfo& {
+		.def("is_deleted", [](Mesh& _self, OM::HalfedgeHandle _h) {
 				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
-				return _self.status(_hh);
-			}, py::return_value_policy::reference_internal)
+				return _self.status(_h).deleted();
+			})
 
-		.def("set_status", [](Mesh& _self, OM::HalfedgeHandle _hh, const StatusInfo& _info) {
+		.def("set_deleted", [](Mesh& _self, OM::HalfedgeHandle _h, bool _val) {
 				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
-				_self.status(_hh) = _info;
+				_self.status(_h).set_deleted(_val);
 			})
 
-		.def("status", [](Mesh& _self, OM::EdgeHandle _eh) -> StatusInfo& {
+		.def("is_deleted", [](Mesh& _self, OM::EdgeHandle _h) {
 				if (!_self.has_edge_status()) _self.request_edge_status();
-				return _self.status(_eh);
-			}, py::return_value_policy::reference_internal)
-
-		.def("set_status", [](Mesh& _self, OM::EdgeHandle _eh, const StatusInfo& _info) {
-				if (!_self.has_edge_status()) _self.request_edge_status();
-				_self.status(_eh) = _info;
+				return _self.status(_h).deleted();
 			})
 
-		.def("status", [](Mesh& _self, OM::FaceHandle _fh) -> StatusInfo& {
-				if (!_self.has_face_status()) _self.request_face_status();
-				return _self.status(_fh);
-			}, py::return_value_policy::reference_internal)
+		.def("set_deleted", [](Mesh& _self, OM::EdgeHandle _h, bool _val) {
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				_self.status(_h).set_deleted(_val);
+			})
 
-		.def("set_status", [](Mesh& _self, OM::FaceHandle _fh, const StatusInfo& _info) {
+		.def("is_deleted", [](Mesh& _self, OM::FaceHandle _h) {
 				if (!_self.has_face_status()) _self.request_face_status();
-				_self.status(_fh) = _info;
+				return _self.status(_h).deleted();
+			})
+
+		.def("set_deleted", [](Mesh& _self, OM::FaceHandle _h, bool _val) {
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.status(_h).set_deleted(_val);
 			})
 
 		.def("request_vertex_normals", &Mesh::request_vertex_normals)
@@ -662,18 +660,14 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("request_vertex_texcoords1D", &Mesh::request_vertex_texcoords1D)
 		.def("request_vertex_texcoords2D", &Mesh::request_vertex_texcoords2D)
 		.def("request_vertex_texcoords3D", &Mesh::request_vertex_texcoords3D)
-		.def("request_vertex_status", &Mesh::request_vertex_status)
-		.def("request_halfedge_status", &Mesh::request_halfedge_status)
 		.def("request_halfedge_normals", &Mesh::request_halfedge_normals)
 		.def("request_halfedge_colors", &Mesh::request_halfedge_colors)
 		.def("request_halfedge_texcoords1D", &Mesh::request_halfedge_texcoords1D)
 		.def("request_halfedge_texcoords2D", &Mesh::request_halfedge_texcoords2D)
 		.def("request_halfedge_texcoords3D", &Mesh::request_halfedge_texcoords3D)
-		.def("request_edge_status", &Mesh::request_edge_status)
 		.def("request_edge_colors", &Mesh::request_edge_colors)
 		.def("request_face_normals", &Mesh::request_face_normals)
 		.def("request_face_colors", &Mesh::request_face_colors)
-		.def("request_face_status", &Mesh::request_face_status)
 		.def("request_face_texture_index", &Mesh::request_face_texture_index)
 
 		.def("release_vertex_normals", &Mesh::release_vertex_normals)
@@ -681,18 +675,14 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("release_vertex_texcoords1D", &Mesh::release_vertex_texcoords1D)
 		.def("release_vertex_texcoords2D", &Mesh::release_vertex_texcoords2D)
 		.def("release_vertex_texcoords3D", &Mesh::release_vertex_texcoords3D)
-		.def("release_vertex_status", &Mesh::release_vertex_status)
-		.def("release_halfedge_status", &Mesh::release_halfedge_status)
 		.def("release_halfedge_normals", &Mesh::release_halfedge_normals)
 		.def("release_halfedge_colors", &Mesh::release_halfedge_colors)
 		.def("release_halfedge_texcoords1D", &Mesh::release_halfedge_texcoords1D)
 		.def("release_halfedge_texcoords2D", &Mesh::release_halfedge_texcoords2D)
 		.def("release_halfedge_texcoords3D", &Mesh::release_halfedge_texcoords3D)
-		.def("release_edge_status", &Mesh::release_edge_status)
 		.def("release_edge_colors", &Mesh::release_edge_colors)
 		.def("release_face_normals", &Mesh::release_face_normals)
 		.def("release_face_colors", &Mesh::release_face_colors)
-		.def("release_face_status", &Mesh::release_face_status)
 		.def("release_face_texture_index", &Mesh::release_face_texture_index)
 
 		.def("has_vertex_normals", &Mesh::has_vertex_normals)
@@ -700,18 +690,14 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("has_vertex_texcoords1D", &Mesh::has_vertex_texcoords1D)
 		.def("has_vertex_texcoords2D", &Mesh::has_vertex_texcoords2D)
 		.def("has_vertex_texcoords3D", &Mesh::has_vertex_texcoords3D)
-		.def("has_vertex_status", &Mesh::has_vertex_status)
-		.def("has_halfedge_status", &Mesh::has_halfedge_status)
 		.def("has_halfedge_normals", &Mesh::has_halfedge_normals)
 		.def("has_halfedge_colors", &Mesh::has_halfedge_colors)
 		.def("has_halfedge_texcoords1D", &Mesh::has_halfedge_texcoords1D)
 		.def("has_halfedge_texcoords2D", &Mesh::has_halfedge_texcoords2D)
 		.def("has_halfedge_texcoords3D", &Mesh::has_halfedge_texcoords3D)
-		.def("has_edge_status", &Mesh::has_edge_status)
 		.def("has_edge_colors", &Mesh::has_edge_colors)
 		.def("has_face_normals", &Mesh::has_face_normals)
 		.def("has_face_colors", &Mesh::has_face_colors)
-		.def("has_face_status", &Mesh::has_face_status)
 		.def("has_face_texture_index", &Mesh::has_face_texture_index)
 
 		.def("new_vertex", new_vertex_void)
@@ -762,7 +748,6 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("find_halfedge", &Mesh::find_halfedge)
 		.def("valence", valence_vh)
 		.def("valence", valence_fh)
-		.def("collapse", &Mesh::collapse)
 		.def("is_simple_link", &Mesh::is_simple_link)
 		.def("is_simply_connected", &Mesh::is_simply_connected)
 		.def("remove_edge", &Mesh::remove_edge)
@@ -772,19 +757,37 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("split_edge", &Mesh::split_edge)
 		.def("split_edge_copy", &Mesh::split_edge_copy)
 
-		.def("add_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr)
-			{ return _self.add_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2))); })
+		.def("is_collapse_ok", [](Mesh& _self, OM::HalfedgeHandle _heh) {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				if (!_self.has_face_status()) _self.request_face_status();
+				return _self.is_collapse_ok(_heh);
+			})
 
-		.def("is_collapse_ok",  &Mesh::is_collapse_ok)
+		.def("collapse", [](Mesh& _self, OM::HalfedgeHandle _heh) {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				if (!_self.has_edge_status()) _self.request_edge_status();
+				if (!_self.has_face_status()) _self.request_face_status();
+				_self.collapse(_heh);
+			})
+
+		.def("add_vertex", [](Mesh& _self, py::array_t<typename Point::value_type> _arr) {
+				return _self.add_vertex(Point(_arr.at(0), _arr.at(1), _arr.at(2)));
+			})
 
 		.def("delete_vertex", [](Mesh& _self, OM::VertexHandle _vh, bool _delete_isolated) {
 				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				if (!_self.has_edge_status()) _self.request_edge_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_vertex(_vh, _delete_isolated);
 			}, py::arg("vh"), py::arg("delete_isolated_vertices")=true)
 
 		.def("delete_edge", [](Mesh& _self, OM::EdgeHandle _eh, bool _delete_isolated) {
 				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
 				if (!_self.has_edge_status()) _self.request_edge_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_edge(_eh, _delete_isolated);
@@ -792,6 +795,8 @@ void expose_mesh(py::module& m, const char *_name) {
 
 		.def("delete_face", [](Mesh& _self, OM::FaceHandle _fh, bool _delete_isolated) {
 				if (!_self.has_vertex_status() && _delete_isolated) _self.request_vertex_status();
+				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				if (!_self.has_edge_status()) _self.request_edge_status();
 				if (!_self.has_face_status()) _self.request_face_status();
 				_self.delete_face(_fh, _delete_isolated);
 			}, py::arg("fh"), py::arg("delete_isolated_vertices")=true)
