@@ -165,7 +165,7 @@ py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 		return py::array_t<int>();
 	}
 	int *indices = new int[_self.n_faces() * 3];
-	for (auto fh : _self.faces()) {
+	for (auto fh : _self.all_faces()) {
 		auto fv_it = _self.fv_iter(fh);
 		indices[fh.idx() * 3 + 0] = fv_it->idx(); ++fv_it;
 		indices[fh.idx() * 3 + 1] = fv_it->idx(); ++fv_it;
@@ -183,7 +183,7 @@ py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
 		return py::array_t<int>();
 	}
 	int *indices = new int[_self.n_halfedges() * 2];
-	for (auto heh : _self.halfedges()) {
+	for (auto heh : _self.all_halfedges()) {
 		auto vh1 = _self.from_vertex_handle(heh);
 		auto vh2 = _self.to_vertex_handle(heh);
 		indices[heh.idx() * 2 + 0] = vh1.idx();
@@ -249,7 +249,7 @@ py::array_t<int> edge_other_indices(Mesh& _self) {
 		return py::array_t<int>();
 	}
 	int *indices = new int[_self.n_edges() * 2];
-	for (auto eh : _self.edges()) {
+	for (auto eh : _self.all_edges()) {
 		CopyFunc::call(_self, eh, &indices[eh.idx() * 2]);
 	}
 	const auto shape = {_self.n_edges(), size_t(2)};
@@ -264,7 +264,7 @@ py::array_t<int> halfedge_other_indices(Mesh& _self) {
 		return py::array_t<int>();
 	}
 	int *indices = new int[_self.n_halfedges()];
-	for (auto heh : _self.halfedges()) {
+	for (auto heh : _self.all_halfedges()) {
 		CopyFunc::call(_self, heh, &indices[heh.idx()]);
 	}
 	const auto shape = {_self.n_halfedges()};
