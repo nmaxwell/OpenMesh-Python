@@ -18,10 +18,10 @@ void def_read_mesh(py::module& m, const char *_name) {
 			bool _vertex_normal,
 			bool _vertex_color,
 			bool _vertex_tex_coord,
+			bool _halfedge_tex_coord,
 			bool _edge_color,
 			bool _face_normal,
 			bool _face_color,
-			bool _face_tex_coord,
 			bool _color_alpha,
 			bool _color_float
 		)
@@ -44,10 +44,15 @@ void def_read_mesh(py::module& m, const char *_name) {
 			}
 			if (_vertex_tex_coord) {
 				options += OM::IO::Options::VertexTexCoord;
-				// TODO request only one property
 				mesh.request_vertex_texcoords1D();
 				mesh.request_vertex_texcoords2D();
 				mesh.request_vertex_texcoords3D();
+			}
+			if (_halfedge_tex_coord) {
+				options += OM::IO::Options::FaceTexCoord;
+				mesh.request_halfedge_texcoords1D();
+				mesh.request_halfedge_texcoords2D();
+				mesh.request_halfedge_texcoords3D();
 			}
 			if (_edge_color) {
 				options += OM::IO::Options::EdgeColor;
@@ -62,7 +67,6 @@ void def_read_mesh(py::module& m, const char *_name) {
 				mesh.request_face_colors();
 			}
 
-			if (_face_tex_coord) options += OM::IO::Options::FaceTexCoord;
 			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
 			if (_color_float) options += OM::IO::Options::ColorFloat;
 
@@ -92,8 +96,8 @@ void def_read_mesh(py::module& m, const char *_name) {
 				PyErr_SetString(PyExc_RuntimeError, "Face colors could not be read.");
 				throw py::error_already_set();
 			}
-			if (_face_tex_coord && !options.face_has_texcoord()) {
-				PyErr_SetString(PyExc_RuntimeError, "Face texcoords could not be read.");
+			if (_halfedge_tex_coord && !options.face_has_texcoord()) {
+				PyErr_SetString(PyExc_RuntimeError, "Halfedge texcoords could not be read.");
 				throw py::error_already_set();
 			}
 
@@ -107,10 +111,10 @@ void def_read_mesh(py::module& m, const char *_name) {
 		py::arg("vertex_normal")=false,
 		py::arg("vertex_color")=false,
 		py::arg("vertex_tex_coord")=false,
+		py::arg("halfedge_tex_coord")=false,
 		py::arg("edge_color")=false,
 		py::arg("face_normal")=false,
 		py::arg("face_color")=false,
-		py::arg("face_tex_coord")=false,
 		py::arg("color_alpha")=false,
 		py::arg("color_float")=false
 	);
@@ -129,10 +133,10 @@ void def_write_mesh(py::module& m) {
 			bool _vertex_normal,
 			bool _vertex_color,
 			bool _vertex_tex_coord,
+			bool _halfedge_tex_coord,
 			bool _edge_color,
 			bool _face_normal,
 			bool _face_color,
-			bool _face_tex_coord,
 			bool _color_alpha,
 			bool _color_float
 		)
@@ -147,11 +151,11 @@ void def_write_mesh(py::module& m) {
 			if (_vertex_normal) options += OM::IO::Options::VertexNormal;
 			if (_vertex_color) options += OM::IO::Options::VertexColor;
 			if (_vertex_tex_coord) options += OM::IO::Options::VertexTexCoord;
+			if (_halfedge_tex_coord) options += OM::IO::Options::FaceTexCoord;
 			if (_edge_color) options += OM::IO::Options::EdgeColor;
 			if (_face_normal) options += OM::IO::Options::FaceNormal;
 			if (_face_color) options += OM::IO::Options::FaceColor;
 
-			if (_face_tex_coord) options += OM::IO::Options::FaceTexCoord;
 			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
 			if (_color_float) options += OM::IO::Options::ColorFloat;
 
@@ -166,10 +170,10 @@ void def_write_mesh(py::module& m) {
 		py::arg("vertex_normal")=false,
 		py::arg("vertex_color")=false,
 		py::arg("vertex_tex_coord")=false,
+		py::arg("halfedge_tex_coord")=false,
 		py::arg("edge_color")=false,
 		py::arg("face_normal")=false,
 		py::arg("face_color")=false,
-		py::arg("face_tex_coord")=false,
 		py::arg("color_alpha")=false,
 		py::arg("color_float")=false
 	);
