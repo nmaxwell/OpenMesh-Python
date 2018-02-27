@@ -464,12 +464,6 @@ void expose_mesh(py::module& m, const char *_name) {
 	void (Mesh::*set_halfedge_handle_vh_hh)(OM::VertexHandle, OM::HalfedgeHandle) = &Mesh::set_halfedge_handle;
 	void (Mesh::*set_halfedge_handle_fh_hh)(OM::FaceHandle,   OM::HalfedgeHandle) = &Mesh::set_halfedge_handle;
 
-	// Handle -> Item
-	const typename Mesh::Vertex&   (Mesh::*vertex  )(OM::VertexHandle  ) const = &Mesh::vertex;
-	const typename Mesh::Halfedge& (Mesh::*halfedge)(OM::HalfedgeHandle) const = &Mesh::halfedge;
-	const typename Mesh::Edge&     (Mesh::*edge    )(OM::EdgeHandle    ) const = &Mesh::edge;
-	const typename Mesh::Face&     (Mesh::*face    )(OM::FaceHandle    ) const = &Mesh::face;
-
 	// Low-level adding new items
 	OM::VertexHandle (Mesh::*new_vertex_void )(void                        ) = &Mesh::new_vertex;
 	OM::FaceHandle   (Mesh::*new_face_void   )(void                        ) = &Mesh::new_face;
