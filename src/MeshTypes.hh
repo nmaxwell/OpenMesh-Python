@@ -179,6 +179,11 @@ public:
 	size_t py_n_items(OpenMesh::EdgeHandle) const { return Mesh::n_edges(); }
 	size_t py_n_items(OpenMesh::FaceHandle) const { return Mesh::n_faces(); }
 
+	size_t py_has_status(OpenMesh::VertexHandle) const { return Mesh::has_vertex_status(); }
+	size_t py_has_status(OpenMesh::HalfedgeHandle) const { return Mesh::has_halfedge_status(); }
+	size_t py_has_status(OpenMesh::EdgeHandle) const { return Mesh::has_edge_status(); }
+	size_t py_has_status(OpenMesh::FaceHandle) const { return Mesh::has_face_status(); }
+
 private:
 
 	template <class Handle, class PropHandle>

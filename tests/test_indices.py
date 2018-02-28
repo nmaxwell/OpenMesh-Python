@@ -30,6 +30,10 @@ class Python(unittest.TestCase):
         #  |     |   | /   |     /   |
         #  0 === 1   4 === 5   8 === 9
 
+    def delete_vertices(self):
+        for vh in self.mesh.vertices():
+            self.mesh.delete_vertex(vh)
+
     def test_vertex_vertex_indices(self):
         indices1 = self.mesh.vertex_vertex_indices()
         indices2 = self.mesh.vv_indices()
@@ -42,6 +46,11 @@ class Python(unittest.TestCase):
             self.assertTrue(np.array_equal(indices2[h1.idx()], correct))
         self.assertEqual(indices1.shape, (self.mesh.n_vertices(), 3))
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 3))
+        
+    def test_vertex_vertex_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.vertex_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.vv_indices)
         
     def test_vertex_face_indices(self):
         indices1 = self.mesh.vertex_face_indices()
@@ -56,6 +65,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_vertices(), 2))
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 2))
         
+    def test_vertex_face_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.vertex_face_indices)
+        self.assertRaises(RuntimeError, self.mesh.vf_indices)
+        
     def test_vertex_edge_indices(self):
         indices1 = self.mesh.vertex_edge_indices()
         indices2 = self.mesh.ve_indices()
@@ -68,6 +82,11 @@ class Python(unittest.TestCase):
             self.assertTrue(np.array_equal(indices2[h1.idx()], correct))
         self.assertEqual(indices1.shape, (self.mesh.n_vertices(), 3))
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 3))
+        
+    def test_vertex_edge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.vertex_edge_indices)
+        self.assertRaises(RuntimeError, self.mesh.ve_indices)
         
     def test_vertex_outgoing_halfedge_indices(self):
         indices1 = self.mesh.vertex_outgoing_halfedge_indices()
@@ -82,6 +101,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_vertices(), 3))
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 3))
         
+    def test_vertex_outgoing_halfedge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.vertex_outgoing_halfedge_indices)
+        self.assertRaises(RuntimeError, self.mesh.voh_indices)
+        
     def test_vertex_incoming_halfedge_indices(self):
         indices1 = self.mesh.vertex_incoming_halfedge_indices()
         indices2 = self.mesh.vih_indices()
@@ -95,9 +119,13 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_vertices(), 3))
         self.assertEqual(indices2.shape, (self.mesh.n_vertices(), 3))
         
+    def test_vertex_incoming_halfedge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.vertex_incoming_halfedge_indices)
+        self.assertRaises(RuntimeError, self.mesh.vih_indices)
+        
     def test_face_vertex_indices_trimesh(self):
         self.mesh = openmesh.read_trimesh('TestFiles/cube-minimal.obj')
-        
         indices1 = self.mesh.face_vertex_indices()
         indices2 = self.mesh.fv_indices()
         for fh in self.mesh.faces():
@@ -113,7 +141,13 @@ class Python(unittest.TestCase):
             self.assertEqual(indices2[fh.idx(), 2], vh3.idx())
         self.assertEqual(indices1.shape, (self.mesh.n_faces(), 3))
         self.assertEqual(indices2.shape, (self.mesh.n_faces(), 3))
-
+        
+    def test_face_vertex_indices_trimesh_delete(self):
+        self.mesh = openmesh.read_trimesh('TestFiles/cube-minimal.obj')
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.face_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.fv_indices)
+        
     def test_face_vertex_indices_polymesh(self):
         indices1 = self.mesh.face_vertex_indices()
         indices2 = self.mesh.fv_indices()
@@ -126,6 +160,11 @@ class Python(unittest.TestCase):
             self.assertTrue(np.array_equal(indices2[h1.idx()], correct))
         self.assertEqual(indices1.shape, (self.mesh.n_faces(), 4))
         self.assertEqual(indices2.shape, (self.mesh.n_faces(), 4))
+        
+    def test_face_vertex_indices_polymesh_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.face_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.fv_indices)
         
     def test_face_face_indices(self):
         indices1 = self.mesh.face_face_indices()
@@ -140,6 +179,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_faces(), 1))
         self.assertEqual(indices2.shape, (self.mesh.n_faces(), 1))
         
+    def test_face_face_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.face_face_indices)
+        self.assertRaises(RuntimeError, self.mesh.ff_indices)
+        
     def test_face_edge_indices(self):
         indices1 = self.mesh.face_edge_indices()
         indices2 = self.mesh.fe_indices()
@@ -153,6 +197,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_faces(), 4))
         self.assertEqual(indices2.shape, (self.mesh.n_faces(), 4))
         
+    def test_face_edge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.face_edge_indices)
+        self.assertRaises(RuntimeError, self.mesh.fe_indices)
+        
     def test_face_halfedge_indices(self):
         indices1 = self.mesh.face_halfedge_indices()
         indices2 = self.mesh.fh_indices()
@@ -165,7 +214,12 @@ class Python(unittest.TestCase):
             self.assertTrue(np.array_equal(indices2[h1.idx()], correct))
         self.assertEqual(indices1.shape, (self.mesh.n_faces(), 4))
         self.assertEqual(indices2.shape, (self.mesh.n_faces(), 4))
-
+        
+    def test_face_halfedge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.face_halfedge_indices)
+        self.assertRaises(RuntimeError, self.mesh.fh_indices)
+        
     def test_edge_vertex_indices(self):
         indices1 = self.mesh.edge_vertex_indices()
         indices2 = self.mesh.ev_indices()
@@ -179,6 +233,11 @@ class Python(unittest.TestCase):
             self.assertEqual(indices2[eh.idx(), 1], vh2.idx())
         self.assertEqual(indices1.shape, (self.mesh.n_edges(), 2))
         self.assertEqual(indices2.shape, (self.mesh.n_edges(), 2))
+        
+    def test_edge_vertex_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.edge_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.ev_indices)
         
     def test_edge_face_indices(self):
         indices1 = self.mesh.edge_face_indices()
@@ -195,6 +254,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_edges(), 2))
         self.assertEqual(indices2.shape, (self.mesh.n_edges(), 2))
         
+    def test_edge_face_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.edge_face_indices)
+        self.assertRaises(RuntimeError, self.mesh.ef_indices)
+        
     def test_edge_halfedge_indices(self):
         indices1 = self.mesh.edge_halfedge_indices()
         indices2 = self.mesh.eh_indices()
@@ -207,6 +271,11 @@ class Python(unittest.TestCase):
             self.assertEqual(indices2[eh.idx(), 1], heh2.idx())
         self.assertEqual(indices1.shape, (self.mesh.n_edges(), 2))
         self.assertEqual(indices2.shape, (self.mesh.n_edges(), 2))
+        
+    def test_edge_halfedge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.edge_halfedge_indices)
+        self.assertRaises(RuntimeError, self.mesh.eh_indices)
 
     def test_halfedge_vertex_indices(self):
         indices1 = self.mesh.halfedge_vertex_indices()
@@ -221,6 +290,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_halfedges(), 2))
         self.assertEqual(indices2.shape, (self.mesh.n_halfedges(), 2))
         
+    def test_halfedge_vertex_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.halfedge_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.hv_indices)
+        
     def test_halfedge_to_vertex_indices(self):
         indices1 = self.mesh.halfedge_to_vertex_indices()
         indices2 = self.mesh.htv_indices()
@@ -230,6 +304,11 @@ class Python(unittest.TestCase):
             self.assertEqual(indices2[heh.idx()], vh.idx())
         self.assertEqual(indices1.shape, (self.mesh.n_halfedges(),))
         self.assertEqual(indices2.shape, (self.mesh.n_halfedges(),))
+        
+    def test_halfedge_to_vertex_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.halfedge_to_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.htv_indices)
         
     def test_halfedge_from_vertex_indices(self):
         indices1 = self.mesh.halfedge_from_vertex_indices()
@@ -241,6 +320,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_halfedges(),))
         self.assertEqual(indices2.shape, (self.mesh.n_halfedges(),))
         
+    def test_halfedge_from_vertex_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.halfedge_from_vertex_indices)
+        self.assertRaises(RuntimeError, self.mesh.hfv_indices)
+        
     def test_halfedge_face_indices(self):
         indices1 = self.mesh.halfedge_face_indices()
         indices2 = self.mesh.hf_indices()
@@ -251,6 +335,11 @@ class Python(unittest.TestCase):
         self.assertEqual(indices1.shape, (self.mesh.n_halfedges(),))
         self.assertEqual(indices2.shape, (self.mesh.n_halfedges(),))
         
+    def test_halfedge_face_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.halfedge_face_indices)
+        self.assertRaises(RuntimeError, self.mesh.hf_indices)
+        
     def test_halfedge_edge_indices(self):
         indices1 = self.mesh.halfedge_edge_indices()
         indices2 = self.mesh.he_indices()
@@ -260,6 +349,11 @@ class Python(unittest.TestCase):
             self.assertEqual(indices2[heh.idx()], eh.idx())
         self.assertEqual(indices1.shape, (self.mesh.n_halfedges(),))
         self.assertEqual(indices2.shape, (self.mesh.n_halfedges(),))
+        
+    def test_halfedge_edge_indices_delete(self):
+        self.delete_vertices()
+        self.assertRaises(RuntimeError, self.mesh.halfedge_edge_indices)
+        self.assertRaises(RuntimeError, self.mesh.he_indices)
 
 
 if __name__ == '__main__':

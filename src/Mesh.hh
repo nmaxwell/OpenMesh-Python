@@ -164,8 +164,17 @@ py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	if (_self.n_faces() == 0) {
 		return py::array_t<int>();
 	}
+
+	const bool has_status = _self.has_face_status();
+
 	int *indices = new int[_self.n_faces() * 3];
+	py::capsule base = free_when_done(indices);
+
 	for (auto fh : _self.all_faces()) {
+		if (has_status && _self.status(fh).deleted()) {
+			PyErr_SetString(PyExc_RuntimeError, "Mesh has deleted items. Please call garbage_collection() first.");
+			throw py::error_already_set();
+		}
 		auto fv_it = _self.fv_iter(fh);
 		indices[fh.idx() * 3 + 0] = fv_it->idx(); ++fv_it;
 		indices[fh.idx() * 3 + 1] = fv_it->idx(); ++fv_it;
@@ -173,25 +182,6 @@ py::array_t<int> face_vertex_indices_trimesh(TriMesh& _self) {
 	}
 	const auto shape = {_self.n_faces(), size_t(3)};
 	const auto strides = {3 * sizeof(int), sizeof(int)};
-	py::capsule base = free_when_done(indices);
-	return py::array_t<int>(shape, strides, indices, base);
-}
-
-template <class Mesh>
-py::array_t<int> halfedge_vertex_indices(Mesh& _self) {
-	if (_self.n_halfedges() == 0) {
-		return py::array_t<int>();
-	}
-	int *indices = new int[_self.n_halfedges() * 2];
-	for (auto heh : _self.all_halfedges()) {
-		auto vh1 = _self.from_vertex_handle(heh);
-		auto vh2 = _self.to_vertex_handle(heh);
-		indices[heh.idx() * 2 + 0] = vh1.idx();
-		indices[heh.idx() * 2 + 1] = vh2.idx();
-	}
-	const auto shape = {_self.n_halfedges(), size_t(2)};
-	const auto strides = {2 * sizeof(int), sizeof(int)};
-	py::capsule base = free_when_done(indices);
 	return py::array_t<int>(shape, strides, indices, base);
 }
 
@@ -223,24 +213,36 @@ struct FuncHalfedgeToVertex {
 	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
 		*_ptr = _mesh.to_vertex_handle(_heh).idx();
 	}
+	static size_t dim() { return 1; }
 };
 
 struct FuncHalfedgeFromVertex {
 	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
 		*_ptr = _mesh.from_vertex_handle(_heh).idx();
 	}
+	static size_t dim() { return 1; }
 };
 
 struct FuncHalfedgeFace {
 	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
 		*_ptr = _mesh.face_handle(_heh).idx();
 	}
+	static size_t dim() { return 1; }
 };
 
 struct FuncHalfedgeEdge {
 	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
 		*_ptr = _mesh.edge_handle(_heh).idx();
 	}
+	static size_t dim() { return 1; }
+};
+
+struct FuncHalfedgeVertex {
+	static void call(const OM::ArrayKernel& _mesh, OM::HalfedgeHandle _heh, int *_ptr) {
+		_ptr[0] = _mesh.from_vertex_handle(_heh).idx();
+		_ptr[1] = _mesh.to_vertex_handle(_heh).idx();
+	}
+	static size_t dim() { return 2; }
 };
 
 template <class Mesh, class CopyFunc>
@@ -248,13 +250,21 @@ py::array_t<int> edge_other_indices(Mesh& _self) {
 	if (_self.n_edges() == 0) {
 		return py::array_t<int>();
 	}
+
+	const bool has_status = _self.has_edge_status();
+
 	int *indices = new int[_self.n_edges() * 2];
+	py::capsule base = free_when_done(indices);
+
 	for (auto eh : _self.all_edges()) {
+		if (has_status && _self.status(eh).deleted()) {
+			PyErr_SetString(PyExc_RuntimeError, "Mesh has deleted items. Please call garbage_collection() first.");
+			throw py::error_already_set();
+		}
 		CopyFunc::call(_self, eh, &indices[eh.idx() * 2]);
 	}
 	const auto shape = {_self.n_edges(), size_t(2)};
 	const auto strides = {2 * sizeof(int), sizeof(int)};
-	py::capsule base = free_when_done(indices);
 	return py::array_t<int>(shape, strides, indices, base);
 }
 
@@ -263,13 +273,32 @@ py::array_t<int> halfedge_other_indices(Mesh& _self) {
 	if (_self.n_halfedges() == 0) {
 		return py::array_t<int>();
 	}
-	int *indices = new int[_self.n_halfedges()];
-	for (auto heh : _self.all_halfedges()) {
-		CopyFunc::call(_self, heh, &indices[heh.idx()]);
-	}
-	const auto shape = {_self.n_halfedges()};
-	const auto strides = {sizeof(int)};
+
+	const bool has_status = _self.has_halfedge_status();
+	const size_t dim = CopyFunc::dim();
+
+	int *indices = new int[_self.n_halfedges() * dim];
 	py::capsule base = free_when_done(indices);
+
+	for (auto heh : _self.all_halfedges()) {
+		if (has_status && _self.status(heh).deleted()) {
+			PyErr_SetString(PyExc_RuntimeError, "Mesh has deleted items. Please call garbage_collection() first.");
+			throw py::error_already_set();
+		}
+		CopyFunc::call(_self, heh, &indices[heh.idx() * dim]);
+	}
+
+	std::vector<size_t> shape;
+	std::vector<size_t> strides;
+	if (dim == 1) {
+		shape = {_self.n_halfedges()};
+		strides = {sizeof(int)};
+	}
+	else {
+		shape = {_self.n_halfedges(), dim};
+		strides = {dim * sizeof(int), sizeof(int)};
+	}
+
 	return py::array_t<int>(shape, strides, indices, base);
 }
 
@@ -278,11 +307,18 @@ py::array_t<int> indices(Mesh& _self) {
 	const size_t n = _self.py_n_items(Handle());
 	if (n == 0) return py::array_t<int>();
 
-	// find max valence
+	const bool has_status = _self.py_has_status(Handle());
+
+	// find max valence and check status
 	int max_valence = 0;
 	for (size_t i = 0; i < n; ++i) {
+		Handle hnd(i);
+		if (has_status && _self.status(hnd).deleted()) {
+			PyErr_SetString(PyExc_RuntimeError, "Mesh has deleted items. Please call garbage_collection() first.");
+			throw py::error_already_set();
+		}
 		int valence = 0;
-		for (auto it = Circulator(_self, Handle(i)); it.is_valid(); ++it) {
+		for (auto it = Circulator(_self, hnd); it.is_valid(); ++it) {
 			valence++;
 		}
 		max_valence = std::max(max_valence, valence);
@@ -1209,8 +1245,8 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("edge_halfedge_indices", &edge_other_indices<Mesh, FuncEdgeHalfedge>)
 		.def("eh_indices", &edge_other_indices<Mesh, FuncEdgeHalfedge>)
 
-		.def("halfedge_vertex_indices", &halfedge_vertex_indices<Mesh>)
-		.def("hv_indices", &halfedge_vertex_indices<Mesh>)
+		.def("halfedge_vertex_indices", &halfedge_other_indices<Mesh, FuncHalfedgeVertex>)
+		.def("hv_indices", &halfedge_other_indices<Mesh, FuncHalfedgeVertex>)
 
 		.def("halfedge_to_vertex_indices", &halfedge_other_indices<Mesh, FuncHalfedgeToVertex>)
 		.def("htv_indices", &halfedge_other_indices<Mesh, FuncHalfedgeToVertex>)
