@@ -66,18 +66,19 @@ class CMakeBuild(build_ext):
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
                                                               self.distribution.get_version())
 
-        if self.which('ninja', env) != None:
-          cmake_args += ['-GNinja']
+        if self.which('ninja', env) is not None:
+            cmake_args += ['-GNinja']
 
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
+
 setup(
     name='openmesh',
     use_scm_version={
-      'version_scheme': 'post-release',
+        'version_scheme': 'post-release',
     },
     author='Alexander Dielen, Isaak Lim, Janis Born',
     author_email='',
