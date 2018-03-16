@@ -596,6 +596,50 @@ void expose_mesh(py::module& m, const char *_name) {
 	class_mesh
 		.def(py::init<>())
 
+		.def(py::init([](py::array_t<typename Point::value_type> _points, py::array_t<int> _faces) {
+				Mesh mesh;
+
+				// return if _points is empty
+				if (_points.size() == 0) {
+					return mesh;
+				}
+
+				// _points is not empty, throw if _points has wrong shape
+				if (_points.ndim() != 2 || _points.shape(1) != 3) {
+					PyErr_SetString(PyExc_RuntimeError, "Array 'points' must have shape (n, 3)");
+					throw py::error_already_set();
+				}
+
+				for (ssize_t i = 0; i < _points.shape(0); ++i) {
+					mesh.add_vertex(Point(_points.at(i, 0), _points.at(i, 1), _points.at(i, 2)));
+				}
+
+				// return if _faces is empty
+				if (_faces.size() == 0) {
+					return mesh;
+				}
+
+				// _faces is not empty, throw if _faces has wrong shape
+				if (_faces.ndim() != 2 || _faces.shape(1) < 3) {
+					PyErr_SetString(PyExc_RuntimeError, "Array 'face_vertex_indices' must have shape (n, m) with m > 2");
+					throw py::error_already_set();
+				}
+
+				for (ssize_t i = 0; i < _faces.shape(0); ++i) {
+					std::vector<OM::VertexHandle> vhandles;
+					for (ssize_t j = 0; j < _faces.shape(1); ++j) {
+						if (_faces.at(i, j) >= 0 && _faces.at(i, j) < _points.shape(0)) {
+							vhandles.push_back(OM::VertexHandle(_faces.at(i, j)));
+						}
+					}
+					if (vhandles.size() >= 3) {
+						mesh.add_face(vhandles);
+					}
+				}
+
+				return mesh;
+			}), py::arg("points"), py::arg("face_vertex_indices")=py::array_t<int>())
+
 		//======================================================================
 		//  KernelT
 		//======================================================================

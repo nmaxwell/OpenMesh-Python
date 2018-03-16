@@ -354,6 +354,46 @@ class Python(unittest.TestCase):
         self.delete_vertices()
         self.assertRaises(RuntimeError, self.mesh.halfedge_edge_indices)
         self.assertRaises(RuntimeError, self.mesh.he_indices)
+        
+    def test_init_with_arrays(self):
+        points = self.mesh.points()
+        face_vertex_indices = self.mesh.face_vertex_indices()
+        # init polymesh
+        polymesh = openmesh.PolyMesh(points, face_vertex_indices)
+        self.assertEqual(polymesh.n_vertices(), self.mesh.n_vertices())
+        self.assertEqual(polymesh.n_faces(), self.mesh.n_faces())
+        # init trimesh (one face will be triangulated)
+        trimesh = openmesh.TriMesh(points, face_vertex_indices)
+        self.assertEqual(trimesh.n_vertices(), self.mesh.n_vertices())
+        self.assertEqual(trimesh.n_faces(), self.mesh.n_faces() + 1)
+        # init with empty points and faces
+        trimesh = openmesh.TriMesh(np.empty((0, 3)), np.empty((0, 4)))
+        self.assertEqual(trimesh.n_vertices(), 0)
+        self.assertEqual(trimesh.n_faces(), 0)
+        # init with empty points
+        trimesh = openmesh.TriMesh(np.empty((0, 3)), face_vertex_indices)
+        self.assertEqual(trimesh.n_vertices(), 0)
+        self.assertEqual(trimesh.n_faces(), 0)
+        # init with empty faces
+        trimesh = openmesh.TriMesh(points, np.empty((0, 4)))
+        self.assertEqual(trimesh.n_vertices(), self.mesh.n_vertices())
+        self.assertEqual(trimesh.n_faces(), 0)
+        # init with points only
+        trimesh = openmesh.TriMesh(points)
+        self.assertEqual(trimesh.n_vertices(), self.mesh.n_vertices())
+        self.assertEqual(trimesh.n_faces(), 0)
+        # init with wrong points shape
+        with self.assertRaises(RuntimeError):
+            openmesh.TriMesh(points[:, :2])
+        # init with wrong faces shape
+        with self.assertRaises(RuntimeError):
+            openmesh.TriMesh(points, face_vertex_indices[:, :2])
+        # init with points and invalid faces
+        face_vertex_indices[1] = [-1, -1, -1, -1]
+        face_vertex_indices[3] = [-1, -1, -1, -1]
+        polymesh = openmesh.PolyMesh(points, face_vertex_indices)
+        self.assertEqual(polymesh.n_vertices(), self.mesh.n_vertices())
+        self.assertEqual(polymesh.n_faces(), self.mesh.n_faces() - 2)
 
 
 if __name__ == '__main__':
