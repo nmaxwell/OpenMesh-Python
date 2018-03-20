@@ -79,17 +79,29 @@ setup(
     name='openmesh',
     use_scm_version={
         'version_scheme': 'post-release',
+        'local_scheme': 'dirty-tag'
     },
     author='Alexander Dielen, Isaak Lim, Janis Born',
-    author_email='',
+    author_email='isaak.lim@cs.rwth-aachen.de',
     description='Python bindings for OpenMesh.',
-    long_description='OpenMesh is a generic and efficient data structure for representing and manipulating polygonal meshes.',
+    long_description_markdown_filename='README.md',
     ext_modules=[CMakeExtension('openmesh')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    setup_requires=['setuptools_scm', 'numpy'],
+    setup_requires=['setuptools_scm', 'setuptools-markdown'],
     install_requires=['numpy'],
     options={'build': {'build_base': 'build-setuptools'}},
     license='BSD 3-Clause',
     url='https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Topic :: Multimedia :: Graphics',
+    ],
+    project_urls={
+        'Source':'https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python',
+        'Tracker':'https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/issues',
+    }
 )
