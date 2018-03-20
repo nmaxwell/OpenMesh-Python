@@ -1,4 +1,5 @@
-# OpenMesh Python Bindings [![pipeline status](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/badges/master/pipeline.svg)](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/commits/master)
+# OpenMesh Python Bindings
+[![pipeline status](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/badges/master/pipeline.svg)](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/commits/master)
 
 OpenMesh python bindings implemented with
 [pybind11](https://github.com/pybind/pybind11) that are tightly integrated with
