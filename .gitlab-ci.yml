@@ -230,6 +230,21 @@ deploy-2.7-macos:
     paths:
       - release/*.whl
 
+deploy-sdist:
+  stage:
+    deploy
+  tags:
+    - Linux
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - virtualenv --clear -p python3.5 .
+    - source bin/activate
+    - python setup.py sdist --dist-dir release
+  artifacts:
+    paths:
+      - release/
+
 deploy-documentation:
   stage:
     deploy
