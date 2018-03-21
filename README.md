@@ -1,15 +1,19 @@
 # OpenMesh Python Bindings
 [![pipeline status](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/badges/master/pipeline.svg)](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/commits/master)
 
-OpenMesh python bindings implemented with
+OpenMesh Python bindings implemented with
 [pybind11](https://github.com/pybind/pybind11) that are tightly integrated with
 [numpy](http://www.numpy.org/).
 
-## Installing
+## Installation
 
-### Prebuild Binaries
+### Using `pip`
 
-We provide prebuild wheels for installation with pip for the following configurations:
+    pip install openmesh
+
+## Prebuilt Binaries
+
+We also provide prebuilt wheels for manual installation with `pip` for the following configurations:
 #### Linux
 * [Python 2.7](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/-/jobs/artifacts/master/browse/release?job=deploy-2.7-linux)
 * [Python 3.5](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/-/jobs/artifacts/master/browse/release?job=deploy-3.5-linux)
@@ -23,6 +27,5 @@ We provide prebuild wheels for installation with pip for the following configura
 
 ### Building from source
 1. recursively clone the repo
-2. cd to repo dir
-3. `pip install -e .` (or `pip install -e . --user` if you are not root or in a
-   virtualenv)
+2. `cd` to repo dir
+3. `pip install -e .` (or `pip install -e . --user` if you are not root or in a virtualenv)
