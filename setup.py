@@ -9,6 +9,10 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
 
+def readme():
+    return open('README.md').read()
+
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -84,7 +88,8 @@ setup(
     author='Alexander Dielen, Isaak Lim, Janis Born',
     author_email='isaak.lim@cs.rwth-aachen.de',
     description='Python bindings for OpenMesh.',
-    long_description_markdown_filename='README.md',
+    long_description=readme(),
+    long_description_content_type='text/markdown',
     ext_modules=[CMakeExtension('openmesh')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
