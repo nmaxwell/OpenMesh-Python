@@ -1,1 +1,4 @@
 include LICENSE
+include README.md
+graft OpenMesh
+graft pybind11
