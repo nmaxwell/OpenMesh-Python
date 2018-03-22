@@ -4,7 +4,6 @@ project(openmesh)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(OPENMESH_BUILD_PYTHON_BINDINGS OFF)
 
 add_subdirectory(OpenMesh)
 add_subdirectory(pybind11)
