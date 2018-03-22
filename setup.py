@@ -93,7 +93,7 @@ setup(
     ext_modules=[CMakeExtension('openmesh')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    setup_requires=['setuptools_scm', 'setuptools-markdown'],
+    setup_requires=['setuptools_scm'],
     install_requires=['numpy'],
     options={'build': {'build_base': 'build-setuptools'}},
     license='BSD 3-Clause',
