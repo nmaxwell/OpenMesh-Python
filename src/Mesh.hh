@@ -690,7 +690,7 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("set_halfedge_handle", set_halfedge_handle_fh_hh)
 
 		.def("is_deleted", [](Mesh& _self, OM::VertexHandle _h) {
-				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				if (!_self.has_vertex_status()) return false;
 				return _self.status(_h).deleted();
 			})
 
@@ -700,7 +700,7 @@ void expose_mesh(py::module& m, const char *_name) {
 			})
 
 		.def("is_deleted", [](Mesh& _self, OM::HalfedgeHandle _h) {
-				if (!_self.has_halfedge_status()) _self.request_halfedge_status();
+				if (!_self.has_halfedge_status()) return false;
 				return _self.status(_h).deleted();
 			})
 
@@ -710,7 +710,7 @@ void expose_mesh(py::module& m, const char *_name) {
 			})
 
 		.def("is_deleted", [](Mesh& _self, OM::EdgeHandle _h) {
-				if (!_self.has_edge_status()) _self.request_edge_status();
+				if (!_self.has_edge_status()) return false;
 				return _self.status(_h).deleted();
 			})
 
@@ -720,7 +720,7 @@ void expose_mesh(py::module& m, const char *_name) {
 			})
 
 		.def("is_deleted", [](Mesh& _self, OM::FaceHandle _h) {
-				if (!_self.has_face_status()) _self.request_face_status();
+				if (!_self.has_face_status()) return false;
 				return _self.status(_h).deleted();
 			})
 
