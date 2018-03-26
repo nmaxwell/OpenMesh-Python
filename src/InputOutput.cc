@@ -70,8 +70,13 @@ void def_read_mesh(py::module& m, const char *_name) {
 			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
 			if (_color_float) options += OM::IO::Options::ColorFloat;
 
-			OM::IO::read_mesh(mesh,_filename, options);
+			const bool ok = OM::IO::read_mesh(mesh,_filename, options);
 
+			if (!ok) {
+				const std::string msg = "File could not be read: " + _filename;
+				PyErr_SetString(PyExc_RuntimeError, msg.c_str());
+				throw py::error_already_set();
+			}
 			if (_vertex_normal && !options.vertex_has_normal()) {
 				PyErr_SetString(PyExc_RuntimeError, "Vertex normals could not be read.");
 				throw py::error_already_set();

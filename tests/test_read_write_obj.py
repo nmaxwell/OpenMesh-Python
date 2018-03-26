@@ -135,6 +135,12 @@ class ReadWriteOBJ(unittest.TestCase):
         
         self.mesh.release_vertex_colors()
 
+    def test_read_nonexistent_obj(self):
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_trimesh("TestFiles/nonexistent.obj")
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_polymesh("TestFiles/nonexistent.obj")
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ReadWriteOBJ)

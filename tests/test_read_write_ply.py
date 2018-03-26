@@ -249,6 +249,12 @@ class ReadWritePLY(unittest.TestCase):
         
         self.mesh.release_vertex_normals()
 
+    def test_read_nonexistent_ply(self):
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_trimesh("TestFiles/nonexistent.ply")
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_polymesh("TestFiles/nonexistent.ply")
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ReadWritePLY)

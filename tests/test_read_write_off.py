@@ -133,6 +133,12 @@ class ReadWriteOFF(unittest.TestCase):
         
         self.mesh.release_vertex_colors()
 
+    def test_read_nonexistent_off(self):
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_trimesh("TestFiles/nonexistent.off")
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_polymesh("TestFiles/nonexistent.off")
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ReadWriteOFF)

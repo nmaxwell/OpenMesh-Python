@@ -44,6 +44,12 @@ class ReadWriteSTL(unittest.TestCase):
 
         self.mesh.release_face_normals()
 
+    def test_read_nonexistent_stl(self):
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_trimesh("TestFiles/nonexistent.stl")
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_polymesh("TestFiles/nonexistent.stl")
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ReadWriteSTL)

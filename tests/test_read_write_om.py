@@ -158,6 +158,12 @@ class ReadWriteOM(unittest.TestCase):
 
     # TODO property tests
 
+    def test_read_nonexistent_om(self):
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_trimesh("TestFiles/nonexistent.om")
+        with self.assertRaises(RuntimeError):
+            self.mesh = openmesh.read_polymesh("TestFiles/nonexistent.om")
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(ReadWriteOM)
