@@ -75,4 +75,5 @@ We provide prebuilt wheels for manual installation with `pip` for the following 
 ### Building from source
 1. recursively clone the repo
 2. `cd` to repo dir
-3. `pip install -e .` (or `pip install -e . --user` if you are not root or in a virtualenv)
+3. ensure the correct virtualenv is activated
+4. `pip install -e .`
