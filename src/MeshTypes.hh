@@ -174,6 +174,30 @@ public:
 		Mesh::copy_property(prop, _from, _to);
 	}
 
+	py::object py_copy() {
+		return py::cast(MeshWrapperT(*this));
+	}
+
+	py::object py_deepcopy(py::dict _memo) {
+		#if PY_MAJOR_VERSION < 3
+		py::object id = py::module::import("__builtin__").attr("id");
+		#else
+		py::object id = py::module::import("builtins").attr("id");
+		#endif
+		py::object deepcopy = py::module::import("copy").attr("deepcopy");
+
+		MeshWrapperT *copy = new MeshWrapperT(*this);
+		py::object copy_pyobj = py::cast(copy, py::return_value_policy::take_ownership);
+		_memo[id(py::cast(this))] = copy_pyobj;
+
+		py_deepcopy_prop<OpenMesh::VertexHandle>(copy, deepcopy, _memo);
+		py_deepcopy_prop<OpenMesh::HalfedgeHandle>(copy, deepcopy, _memo);
+		py_deepcopy_prop<OpenMesh::EdgeHandle>(copy, deepcopy, _memo);
+		py_deepcopy_prop<OpenMesh::FaceHandle>(copy, deepcopy, _memo);
+
+		return copy_pyobj;
+	}
+
 	size_t py_n_items(OpenMesh::VertexHandle) const { return Mesh::n_vertices(); }
 	size_t py_n_items(OpenMesh::HalfedgeHandle) const { return Mesh::n_halfedges(); }
 	size_t py_n_items(OpenMesh::EdgeHandle) const { return Mesh::n_edges(); }
@@ -185,6 +209,17 @@ public:
 	size_t py_has_status(OpenMesh::FaceHandle) const { return Mesh::has_face_status(); }
 
 private:
+
+	template <class Handle>
+	void py_deepcopy_prop(MeshWrapperT *_copy, py::object _copyfunc, py::dict _memo) {
+		for (const auto& item : py_prop_map(Handle())) {
+			const auto prop = item.second;
+			for (size_t i = 0; i < py_n_items(Handle()); ++i) {
+				const Handle h(i);
+				_copy->property(prop, h) = _copyfunc(this->property(prop, h), _memo);
+			}
+		}
+	}
 
 	template <class Handle, class PropHandle>
 	PropHandle py_prop_on_demand(const std::string& _name) {
