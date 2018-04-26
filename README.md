@@ -2,9 +2,8 @@
 
 [![](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/badges/master/pipeline.svg)](https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/commits/master)
 
-OpenMesh Python bindings implemented with
-[pybind11](https://github.com/pybind/pybind11) that are tightly integrated with
-[numpy](http://www.numpy.org/).
+OpenMesh is a versatile halfedge-based data structure for representing and manipulating polygon meshes.
+The OpenMesh Python bindings are are tightly integrated with [numpy](http://www.numpy.org/) and are implemented using [pybind11](https://github.com/pybind/pybind11). 
 
 ## Example
 ```python
@@ -58,7 +57,7 @@ For further examples see the documentation or refer to the [unit tests](https://
 
     pip install openmesh
 
-## Prebuilt Binaries
+### Prebuilt Binaries
 
 We provide prebuilt wheels for manual installation with `pip` for the following configurations:
 #### Linux

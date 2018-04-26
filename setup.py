@@ -87,7 +87,7 @@ setup(
     },
     author='Alexander Dielen, Isaak Lim, Janis Born',
     author_email='vci-pypi@cs.rwth-aachen.de',
-    description='a versatile halfedge data structure for representing and manipulating polygon meshes',
+    description='a versatile halfedge-based data structure for representing and manipulating polygon meshes',
     long_description=readme(),
     long_description_content_type='text/markdown',
     ext_modules=[CMakeExtension('openmesh')],
