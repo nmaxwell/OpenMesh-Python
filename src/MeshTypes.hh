@@ -88,7 +88,8 @@ public:
 		const auto prop = py_prop_on_demand<Handle, PropHandle>(_name);
 
 		if (_list.size() != n) {
-			return;
+			PyErr_SetString(PyExc_RuntimeError, "List must have length n.");
+			throw py::error_already_set();
 		}
 		for (size_t i = 0; i < n; ++i) {
 			Mesh::property(prop, Handle(i)) = py::object(_list[i]);
@@ -150,9 +151,15 @@ public:
 		const size_t n = py_n_items(Handle());
 		const auto prop = py_prop_on_demand<Handle, PropHandle>(_name);
 
-		// array cannot be empty and its shape has to be (_n, m,...)
-		if (_arr.size() == 0 || _arr.ndim() < 2 || _arr.shape(0) != n) {
-			return;
+		// array cannot be empty and its shape has to be (n, ...)
+		if (_arr.size() == 0 || _arr.ndim() < 1 || _arr.shape(0) != n) {
+			PyErr_SetString(PyExc_RuntimeError, "Array must have shape (n, ...).");
+			throw py::error_already_set();
+		}
+
+		// reshape to (n, 1) if necessary
+		if (_arr.ndim() == 1) {
+			_arr.resize({n, size_t(1)});
 		}
 
 		// copy one array at a time
