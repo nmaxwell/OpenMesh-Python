@@ -815,6 +815,20 @@ void expose_mesh(py::module& m, const char *_name) {
 			py::arg("fh_from"), py::arg("fh_to"), py::arg("copy_build_in")=false)
 
 		//======================================================================
+		//  ArrayKernel
+		//======================================================================
+
+		.def("is_valid_handle", (bool (Mesh::*)(OM::VertexHandle) const) &Mesh::is_valid_handle)
+		.def("is_valid_handle", (bool (Mesh::*)(OM::HalfedgeHandle) const) &Mesh::is_valid_handle)
+		.def("is_valid_handle", (bool (Mesh::*)(OM::EdgeHandle) const) &Mesh::is_valid_handle)
+		.def("is_valid_handle", (bool (Mesh::*)(OM::FaceHandle) const) &Mesh::is_valid_handle)
+
+		.def("delete_isolated_vertices", [](Mesh& _self) {
+				if (!_self.has_vertex_status()) _self.request_vertex_status();
+				_self.delete_isolated_vertices();
+			})
+
+		//======================================================================
 		//  PolyConnectivity
 		//======================================================================
 
