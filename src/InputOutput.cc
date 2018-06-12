@@ -22,6 +22,7 @@ void def_read_mesh(py::module& m, const char *_name) {
 			bool _edge_color,
 			bool _face_normal,
 			bool _face_color,
+			bool _face_texture_index,
 			bool _color_alpha,
 			bool _color_float
 		)
@@ -66,11 +67,14 @@ void def_read_mesh(py::module& m, const char *_name) {
 				options += OM::IO::Options::FaceColor;
 				mesh.request_face_colors();
 			}
+			if (_face_texture_index) {
+				mesh.request_face_texture_index();
+			}
 
 			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
 			if (_color_float) options += OM::IO::Options::ColorFloat;
 
-			const bool ok = OM::IO::read_mesh(mesh,_filename, options);
+			const bool ok = OM::IO::read_mesh(mesh, _filename, options);
 
 			if (!ok) {
 				const std::string msg = "File could not be read: " + _filename;
@@ -120,6 +124,7 @@ void def_read_mesh(py::module& m, const char *_name) {
 		py::arg("edge_color")=false,
 		py::arg("face_normal")=false,
 		py::arg("face_color")=false,
+		py::arg("face_texture_index")=false,
 		py::arg("color_alpha")=false,
 		py::arg("color_float")=false
 	);

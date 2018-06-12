@@ -469,6 +469,7 @@ void expose_mesh(py::module& m, const char *_name) {
 	typedef typename Mesh::TexCoord1D TexCoord1D;
 	typedef typename Mesh::TexCoord2D TexCoord2D;
 	typedef typename Mesh::TexCoord3D TexCoord3D;
+	typedef typename Mesh::TextureIndex TextureIndex;
 
 	//======================================================================
 	//  KernelT Function Pointers
@@ -800,6 +801,33 @@ void expose_mesh(py::module& m, const char *_name) {
 		.def("shalfedges", shalfedges)
 		.def("sedges", sedges)
 		.def("sfaces", sfaces)
+
+		.def("texture_index", [](Mesh& _self, OM::FaceHandle _h) {
+				if (!_self.has_face_texture_index()) _self.request_face_texture_index();
+				return _self.texture_index(_h);
+			})
+
+		.def("set_texture_index", [](Mesh& _self, OM::FaceHandle _h, TextureIndex _idx) {
+				if (!_self.has_face_texture_index()) _self.request_face_texture_index();
+				_self.set_texture_index(_h, _idx);
+			})
+
+		.def("texture_name", [](Mesh& _self, TextureIndex _idx) {
+				OM::MPropHandleT<std::map<TextureIndex, std::string> > prop;
+				if (_self.get_property_handle(prop, "TextureMapping")) {
+					const auto map =  _self.property(prop);
+					if (map.count(_idx) == 0) {
+						throw py::index_error();
+					}
+					else {
+						return map.at(_idx);
+					}
+				}
+				else {
+					PyErr_SetString(PyExc_RuntimeError, "Mesh has no textures.");
+					throw py::error_already_set();
+				}
+			})
 
 		//======================================================================
 		//  BaseKernel
