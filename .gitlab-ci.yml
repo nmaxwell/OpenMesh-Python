@@ -169,7 +169,7 @@ deploy-3.6-VS2017:
   script:
     - mkdir release
     - cd dist3
-    - FOR %%a IN (*.whl) DO cp %%a ..\release
+    - FOR %%a IN (*.whl) DO copy %%a ..\release
   artifacts:
     paths:
       - release/*.whl
