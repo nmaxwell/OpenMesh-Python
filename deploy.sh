@@ -1,7 +1,15 @@
 #!/bin/bash
+
+# usage:
+#   ./deploy.sh [revision]
+#
+# revision: tag, branch name, or commit to publish. Default is 'master'
+
+revision=${1:-master}
+
 for name in "deploy-sdist" "deploy-2.7-macos" "deploy-3.5-macos" "deploy-2.7-linux" "deploy-3.5-linux" "deploy-3.6-VS2017"
 do
-  wget "https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/-/jobs/artifacts/master/download?job=$name" -O "$name.zip"
+  wget "https://www.graphics.rwth-aachen.de:9000/OpenMesh/openmesh-python/-/jobs/artifacts/$revision/download?job=$name" -O "$name.zip"
   unzip "$name.zip"
   rm -f "$name.zip"
 done
