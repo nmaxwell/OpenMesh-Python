@@ -169,7 +169,13 @@ void def_write_mesh(py::module& m) {
 			if (_color_alpha) options += OM::IO::Options::ColorAlpha;
 			if (_color_float) options += OM::IO::Options::ColorFloat;
 
-			OM::IO::write_mesh(_mesh, _filename, options);
+			const bool ok = OM::IO::write_mesh(_mesh, _filename, options);
+
+			if (!ok) {
+				const std::string msg = "File could not be written: " + _filename;
+				PyErr_SetString(PyExc_RuntimeError, msg.c_str());
+				throw py::error_already_set();
+			}
 		},
 		py::arg("filename"),
 		py::arg("mesh"),
