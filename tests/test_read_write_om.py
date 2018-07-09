@@ -10,6 +10,13 @@ class ReadWriteOM(unittest.TestCase):
         if not os.path.exists('OutFiles'):
             os.makedirs('OutFiles')
 
+    def test_read_write_read(self):
+        mesh1 = openmesh.read_trimesh("TestFiles/cube-minimal.obj")
+        openmesh.write_mesh('OutFiles/test_read_write_read.om', mesh1)
+        mesh2 = openmesh.read_trimesh('OutFiles/test_read_write_read.om')
+        self.assertTrue(np.allclose(mesh1.points(), mesh2.points()))
+        self.assertTrue(np.array_equal(mesh1.face_vertex_indices(), mesh2.face_vertex_indices()))
+
     def test_load_simple_om_force_vertex_colors_although_not_available(self):
         with self.assertRaises(RuntimeError):
             openmesh.read_trimesh("TestFiles/cube-minimal.om", vertex_color=True)

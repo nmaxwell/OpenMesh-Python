@@ -1,7 +1,21 @@
 import unittest
 import openmesh
+import os
+
+import numpy as np
 
 class ReadWriteSTL(unittest.TestCase):
+
+    def setUp(self):
+        if not os.path.exists('OutFiles'):
+            os.makedirs('OutFiles')
+
+    def test_read_write_read(self):
+        mesh1 = openmesh.read_trimesh("TestFiles/cube-minimal.stl")
+        openmesh.write_mesh('OutFiles/test_read_write_read.stl', mesh1)
+        mesh2 = openmesh.read_trimesh('OutFiles/test_read_write_read.stl')
+        self.assertTrue(np.allclose(mesh1.points(), mesh2.points()))
+        self.assertTrue(np.array_equal(mesh1.face_vertex_indices(), mesh2.face_vertex_indices()))
 
     def test_load_simple_stl_file(self):
         self.mesh = openmesh.read_trimesh("TestFiles/cube1.stl")
