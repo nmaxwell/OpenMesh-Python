@@ -140,7 +140,7 @@ public:
 				PyErr_SetString(PyExc_RuntimeError, "Array shapes do not match.");
 				throw py::error_already_set();
 			}
-			std::copy(arr.data(0), arr.data(0) + size, &data[size * i]);
+			std::copy(arr.data(), arr.data() + size, &data[size * i]);
 		}
 
 		return py::array_t<double>(shape, strides, data, base);
