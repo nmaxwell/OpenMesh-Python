@@ -157,21 +157,24 @@ public:
 			throw py::error_already_set();
 		}
 
-		// reshape to (n, 1) if necessary
 		if (_arr.ndim() == 1) {
-			_arr.resize({n, size_t(1)});
+			// special case: use scalar properties
+			for (size_t i = 0; i < n; ++i) {
+				Mesh::property(prop, Handle(i)) = py::float_(_arr.at(i));
+			}
 		}
-
-		// copy one array at a time
-		const size_t size = _arr.strides(0) / sizeof(double);
-		for (size_t i = 0; i < n; ++i) {
-			double *data = new double[size];
-			std::copy(_arr.data(i), _arr.data(i) + size, data);
-			const std::vector<size_t> shape(_arr.shape() + 1, _arr.shape() + _arr.ndim());
-			const std::vector<size_t> strides(_arr.strides() + 1, _arr.strides() + _arr.ndim());
-			py::capsule base = free_when_done(data);
-			py::array_t<double> tmp(shape, strides, data, base);
-			Mesh::property(prop, Handle(i)) = tmp;
+		else {
+			// copy one array at a time
+			const size_t size = _arr.strides(0) / sizeof(double);
+			for (size_t i = 0; i < n; ++i) {
+				double *data = new double[size];
+				std::copy(_arr.data(i), _arr.data(i) + size, data);
+				const std::vector<size_t> shape(_arr.shape() + 1, _arr.shape() + _arr.ndim());
+				const std::vector<size_t> strides(_arr.strides() + 1, _arr.strides() + _arr.ndim());
+				py::capsule base = free_when_done(data);
+				py::array_t<double> tmp(shape, strides, data, base);
+				Mesh::property(prop, Handle(i)) = tmp;
+			}
 		}
 	}
 
