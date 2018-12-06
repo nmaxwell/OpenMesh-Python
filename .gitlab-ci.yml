@@ -16,7 +16,7 @@ build-3.6-VS2017:
     - git submodule update --init --recursive
   script:
     - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
-    - virtualenv --clear -p "C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python36_64\python.exe" .
+    - virtualenv --clear -p "C:\Program Files \(x86\)\Microsoft Visual Studio\Shared\Python36_64\python.exe" .
     - call .\Scripts\activate
     - python setup.py bdist_wheel --dist-dir dist3
   artifacts:
@@ -94,7 +94,7 @@ test-3.6-VS2017:
     - build-3.6-VS2017
   script:
     - set Path=%Path%;C:\Program Files\Python36;C:\Program Files\Python36\Scripts;
-    - virtualenv --clear -p "C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python36_64\python.exe" .
+    - virtualenv --clear -p "C:\Program Files \(x86\)\Microsoft Visual Studio\Shared\Python36_64\python.exe" .
     - call .\Scripts\activate
     - cd dist3
     - FOR %%a IN (*.whl) DO pip install %%a
