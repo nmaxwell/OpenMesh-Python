@@ -15,7 +15,7 @@ build-3.7-VS2017:
     - git submodule sync --recursive
     - git submodule update --init --recursive
   script:
-    - set Path=%Path%;C:\Program Files\Python37;C:\Program Files\Python37\Scripts;
+    - set Path=%Path%;C:\Program Files\Python37;C:\Program Files\Python37\Scripts;C:\Program Files\CMake\bin;
     - echo %Path%
     - virtualenv.exe --clear -p "C:\Program Files\Python37\python.exe" .
     - call .\Scripts\activate
