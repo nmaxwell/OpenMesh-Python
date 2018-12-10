@@ -8,6 +8,7 @@ build-3.7-VS2017:
     build
   tags:
     - VS2017
+    - python37
   variables:
     BUILD_PLATFORM: "VS2017"
     ARCHITECTURE: "x64"
@@ -90,6 +91,7 @@ test-3.7-VS2017:
     test
   tags:
     - VS2017
+    - python37
   dependencies:
     - build-3.7-VS2017
   script:
@@ -164,6 +166,7 @@ deploy-3.7-VS2017:
     deploy
   tags:
     - VS2017
+    - python37
   dependencies:
     - build-3.7-VS2017
   script:
